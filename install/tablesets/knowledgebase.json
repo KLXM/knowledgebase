@@ -315,7 +315,7 @@
         "label": "Layout",
         "db_type": "none",
         "type": "start",
-        "layout": "1fr",
+        "layout": "1fr 1fr",
         "gap": "8px",
         "no_db": "1",
         "not_required": "1",
