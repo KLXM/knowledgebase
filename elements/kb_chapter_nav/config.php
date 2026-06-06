@@ -16,7 +16,7 @@ return [
         'content' => [
             'label' => $_ci('group_content', 'Inhalt'),
             'icon' => 'fa-book',
-            'fields' => ['title', 'text', 'badge', 'anchor_id'],
+            'fields' => ['title', 'heading_level', 'text', 'badge', 'anchor_id'],
         ],
     ],
     'fields' => [
@@ -24,6 +24,17 @@ return [
             'type' => 'text',
             'label' => $_ci('field_title', 'Titel'),
             'required' => true,
+        ],
+        'heading_level' => [
+            'type' => 'choice',
+            'label' => $_ci('field_heading_level', 'Ebene'),
+            'choices' => [
+                'h2' => 'H2',
+                'h3' => 'H3',
+                'h4' => 'H4',
+            ],
+            'default' => 'h2',
+            'notice' => $_ci('field_heading_level_notice', 'Nur H2 wird in der Navigation gelistet. H3/H4 bleiben im Inhalt.'),
         ],
         'text' => [
             'type' => 'textarea',

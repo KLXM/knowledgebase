@@ -23,12 +23,14 @@ final class FrontendI18n
         'knowledgebase_nav_expand_all',
         'knowledgebase_nav_collapse_all',
         'knowledgebase_nav_glossary',
+        'knowledgebase_nav_all_levels',
         'knowledgebase_frontend_missing_article',
         'knowledgebase_article_label',
         'knowledgebase_glossary_title',
         'knowledgebase_glossary_empty',
         'knowledgebase_search_results',
         'knowledgebase_search_empty',
+        'knowledgebase_toc_empty',
     ];
 
     /**
@@ -46,12 +48,14 @@ final class FrontendI18n
             'knowledgebase_nav_expand_all' => 'Alle aufklappen',
             'knowledgebase_nav_collapse_all' => 'Alle einklappen',
             'knowledgebase_nav_glossary' => 'Glossar',
+            'knowledgebase_nav_all_levels' => 'Inhaltsverzeichnis (alle Ebenen)',
             'knowledgebase_frontend_missing_article' => 'Es ist noch kein Beitrag vorhanden.',
             'knowledgebase_article_label' => 'Kapitel',
             'knowledgebase_glossary_title' => 'Glossar',
             'knowledgebase_glossary_empty' => 'Noch keine Glossar-Begriffe vorhanden.',
             'knowledgebase_search_results' => 'Suchergebnisse',
             'knowledgebase_search_empty' => 'Keine Treffer gefunden.',
+            'knowledgebase_toc_empty' => 'Für diesen Beitrag sind noch keine Kapitelmarken vorhanden.',
         ],
         'en' => [
             'knowledgebase_frontend_missing_base' => 'The knowledge base is not available.',
@@ -64,12 +68,14 @@ final class FrontendI18n
             'knowledgebase_nav_expand_all' => 'Expand all',
             'knowledgebase_nav_collapse_all' => 'Collapse all',
             'knowledgebase_nav_glossary' => 'Glossary',
+            'knowledgebase_nav_all_levels' => 'Table of contents (all levels)',
             'knowledgebase_frontend_missing_article' => 'No article is available yet.',
             'knowledgebase_article_label' => 'Chapter',
             'knowledgebase_glossary_title' => 'Glossary',
             'knowledgebase_glossary_empty' => 'No glossary terms available yet.',
             'knowledgebase_search_results' => 'Search results',
             'knowledgebase_search_empty' => 'No results found.',
+            'knowledgebase_toc_empty' => 'No chapter markers available for this article yet.',
         ],
     ];
 

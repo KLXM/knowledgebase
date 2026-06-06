@@ -6,6 +6,11 @@ $title = trim((string) ($elementData['title'] ?? ''));
 $text = trim((string) ($elementData['text'] ?? ''));
 $badge = trim((string) ($elementData['badge'] ?? ''));
 $anchorInput = trim((string) ($elementData['anchor_id'] ?? ''));
+$headingLevel = strtolower(trim((string) ($elementData['heading_level'] ?? 'h2')));
+
+if (!in_array($headingLevel, ['h2', 'h3', 'h4'], true)) {
+    $headingLevel = 'h2';
+}
 
 if ('' === $title) {
     return;
@@ -25,7 +30,7 @@ if ('' === $anchor) {
         <div class="uk-text-meta uk-margin-small-bottom"><?= rex_escape($badge) ?></div>
     <?php endif; ?>
 
-        <h2 class="uk-heading-bullet uk-margin-small-bottom"><?= rex_escape($title) ?></h2>
+        <<?= $headingLevel ?> class="uk-heading-bullet uk-margin-small-bottom"><?= rex_escape($title) ?></<?= $headingLevel ?>>
 
     <?php if ('' !== $text): ?>
         <p class="uk-text-muted uk-margin-bottom"><?= nl2br(rex_escape($text)) ?></p>

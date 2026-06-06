@@ -30,10 +30,12 @@ final class FrontendRenderer
         $articleParam = 'kb_' . $knowledgebaseId . '_article';
         $searchParam = 'kb_' . $knowledgebaseId . '_q';
         $glossaryParam = 'kb_' . $knowledgebaseId . '_glossary';
+        $tocParam = 'kb_' . $knowledgebaseId . '_toc';
 
         $requestedSlug = trim((string) \rex_request($articleParam, 'string', $startSlug));
         $searchQuery = trim((string) \rex_request($searchParam, 'string', ''));
         $glossaryRequested = (int) \rex_request($glossaryParam, 'int', 0) === 1;
+        $tocRequested = (int) \rex_request($tocParam, 'int', 0) === 1;
 
         $articles = $knowledgebase->getOnlineArticles()->toArray();
 
@@ -59,9 +61,11 @@ final class FrontendRenderer
             $articleParam,
             $searchParam,
             $glossaryParam,
+            $tocParam,
             $searchQuery,
             $searchResults,
             $glossaryRequested,
+            $tocRequested,
             max(0, $stickyHeaderOffset),
             max(0, $stickyNavOffset),
         );
@@ -74,18 +78,21 @@ final class FrontendRenderer
      * @param list<rex_yform_manager_dataset> $articles
      * @param list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string}> $searchResults
      */
-    private static function renderInner(string $instanceId, \rex_data_knowledgebase $knowledgebase, array $articles, ?\rex_data_knowledgebase_article $currentArticle, string $articleParam, string $searchParam, string $glossaryParam, string $searchQuery, array $searchResults, bool $glossaryRequested, int $stickyHeaderOffset, int $stickyNavOffset): string
+    private static function renderInner(string $instanceId, \rex_data_knowledgebase $knowledgebase, array $articles, ?\rex_data_knowledgebase_article $currentArticle, string $articleParam, string $searchParam, string $glossaryParam, string $tocParam, string $searchQuery, array $searchResults, bool $glossaryRequested, bool $tocRequested, int $stickyHeaderOffset, int $stickyNavOffset): string
     {
         $basePath = self::getCurrentPath();
         $stickyOffsetTotal = $stickyHeaderOffset + $stickyNavOffset;
         $glossaryEnabled = $knowledgebase->isGlossaryEnabled();
         $showGlossaryPage = $glossaryEnabled && $glossaryRequested && $searchQuery === '';
-        $nav = self::renderNavigation($articles, $currentArticle, $articleParam, $glossaryParam, $glossaryEnabled, $showGlossaryPage);
+        $showTocPage = $tocRequested && !$showGlossaryPage && $searchQuery === '';
+        $nav = self::renderNavigation($articles, $currentArticle, $articleParam, $glossaryParam, $tocParam, $glossaryEnabled, $showGlossaryPage, $showTocPage);
         $main = '' !== $searchQuery
             ? self::renderSearchResults($searchResults, $articleParam, $searchQuery)
             : ($showGlossaryPage
                 ? self::renderGlossaryIndex($knowledgebase, $glossaryParam)
-                : self::renderArticle($knowledgebase, $currentArticle));
+                : ($showTocPage
+                    ? self::renderTocPage($knowledgebase, $articles, $currentArticle, $articleParam, $tocParam)
+                    : self::renderArticle($knowledgebase, $currentArticle)));
 
         $title = rex_escape((string) $knowledgebase->getValue('title'));
         $description = trim((string) $knowledgebase->getValue('description'));
@@ -98,12 +105,13 @@ final class FrontendRenderer
             . '<div class="kb-app__hero-inner uk-grid-small" uk-grid>'
             . '<div>'
             . '<div class="kb-app__eyebrow">Knowledge Base</div>'
-            . '<h2 class="kb-app__title uk-margin-remove">' . $title . '</h2>'
+            . '<div class="kb-app__title uk-margin-remove">' . $title . '</div>'
             . $descriptionHtml
             . '</div>'
             . '<div class="kb-app__search-panel">'
             . '<form class="kb-app__search-form" method="get" action="' . rex_escape($basePath) . '">'
             . '<input type="hidden" name="' . rex_escape($glossaryParam) . '" value="0">'
+            . '<input type="hidden" name="' . rex_escape($tocParam) . '" value="0">'
             . '<label class="kb-app__search-label" for="' . rex_escape($instanceId . '-search') . '">' . rex_escape(FrontendI18n::msg('knowledgebase_search_label', 'Suche')) . '</label>'
             . '<div class="kb-app__search-control">'
             . '<span uk-icon="search"></span>'
@@ -132,13 +140,14 @@ final class FrontendRenderer
     /**
      * @param list<rex_yform_manager_dataset> $articles
      */
-    private static function renderNavigation(array $articles, ?\rex_data_knowledgebase_article $currentArticle, string $articleParam, string $glossaryParam, bool $glossaryEnabled, bool $glossaryActive): string
+    private static function renderNavigation(array $articles, ?\rex_data_knowledgebase_article $currentArticle, string $articleParam, string $glossaryParam, string $tocParam, bool $glossaryEnabled, bool $glossaryActive, bool $tocActive): string
     {
         $currentId = $currentArticle instanceof \rex_data_knowledgebase_article ? $currentArticle->getId() : 0;
         $navSearchId = 'kb-nav-search-' . $articleParam;
         $expandLabel = FrontendI18n::msg('knowledgebase_nav_expand_all', 'Alle aufklappen');
         $collapseLabel = FrontendI18n::msg('knowledgebase_nav_collapse_all', 'Alle einklappen');
         $glossaryLabel = FrontendI18n::msg('knowledgebase_nav_glossary', 'Glossar');
+        $tocLabel = FrontendI18n::msg('knowledgebase_nav_all_levels', 'Inhaltsverzeichnis (alle Ebenen)');
         $items = '<ul class="kb-app__nav-list">';
 
         foreach ($articles as $article) {
@@ -191,6 +200,13 @@ final class FrontendRenderer
             $items .= '</li>';
         }
 
+        $items .= '<li class="kb-app__nav-main-item kb-app__nav-main-item--toc" data-kb-nav-main>';
+        $items .= '<a class="kb-app__nav-link kb-app__nav-link--toc' . ($tocActive ? ' is-current is-trail' : '') . '" data-kb-nav-main-link href="' . rex_escape(self::buildUrl([$tocParam => 1])) . '">';
+        $items .= self::renderNavBadgeIcon('list');
+        $items .= '<span>' . rex_escape($tocLabel) . '</span>';
+        $items .= '</a>';
+        $items .= '</li>';
+
         $items .= '</ul>';
 
         return '<div class="kb-app__nav-shell">'
@@ -213,7 +229,7 @@ final class FrontendRenderer
         if (count($terms) === 0) {
             return '<section class="kb-app__glossary-page">'
                 . '<div class="kb-app__article-meta">' . rex_escape(FrontendI18n::msg('knowledgebase_glossary_title', 'Glossar')) . '</div>'
-                . '<h3 class="kb-app__article-title">' . rex_escape((string) $knowledgebase->getValue('title')) . '</h3>'
+                . '<div class="kb-app__article-title">' . rex_escape((string) $knowledgebase->getValue('title')) . '</div>'
                 . '<div class="uk-alert-warning" uk-alert>' . rex_escape(FrontendI18n::msg('knowledgebase_glossary_empty', 'Noch keine Glossar-Begriffe vorhanden.')) . '</div>'
                 . '</section>';
         }
@@ -262,10 +278,86 @@ final class FrontendRenderer
         return '<section class="kb-app__glossary-page">'
             . '<div class="kb-app__breadcrumbs"><a href="' . rex_escape($backUrl) . '">' . rex_escape((string) $knowledgebase->getValue('title')) . '</a><span>/</span><span>' . rex_escape(FrontendI18n::msg('knowledgebase_glossary_title', 'Glossar')) . '</span></div>'
             . '<div class="kb-app__article-meta">' . rex_escape(FrontendI18n::msg('knowledgebase_glossary_title', 'Glossar')) . '</div>'
-            . '<h3 class="kb-app__article-title">' . rex_escape((string) $knowledgebase->getValue('title')) . '</h3>'
+            . '<div class="kb-app__article-title">' . rex_escape((string) $knowledgebase->getValue('title')) . '</div>'
             . '<div class="kb-app__glossary-letters">' . $alphabetLinks . '</div>'
             . $entries
             . $modals
+            . '</section>';
+    }
+
+    /**
+     * @param list<rex_yform_manager_dataset> $articles
+     */
+    private static function renderTocPage(\rex_data_knowledgebase $knowledgebase, array $articles, ?\rex_data_knowledgebase_article $currentArticle, string $articleParam, string $tocParam): string
+    {
+        if (count($articles) === 0) {
+            return '<div class="uk-alert-warning" uk-alert>' . rex_escape(FrontendI18n::msg('knowledgebase_frontend_missing_article', 'Es ist noch kein Beitrag vorhanden.')) . '</div>';
+        }
+
+        $tocTitle = FrontendI18n::msg('knowledgebase_nav_all_levels', 'Inhaltsverzeichnis (alle Ebenen)');
+        $backSlug = $currentArticle instanceof \rex_data_knowledgebase_article
+            ? (string) $currentArticle->getValue('slug')
+            : (string) $articles[0]->getValue('slug');
+        $backUrl = self::buildUrl([$articleParam => $backSlug, $tocParam => null]);
+        $breadcrumbs = '<div class="kb-app__breadcrumbs"><a href="' . rex_escape($backUrl) . '">' . rex_escape((string) $knowledgebase->getValue('title')) . '</a><span>/</span><span>' . rex_escape($tocTitle) . '</span></div>';
+
+        $groupsHtml = '';
+        $hasAnyChapter = false;
+
+        foreach ($articles as $article) {
+            if (!$article instanceof \rex_data_knowledgebase_article) {
+                continue;
+            }
+            if ((int) $article->getValue('show_in_nav') !== 1) {
+                continue;
+            }
+
+            $chapters = self::extractArticleChapters($article, false);
+            if (count($chapters) === 0) {
+                continue;
+            }
+
+            $hasAnyChapter = true;
+            $articleUrl = self::buildUrl([$articleParam => (string) $article->getValue('slug'), $tocParam => null]);
+            $groupItems = '';
+
+            foreach ($chapters as $chapter) {
+                $indentClass = '';
+                if ($chapter['level'] === 'h3') {
+                    $indentClass = ' uk-margin-left';
+                } elseif ($chapter['level'] === 'h4') {
+                    $indentClass = ' uk-margin-large-left';
+                }
+
+                $href = $articleUrl . '#' . rawurlencode($chapter['anchor']);
+                $groupItems .= '<li class="kb-app__toc-item' . $indentClass . '">';
+                $groupItems .= '<a class="kb-app__nav-link kb-app__nav-link--chapter" href="' . rex_escape($href) . '">';
+                $groupItems .= self::renderNavBadge($chapter['badge']);
+                $groupItems .= '<span>' . rex_escape($chapter['title']) . '</span>';
+                $groupItems .= '</a>';
+                $groupItems .= '</li>';
+            }
+
+            $groupsHtml .= '<section class="kb-app__toc-group">';
+            $groupsHtml .= '<h2 class="kb-app__toc-group-title"><a href="' . rex_escape($articleUrl) . '">' . rex_escape($article->getNavLabel()) . '</a></h2>';
+            $groupsHtml .= '<ul class="kb-app__nav-list kb-app__toc-list">' . $groupItems . '</ul>';
+            $groupsHtml .= '</section>';
+        }
+
+        if (!$hasAnyChapter) {
+            return '<section class="kb-app__toc-page">'
+                . $breadcrumbs
+                . '<div class="kb-app__article-meta">' . rex_escape($tocTitle) . '</div>'
+                . '<div class="kb-app__article-title">' . rex_escape((string) $knowledgebase->getValue('title')) . '</div>'
+                . '<div class="uk-alert-warning" uk-alert>' . rex_escape(FrontendI18n::msg('knowledgebase_toc_empty', 'Für diesen Beitrag sind noch keine Kapitelmarken vorhanden.')) . '</div>'
+                . '</section>';
+        }
+
+        return '<section class="kb-app__toc-page">'
+            . $breadcrumbs
+            . '<div class="kb-app__article-meta">' . rex_escape($tocTitle) . '</div>'
+            . '<div class="kb-app__article-title">' . rex_escape((string) $knowledgebase->getValue('title')) . '</div>'
+            . $groupsHtml
             . '</section>';
     }
 
@@ -301,7 +393,7 @@ final class FrontendRenderer
         return '<article class="kb-app__article">'
             . $breadcrumbs
             . '<div class="kb-app__article-meta">' . rex_escape(FrontendI18n::msg('knowledgebase_article_label', 'Kapitel')) . '</div>'
-            . '<h3 class="kb-app__article-title">' . rex_escape((string) $article->getValue('title')) . '</h3>'
+            . '<h1 class="kb-app__article-title">' . rex_escape((string) $article->getValue('title')) . '</h1>'
             . $introHtml
             . '<div class="kb-app__article-body">' . $articleBody . '</div>'
             . '</article>';
@@ -344,9 +436,9 @@ final class FrontendRenderer
     }
 
     /**
-     * @return list<array{title:string,badge:string,anchor:string}>
+    * @return list<array{title:string,badge:string,anchor:string,level:string}>
      */
-    private static function extractArticleChapters(\rex_data_knowledgebase_article $article): array
+    private static function extractArticleChapters(\rex_data_knowledgebase_article $article, bool $topLevelOnly = true): array
     {
         $content = trim((string) $article->getValue('content'));
         if ($content === '') {
@@ -374,6 +466,15 @@ final class FrontendRenderer
                 continue;
             }
 
+            $headingLevel = strtolower(trim((string) ($data['heading_level'] ?? 'h2')));
+            if (!in_array($headingLevel, ['h2', 'h3', 'h4'], true)) {
+                $headingLevel = 'h2';
+            }
+
+            if ($topLevelOnly && $headingLevel !== 'h2') {
+                continue;
+            }
+
             $title = trim((string) ($data['title'] ?? ''));
             if ($title === '') {
                 continue;
@@ -390,6 +491,7 @@ final class FrontendRenderer
                 'title' => $title,
                 'badge' => $badge,
                 'anchor' => $anchor,
+                'level' => $headingLevel,
             ];
         }
 
