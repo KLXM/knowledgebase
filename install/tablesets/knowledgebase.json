@@ -324,7 +324,7 @@
       },
       {
         "type_id": "value",
-        "type_name": "checkbox",
+        "type_name": "fields_inline_switch",
         "name": "show_in_nav",
         "label": "In Navigation anzeigen",
         "db_type": "tinyint(1)",
