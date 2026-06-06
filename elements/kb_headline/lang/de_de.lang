@@ -1,0 +1,17 @@
+kb_headline_label = KB Headline
+kb_headline_description = Ueberschrift mit UIkit Stil-, Link- und Layoutoptionen.
+kb_headline_group_content_label = Inhalt
+kb_headline_group_layout_label = Layout
+kb_headline_group_link_label = Link
+kb_headline_group_section_label = Sektion
+kb_headline_field_text_label = Ueberschrift
+kb_headline_field_size_label = Groesse
+kb_headline_field_modifier_label = UIkit Modifier
+kb_headline_field_alignment_label = Ausrichtung
+kb_headline_field_color_label = Farbe
+kb_headline_field_spacing_top_label = Abstand oben
+kb_headline_field_spacing_bottom_label = Abstand unten
+kb_headline_field_underline_label = Unterstreichung
+kb_headline_field_link_type_label = Link-Art
+kb_headline_field_link_url_label = Externe URL
+kb_headline_field_link_internal_label = Interne Seite

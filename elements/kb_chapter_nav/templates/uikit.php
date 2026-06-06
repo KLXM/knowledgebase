@@ -25,7 +25,7 @@ if ('' === $anchor) {
         <div class="uk-text-meta uk-margin-small-bottom"><?= rex_escape($badge) ?></div>
     <?php endif; ?>
 
-    <h3 class="uk-heading-bullet uk-margin-small-bottom"><?= rex_escape($title) ?></h3>
+        <h2 class="uk-heading-bullet uk-margin-small-bottom"><?= rex_escape($title) ?></h2>
 
     <?php if ('' !== $text): ?>
         <p class="uk-text-muted uk-margin-bottom"><?= nl2br(rex_escape($text)) ?></p>

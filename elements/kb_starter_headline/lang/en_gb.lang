@@ -1,0 +1,17 @@
+kb_starter_headline_label = KB Headline
+kb_starter_headline_description = Semantic rich headline with a combined input field.
+kb_starter_headline_group_content_label = Content
+kb_starter_headline_group_layout_label = Layout
+kb_starter_headline_group_wrapper_label = Wrapper
+kb_starter_headline_group_section_label = Section
+kb_starter_headline_field_headline_label = Headline
+kb_starter_headline_field_headline_notice = Eyebrow, highlight, subline and tag are managed together.
+kb_starter_headline_field_container_width_label = Container width
+kb_starter_headline_field_section_padding_label = Section spacing
+kb_starter_headline_field_section_padding_choice_default = Default
+kb_starter_headline_field_section_padding_choice_xsmall = Very compact
+kb_starter_headline_field_section_padding_choice_small = Compact
+kb_starter_headline_field_section_padding_choice_normal = Normal
+kb_starter_headline_field_section_padding_choice_large = Large
+kb_starter_headline_field_section_padding_choice_xlarge = Very large
+kb_starter_headline_field_section_padding_notice = Controls the vertical section spacing (without colors/background image).

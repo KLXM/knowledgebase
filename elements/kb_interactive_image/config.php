@@ -10,7 +10,7 @@ return [
     'label' => $_ci('label', 'Interaktives Bild auswählen'),
     'icon' => 'fa fa-crosshairs',
     'description' => $_ci('description', 'Wählt ein interaktives Bild-Asset aus dem Knowledgebase-Backend aus.'),
-    'category' => 'media',
+    'category' => 'Knowledgebase',
     'version' => '1.0.0',
     'fields' => [
         'interactive_image_id' => [

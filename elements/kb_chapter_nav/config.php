@@ -10,7 +10,7 @@ return [
     'label' => $_ci('label', 'KB Kapitelanker'),
     'icon' => 'fa fa-bookmark',
     'description' => $_ci('description', 'Definiert eine Kapitel-Überschrift inkl. Anker für TOC und Navigation.'),
-    'category' => 'content',
+    'category' => 'Knowledgebase',
     'version' => '1.0.0',
     'field_groups' => [
         'content' => [

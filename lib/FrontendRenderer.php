@@ -141,15 +141,6 @@ final class FrontendRenderer
         $glossaryLabel = FrontendI18n::msg('knowledgebase_nav_glossary', 'Glossar');
         $items = '<ul class="kb-app__nav-list">';
 
-        if ($glossaryEnabled) {
-            $items .= '<li class="kb-app__nav-main-item kb-app__nav-main-item--glossary" data-kb-nav-main>';
-            $items .= '<a class="kb-app__nav-link kb-app__nav-link--glossary' . ($glossaryActive ? ' is-current is-trail' : '') . '" data-kb-nav-main-link href="' . rex_escape(self::buildUrl([$glossaryParam => 1])) . '">';
-            $items .= '<span class="kb-app__nav-badge">A-Z</span>';
-            $items .= '<span>' . rex_escape($glossaryLabel) . '</span>';
-            $items .= '</a>';
-            $items .= '</li>';
-        }
-
         foreach ($articles as $article) {
             if (!$article instanceof \rex_data_knowledgebase_article) {
                 continue;
@@ -190,6 +181,16 @@ final class FrontendRenderer
 
             $items .= '</li>';
         }
+
+        if ($glossaryEnabled) {
+            $items .= '<li class="kb-app__nav-main-item kb-app__nav-main-item--glossary" data-kb-nav-main>';
+            $items .= '<a class="kb-app__nav-link kb-app__nav-link--glossary' . ($glossaryActive ? ' is-current is-trail' : '') . '" data-kb-nav-main-link href="' . rex_escape(self::buildUrl([$glossaryParam => 1])) . '">';
+            $items .= '<span class="kb-app__nav-badge">A-Z</span>';
+            $items .= '<span>' . rex_escape($glossaryLabel) . '</span>';
+            $items .= '</a>';
+            $items .= '</li>';
+        }
+
         $items .= '</ul>';
 
         return '<div class="kb-app__nav-shell">'
