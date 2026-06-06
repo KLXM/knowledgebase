@@ -59,5 +59,13 @@ foreach ($tables as $tableName) {
     $dropSql->setQuery('DROP TABLE IF EXISTS `' . $tableName . '`');
 }
 
-rex_addon::get('knowledgebase')->removeConfig();
+$addon = rex_addon::get('knowledgebase');
+$config = $addon->getConfig();
+if (is_array($config)) {
+    foreach (array_keys($config) as $configKey) {
+        if (is_string($configKey) && '' !== $configKey) {
+            $addon->removeConfig($configKey);
+        }
+    }
+}
 rex_delete_cache();
