@@ -12,25 +12,36 @@ requires:
 
 page:
     title: 'Knowledge Base'
-    perm: admin[]
+    perm: knowledgebase[]
     icon: rex-icon fa-book
     subpages:
         overview:
             title: 'Übersicht'
-        settings:
-            title: 'Frontend-Texte'
-        bases:
-            title: 'Wissensbasen'
-            subPath: pages/yform.php
-        glossary:
-            title: 'Glossar'
-            subPath: pages/yform.php
-        interactive_images:
-            title: 'Interaktive Bilder'
-            subPath: pages/yform.php
+            perm: knowledgebase[overview]
         articles:
             title: 'Beiträge'
             subPath: pages/articles.php
+            perm: knowledgebase[articles]
+        bases:
+            title: 'Wissensbasen'
+            subPath: pages/yform.php
+            perm: knowledgebase[bases]
+        glossary:
+            title: 'Glossar'
+            subPath: pages/yform.php
+            perm: knowledgebase[glossary]
+        interactive_images:
+            title: 'Interaktive Bilder'
+            subPath: pages/yform.php
+            perm: knowledgebase[interactive_images]
+        settings:
+            title: 'Einstellungen'
+            subPath: pages/settings.php
+            perm: admin
+        frontend_texts:
+            title: 'Frontend-Texte'
+            subPath: pages/frontend_texts.php
+            perm: knowledgebase[frontend_texts]
 
 autoload:
     classes:

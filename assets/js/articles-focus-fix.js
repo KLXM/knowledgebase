@@ -1,0 +1,93 @@
+(function () {
+    'use strict';
+
+    function isKnowledgebaseArticleAddPage() {
+        var params = new URLSearchParams(window.location.search);
+        return params.get('page') === 'knowledgebase/articles' && params.get('func') === 'add';
+    }
+
+    if (!isKnowledgebaseArticleAddPage()) {
+        return;
+    }
+
+    var stopEnforcement = false;
+    var startedAt = Date.now();
+    var maxRuntimeMs = 2800;
+
+    function getTargetInput() {
+        return document.querySelector('input[id^="yform-data_edit-rex_knowledgebase_article-field-"][type="text"]:not([disabled])');
+    }
+
+    function tinyEditorIsActive() {
+        var active = document.activeElement;
+        return !!active && active.matches('iframe.tox-edit-area__iframe');
+    }
+
+    function shouldEnforce() {
+        if (stopEnforcement) {
+            return false;
+        }
+
+        return (Date.now() - startedAt) <= maxRuntimeMs;
+    }
+
+    function enforceInitialFocus() {
+        var target = getTargetInput();
+        if (!target || !shouldEnforce()) {
+            return;
+        }
+
+        if (tinyEditorIsActive()) {
+            var active = document.activeElement;
+            if (active && typeof active.blur === 'function') {
+                active.blur();
+            }
+
+            try {
+                target.focus({ preventScroll: true });
+            } catch (error) {
+                target.focus();
+            }
+            window.scrollTo(0, 0);
+        }
+    }
+
+    function startEnforcementLoop() {
+        var attempts = 0;
+        var maxAttempts = 16;
+
+        function tick() {
+            if (!shouldEnforce() || attempts >= maxAttempts) {
+                return;
+            }
+
+            attempts += 1;
+            enforceInitialFocus();
+            window.setTimeout(tick, 140);
+        }
+
+        tick();
+    }
+
+    document.addEventListener('mousedown', function () {
+        stopEnforcement = true;
+    }, true);
+
+    document.addEventListener('keydown', function () {
+        stopEnforcement = true;
+    }, true);
+
+    document.addEventListener('focusin', function (event) {
+        if (!shouldEnforce()) {
+            return;
+        }
+
+        if (event.target && event.target.matches('iframe.tox-edit-area__iframe')) {
+            window.setTimeout(enforceInitialFocus, 0);
+        }
+    }, true);
+
+    window.addEventListener('load', function () {
+        window.setTimeout(startEnforcementLoop, 120);
+    });
+})();

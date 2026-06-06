@@ -2,6 +2,29 @@
 
 declare(strict_types=1);
 
+use FriendsOfREDAXO\Knowledgebase\AddonSettings;
+
+if (rex::isBackend() && null !== rex::getUser()) {
+    rex_perm::register('knowledgebase[]', null, rex_perm::OPTIONS);
+    rex_perm::register('knowledgebase[overview]', null, rex_perm::OPTIONS);
+    rex_perm::register('knowledgebase[articles]', null, rex_perm::OPTIONS);
+    rex_perm::register('knowledgebase[bases]', null, rex_perm::OPTIONS);
+    rex_perm::register('knowledgebase[glossary]', null, rex_perm::OPTIONS);
+    rex_perm::register('knowledgebase[interactive_images]', null, rex_perm::OPTIONS);
+    rex_perm::register('knowledgebase[frontend_texts]', null, rex_perm::OPTIONS);
+}
+
+if (rex::isBackend()) {
+    rex_extension::register('PACKAGES_INCLUDED', static function (): void {
+        $addon = rex_addon::get('knowledgebase');
+        $page = $addon->getProperty('page');
+        if (is_array($page)) {
+            $page['title'] = AddonSettings::getMenuTitle();
+            $addon->setProperty('page', $page);
+        }
+    }, rex_extension::EARLY);
+}
+
 if (rex_addon::get('yform')->isAvailable()) {
     rex_yform_manager_dataset::setModelClass(
         rex::getTable('knowledgebase'),
@@ -39,8 +62,7 @@ if (rex_addon::get('yform_content_builder')->isAvailable()) {
     rex_extension::register(
         'YFORM_CONTENT_BUILDER_ELEMENT_MODE',
         static function (): string {
-            // Eigene Elemente zusätzlich anbieten, Core-Elemente aber behalten.
-            return 'merge';
+            return AddonSettings::getElementMode();
         },
         rex_extension::EARLY,
     );
@@ -73,4 +95,9 @@ if (rex::isBackend() && null !== rex::getUser() && rex_addon::get('tinymce')->is
         rex_url::addonAssets('knowledgebase', 'js/tinymce-knowledgebase-link-plugin.js'),
         'knowledgebase_link'
     );
+}
+
+if (rex::isBackend() && null !== rex::getUser() && rex_be_controller::getCurrentPage() === 'knowledgebase/articles') {
+    $addon = rex_addon::get('knowledgebase');
+    rex_view::addJsFile(rex_url::addonAssets('knowledgebase', 'js/articles-focus-fix.js') . '?v=' . rawurlencode((string) $addon->getVersion()));
 }

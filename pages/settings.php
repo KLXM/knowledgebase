@@ -1,84 +1,58 @@
 <?php
 
-use FriendsOfREDAXO\Knowledgebase\FrontendI18n;
+use FriendsOfREDAXO\Knowledgebase\AddonSettings;
 
-$addon = rex_addon::get('knowledgebase');
-$csrfToken = rex_csrf_token::factory('knowledgebase_frontend_i18n');
+if (!rex::getUser() || !rex::getUser()->isAdmin()) {
+    echo rex_view::error('Nur Administratoren duerfen diese Seite bearbeiten.');
+    return;
+}
+
+$csrfToken = rex_csrf_token::factory('knowledgebase_addon_settings');
 
 if ('save' === rex_request('func', 'string') && $csrfToken->isValid()) {
-    $posted = rex_request('translations', 'array', []);
-    $translations = [];
+    $menuTitle = trim(rex_request('menu_title', 'string', ''));
+    $elementMode = rex_request('element_mode', 'string', 'merge');
 
-    foreach ($posted as $langCode => $entries) {
-        if (!is_string($langCode) || !is_array($entries)) {
-            continue;
-        }
+    AddonSettings::setMenuTitle($menuTitle);
+    AddonSettings::setElementMode($elementMode);
 
-        foreach (FrontendI18n::getManagedKeys() as $key) {
-            $translations[$langCode][$key] = trim((string) ($entries[$key] ?? ''));
-        }
-    }
-
-    FrontendI18n::saveConfigTranslations($translations);
-    echo rex_view::success('Frontend-Texte wurden gespeichert.');
+    echo rex_view::success('Einstellungen wurden gespeichert.');
 } elseif ('save' === rex_request('func', 'string')) {
     echo rex_view::error('CSRF-Token ist ungueltig. Bitte Seite neu laden.');
 }
 
-$currentConfig = FrontendI18n::getConfigTranslations();
-$languages = FrontendI18n::getActiveFrontendLanguages();
+$currentMenuTitle = (string) rex_addon::get('knowledgebase')->getConfig('menu_title', '');
+$currentElementMode = AddonSettings::getElementMode();
 
-if (count($languages) === 0) {
-    echo rex_view::warning('Keine aktiven Frontend-Sprachen gefunden.');
-    return;
-}
+$content = '';
+$content .= '<form action="' . rex_url::currentBackendPage() . '" method="post">';
+$content .= $csrfToken->getHiddenField();
+$content .= '<input type="hidden" name="func" value="save">';
+$content .= '<fieldset>';
+$content .= '<legend>Allgemein</legend>';
+$content .= '<div class="form-group">';
+$content .= '<label class="control-label" for="kb-menu-title">AddOn-Name im Backend-Menue</label>';
+$content .= '<input class="form-control" type="text" id="kb-menu-title" name="menu_title" value="' . rex_escape($currentMenuTitle) . '" placeholder="Knowledge Base">';
+$content .= '<p class="help-block">Leer lassen = Standardtitel aus Sprachdatei verwenden.</p>';
+$content .= '</div>';
+$content .= '</fieldset>';
 
-$labels = [
-    'knowledgebase_frontend_missing_base' => 'Fehlertext: Wissensbasis nicht verfuegbar',
-    'knowledgebase_search_label' => 'Label: Suche',
-    'knowledgebase_search_submit' => 'Button: Volltextsuche',
-    'knowledgebase_nav_toggle' => 'Button: Kapitel (mobil)',
-    'knowledgebase_nav_title' => 'Titel: Inhaltsverzeichnis',
-    'knowledgebase_nav_filter_label' => 'Label: Kapitel filtern',
-    'knowledgebase_nav_filter_placeholder' => 'Placeholder: Kapitel filtern',
-    'knowledgebase_nav_expand_all' => 'Button: Alle aufklappen',
-    'knowledgebase_nav_collapse_all' => 'Button: Alle einklappen',
-    'knowledgebase_nav_glossary' => 'Button/Link: Glossar',
-    'knowledgebase_frontend_missing_article' => 'Hinweis: Kein Beitrag vorhanden',
-    'knowledgebase_article_label' => 'Label: Kapitel',
-    'knowledgebase_glossary_title' => 'Titel: Glossar',
-    'knowledgebase_glossary_empty' => 'Hinweis: Glossar leer',
-    'knowledgebase_search_results' => 'Titel: Suchergebnisse',
-    'knowledgebase_search_empty' => 'Hinweis: Keine Treffer',
-];
+$content .= '<fieldset>';
+$content .= '<legend>Element-Auswahl</legend>';
+$content .= '<div class="form-group">';
+$content .= '<label class="control-label" for="kb-element-mode">Content-Builder-Modus</label>';
+$content .= '<select class="form-control" id="kb-element-mode" name="element_mode">';
+$content .= '<option value="merge"' . ('merge' === $currentElementMode ? ' selected' : '') . '>Merge (Original-Elemente + KB-Elemente)</option>';
+$content .= '<option value="replace"' . ('replace' === $currentElementMode ? ' selected' : '') . '>Replace (nur KB-Elemente)</option>';
+$content .= '</select>';
+$content .= '<p class="help-block">Steuert den YForm Content Builder Elementmodus fuer dieses AddOn.</p>';
+$content .= '</div>';
+$content .= '</fieldset>';
 
-echo '<form action="' . rex_url::currentBackendPage() . '" method="post">';
-echo $csrfToken->getHiddenField();
-echo '<input type="hidden" name="func" value="save">';
+$content .= '<p><button class="btn btn-save" type="submit">Speichern</button></p>';
+$content .= '</form>';
 
-foreach ($languages as $clang) {
-    $code = strtolower((string) $clang->getCode());
-    $name = (string) $clang->getName();
-    $effective = FrontendI18n::getTranslationsForLanguage($code);
-
-    echo '<section class="panel panel-default">';
-    echo '<header class="panel-heading"><strong>' . rex_escape($name) . ' (' . rex_escape($code) . ')</strong></header>';
-    echo '<div class="panel-body">';
-
-    foreach (FrontendI18n::getManagedKeys() as $key) {
-        $value = (string) ($currentConfig[$code][$key] ?? '');
-        $placeholder = (string) ($effective[$key] ?? '');
-        $label = $labels[$key] ?? $key;
-
-        echo '<div class="form-group">';
-        echo '<label class="control-label" for="kb-i18n-' . rex_escape($code . '-' . $key) . '">' . rex_escape($label) . '</label>';
-        echo '<input class="form-control" type="text" id="kb-i18n-' . rex_escape($code . '-' . $key) . '" name="translations[' . rex_escape($code) . '][' . rex_escape($key) . ']" value="' . rex_escape($value) . '" placeholder="' . rex_escape($placeholder) . '">';
-        echo '</div>';
-    }
-
-    echo '</div>';
-    echo '</section>';
-}
-
-echo '<p><button class="btn btn-save rex-form-aligned" type="submit">Speichern</button></p>';
-echo '</form>';
+$fragment = new rex_fragment();
+$fragment->setVar('title', 'Knowledgebase Einstellungen', false);
+$fragment->setVar('body', $content, false);
+echo $fragment->parse('core/page/section.php');
