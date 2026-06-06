@@ -41,16 +41,60 @@ foreach (rex_sql::showColumns($moduleTable) as $column) {
     }
 }
 
-$moduleSql = rex_sql::factory();
+$moduleLookupSql = rex_sql::factory();
 if ($hasKey) {
-    $moduleSql->setQuery(
-        'DELETE FROM ' . $moduleTable . ' WHERE `key` = :module_key',
+    $moduleLookupSql->setQuery(
+        'SELECT id, name FROM ' . $moduleTable . ' WHERE `key` = :module_key',
         ['module_key' => $moduleKey],
     );
 } else {
-    $moduleSql->setQuery(
-        'DELETE FROM ' . $moduleTable . ' WHERE name = :module_name',
+    $moduleLookupSql->setQuery(
+        'SELECT id, name FROM ' . $moduleTable . ' WHERE name = :module_name',
         ['module_name' => $moduleName],
+    );
+}
+
+$moduleIds = [];
+foreach ($moduleLookupSql as $moduleRow) {
+    $moduleIds[] = (int) $moduleRow->getValue('id');
+}
+
+if ([] !== $moduleIds) {
+    $sliceSql = rex_sql::factory();
+    $sliceSql->setQuery(
+        'SELECT s.id AS slice_id, s.article_id, s.clang_id, s.ctype_id, s.priority, a.name AS article_name, c.name AS clang_name '
+        . 'FROM ' . rex::getTable('article_slice') . ' s '
+        . 'LEFT JOIN ' . rex::getTable('article') . ' a ON a.id = s.article_id AND a.clang_id = s.clang_id '
+        . 'LEFT JOIN ' . rex::getTable('clang') . ' c ON c.id = s.clang_id '
+        . 'WHERE s.module_id IN (' . implode(',', array_map('intval', $moduleIds)) . ') '
+        . 'ORDER BY s.article_id, s.clang_id, s.ctype_id, s.priority',
+    );
+
+    if ($sliceSql->getRows() > 0) {
+        $usageLines = [];
+        foreach ($sliceSql as $sliceRow) {
+            $usageLines[] = sprintf(
+                'Slice #%d in Artikel "%s" (article_id=%d, clang_id=%d, ctype_id=%d, priority=%d)%s',
+                (int) $sliceRow->getValue('slice_id'),
+                (string) ($sliceRow->getValue('article_name') ?: 'unbekannt'),
+                (int) $sliceRow->getValue('article_id'),
+                (int) $sliceRow->getValue('clang_id'),
+                (int) $sliceRow->getValue('ctype_id'),
+                (int) $sliceRow->getValue('priority'),
+                '' !== (string) $sliceRow->getValue('clang_name') ? ' [Sprache: ' . (string) $sliceRow->getValue('clang_name') . ']' : '',
+            );
+        }
+
+        throw new rex_functional_exception(
+            'Das Modul "' . $moduleName . '" ist noch in Verwendung und kann nicht entfernt werden. '
+            . 'Bitte zuerst alle Slices mit diesem Modul umstellen oder löschen. Gefunden in: ' . PHP_EOL
+            . implode(PHP_EOL, $usageLines),
+        );
+    }
+
+    $moduleDeleteSql = rex_sql::factory();
+    $moduleDeleteSql->setQuery(
+        'DELETE FROM ' . $moduleTable . ' WHERE id IN (' . implode(',', array_map('intval', $moduleIds)) . ')',
     );
 }
 
@@ -59,13 +103,4 @@ foreach ($tables as $tableName) {
     $dropSql->setQuery('DROP TABLE IF EXISTS `' . $tableName . '`');
 }
 
-$addon = rex_addon::get('knowledgebase');
-$config = $addon->getConfig();
-if (is_array($config)) {
-    foreach (array_keys($config) as $configKey) {
-        if (is_string($configKey) && '' !== $configKey) {
-            $addon->removeConfig($configKey);
-        }
-    }
-}
 rex_delete_cache();
