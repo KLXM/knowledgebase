@@ -15,6 +15,7 @@ page:
     title: 'Knowledge Base'
     perm: knowledgebase[]
     icon: rex-icon fa-book
+    block: system
     subpages:
         overview:
             title: 'Übersicht'
