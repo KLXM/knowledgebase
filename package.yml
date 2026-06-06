@@ -8,6 +8,7 @@ requires:
     php: ^8.2
     yform: ^5.0
     packages:
+        fields: '>=1.4.0'
         yform_content_builder: '*'
 
 page:

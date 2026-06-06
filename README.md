@@ -22,6 +22,7 @@ Ein REDAXO-Add-on zur Verwaltung und Ausgabe strukturierter Wissensinhalte mit A
 - REDAXO >= 5.18
 - PHP >= 8.2
 - yform >= 5.0
+- fields >= 1.4.0
 - yform_content_builder
 
 Hinweis zu Abhängigkeiten:
