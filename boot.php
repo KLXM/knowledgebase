@@ -66,3 +66,11 @@ if (rex_addon::get('yform_content_builder')->isAvailable()) {
         rex_view::addJsFile($addon->getAssetsUrl('js/interactive_images_editor.js'));
     }
 }
+
+if (rex::isBackend() && null !== rex::getUser() && rex_addon::get('tinymce')->isAvailable() && class_exists(\FriendsOfRedaxo\TinyMce\PluginRegistry::class)) {
+    \FriendsOfRedaxo\TinyMce\PluginRegistry::addPlugin(
+        'knowledgebase_link',
+        rex_url::addonAssets('knowledgebase', 'js/tinymce-knowledgebase-link-plugin.js'),
+        'knowledgebase_link'
+    );
+}
