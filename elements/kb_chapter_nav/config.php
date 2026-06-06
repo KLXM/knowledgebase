@@ -32,6 +32,7 @@ return [
         'badge' => [
             'type' => 'text',
             'label' => $_ci('field_badge', 'Badge / Kapitelnummer'),
+            'notice' => $_ci('field_badge_notice', 'Optional: Zahl 1-99 oder UIKit3-Iconname (z.B. file-text, bookmark, info, question, tag, star).'),
         ],
         'anchor_id' => [
             'type' => 'text',

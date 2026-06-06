@@ -74,6 +74,37 @@ $slugTypeSql->setQuery(
     ],
 );
 
+$articleTableName = rex::getTable('knowledgebase_article');
+$navTitleFieldSql = rex_sql::factory();
+$navTitleFieldSql->setQuery(
+    'SELECT prio FROM ' . rex::getTable('yform_field') . ' WHERE table_name = :table_name AND name = :field_name AND type_id = :type_id LIMIT 1',
+    [
+        'table_name' => $articleTableName,
+        'field_name' => 'nav_title',
+        'type_id' => 'value',
+    ],
+);
+
+if ($navTitleFieldSql->getRows() > 0) {
+    $navBadgePrio = (int) $navTitleFieldSql->getValue('prio') + 1;
+
+    $navBadgeFieldSql = rex_sql::factory();
+    $navBadgeFieldSql->setQuery(
+        'UPDATE ' . rex::getTable('yform_field')
+        . ' SET prio = :prio, list_hidden = :list_hidden, label = :label, notice = :notice'
+        . ' WHERE table_name = :table_name AND name = :field_name AND type_id = :type_id',
+        [
+            'prio' => $navBadgePrio,
+            'list_hidden' => 0,
+            'label' => 'Navigation-Badge',
+            'notice' => 'Optional: Zahl 1-99 oder UIKit3-Iconname (z.B. file-text, bookmark, info, question, tag, star).',
+            'table_name' => $articleTableName,
+            'field_name' => 'nav_badge',
+            'type_id' => 'value',
+        ],
+    );
+}
+
 $slugTypeSql = rex_sql::factory();
 $slugTypeSql->setQuery(
     'UPDATE ' . rex::getTable('yform_field') . ' SET type_name = :type_name WHERE table_name = :table_name AND name = :field_name AND type_id = :type_id',
@@ -185,6 +216,7 @@ rex_sql_table::get(rex::getTable('knowledgebase_article'))
     // damit der kombinierte Index auch auf restriktiven DB-Setups anlegbar bleibt.
     ->ensureColumn(new rex_sql_column('knowledgebase_id', 'int(10) unsigned'))
     ->ensureColumn(new rex_sql_column('slug', 'varchar(191)'))
+    ->ensureColumn(new rex_sql_column('nav_badge', 'varchar(64)'))
     ->removeIndex('knowledgebase_article_base_parent')
     ->ensureIndex(new rex_sql_index('knowledgebase_article_base_online', ['knowledgebase_id', 'online']))
     ->ensureIndex(new rex_sql_index('knowledgebase_article_base_priority', ['knowledgebase_id', 'priority']))
@@ -192,6 +224,23 @@ rex_sql_table::get(rex::getTable('knowledgebase_article'))
     ->ensureIndex(new rex_sql_index('knowledgebase_article_search', ['search_text'], rex_sql_index::FULLTEXT))
     ->removeColumn('parent_id')
     ->ensure();
+
+$articlePrioFieldSql = rex_sql::factory();
+$articlePrioFieldSql->setQuery(
+    'UPDATE ' . rex::getTable('yform_field')
+    . ' SET type_name = :type_name, label = :label, fields = :fields, scope = :scope, db_type = :db_type'
+    . ' WHERE table_name = :table_name AND name = :name AND type_id = :type_id',
+    [
+        'type_name' => 'prio',
+        'label' => 'Prio',
+        'fields' => 'title,nav_title',
+        'scope' => 'knowledgebase_id',
+        'db_type' => 'int(10) unsigned',
+        'table_name' => rex::getTable('knowledgebase_article'),
+        'name' => 'priority',
+        'type_id' => 'value',
+    ],
+);
 
 rex_sql_table::get(rex::getTable('knowledgebase_glossary'))
     ->ensureColumn(new rex_sql_column('knowledgebase_id', 'int(10) unsigned'))

@@ -93,7 +93,7 @@ final class FrontendRenderer
 
         $offcanvasId = $instanceId . '-nav';
 
-        return '<section id="' . rex_escape($instanceId) . '" class="kb-app uk-card uk-card-default" data-kb-base-path="' . rex_escape($basePath) . '" data-kb-id="' . $knowledgebase->getId() . '" data-kb-article-param="' . rex_escape($articleParam) . '" data-kb-search-param="' . rex_escape($searchParam) . '" data-kb-api="' . rex_escape(rex_url::frontendController(['rex-api-call' => 'knowledgebase_search'], false)) . '" data-kb-sticky-header-offset="' . $stickyHeaderOffset . '" data-kb-sticky-nav-offset="' . $stickyNavOffset . '" data-kb-sticky-offset="' . $stickyOffsetTotal . '" data-kb-sticky-media="960">'
+        return '<section id="' . rex_escape($instanceId) . '" class="kb-app uk-card uk-card-default" data-kb-base-path="' . rex_escape($basePath) . '" data-kb-id="' . $knowledgebase->getId() . '" data-kb-article-param="' . rex_escape($articleParam) . '" data-kb-search-param="' . rex_escape($searchParam) . '" data-kb-api="' . rex_escape(self::buildUrl(['rex-api-call' => 'knowledgebase_search'])) . '" data-kb-sticky-header-offset="' . $stickyHeaderOffset . '" data-kb-sticky-nav-offset="' . $stickyNavOffset . '" data-kb-sticky-offset="' . $stickyOffsetTotal . '" data-kb-sticky-media="960">'
             . '<div class="kb-app__hero uk-section uk-section-xsmall uk-section-muted">'
             . '<div class="kb-app__hero-inner uk-grid-small" uk-grid>'
             . '<div>'
@@ -165,7 +165,7 @@ final class FrontendRenderer
             $hasChapters = count($chapters) > 0;
             $items .= '<div class="kb-app__nav-main-row">';
             $items .= '<a class="kb-app__nav-link' . ($isCurrent ? ' is-current is-trail' : '') . '" data-kb-nav-main-link href="' . rex_escape(self::buildUrl([$articleParam => (string) $article->getValue('slug')])) . '" aria-expanded="' . ($isCurrent ? 'true' : 'false') . '">';
-            $items .= '<span class="kb-app__nav-badge">' . rex_escape((string) $article->getValue('priority')) . '</span>';
+            $items .= self::renderNavBadge((string) $article->getValue('nav_badge'), 'file-text');
             $items .= '<span>' . rex_escape($article->getNavLabel()) . '</span>';
             $items .= '</a>';
 
@@ -180,9 +180,7 @@ final class FrontendRenderer
                     $href = self::buildUrl([$articleParam => (string) $article->getValue('slug')]) . '#' . rawurlencode($chapter['anchor']);
                     $items .= '<li class="kb-app__nav-chapter-item" data-kb-nav-chapter>';
                     $items .= '<a class="kb-app__nav-link kb-app__nav-link--chapter" data-kb-nav-chapter-link href="' . rex_escape($href) . '">';
-                    if ($chapter['badge'] !== '') {
-                        $items .= '<span class="kb-app__nav-badge">' . rex_escape($chapter['badge']) . '</span>';
-                    }
+                    $items .= self::renderNavBadge($chapter['badge']);
                     $items .= '<span>' . rex_escape($chapter['title']) . '</span>';
                     $items .= '</a>';
                     $items .= '</li>';
@@ -406,6 +404,40 @@ final class FrontendRenderer
         }
 
         return trim($normalized, '-');
+    }
+
+    private static function renderNavBadge(string $badge, ?string $defaultIcon = null): string
+    {
+        $trimmed = trim($badge);
+
+        if ($trimmed === '') {
+            return self::renderNavBadgeIcon($defaultIcon);
+        }
+
+        if (preg_match('/^\d{1,2}$/', $trimmed) === 1) {
+            $number = (int) $trimmed;
+            if ($number > 0) {
+                return '<span class="kb-app__nav-badge">' . rex_escape((string) $number) . '</span>';
+            }
+
+            return self::renderNavBadgeIcon($defaultIcon);
+        }
+
+        if (preg_match('/^[a-z0-9-]{2,40}$/', $trimmed) === 1) {
+            return self::renderNavBadgeIcon($trimmed);
+        }
+
+        return self::renderNavBadgeIcon($defaultIcon);
+    }
+
+    private static function renderNavBadgeIcon(?string $icon): string
+    {
+        $trimmed = trim((string) $icon);
+        if ($trimmed === '' || preg_match('/^[a-z0-9-]{2,40}$/', $trimmed) !== 1) {
+            return '';
+        }
+
+        return '<span class="kb-app__nav-badge kb-app__nav-badge--icon"><span uk-icon="icon: ' . rex_escape($trimmed) . '; ratio: 0.85" aria-hidden="true"></span></span>';
     }
 
     /**

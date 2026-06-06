@@ -7,11 +7,48 @@ document.addEventListener('DOMContentLoaded', function () {
         var articleParam = app.getAttribute('data-kb-article-param') || '';
         var basePath = app.getAttribute('data-kb-base-path') || window.location.pathname;
         var requestToken = 0;
+        var fetchSuggestions = function () {
+            var query = searchInput.value.trim();
+            requestToken += 1;
+            var currentToken = requestToken;
+
+            if (query.length < 3) {
+                resultsBox.innerHTML = '';
+                resultsBox.hidden = true;
+                return;
+            }
+
+            var url = apiUrl
+                + (apiUrl.indexOf('?') >= 0 ? '&' : '?')
+                + 'knowledgebase_id=' + encodeURIComponent(knowledgebaseId)
+                + '&q=' + encodeURIComponent(query)
+                + '&limit=8';
+
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function (response) {
+                    return response.ok ? response.json() : { results: [] };
+                })
+                .then(function (payload) {
+                    if (currentToken !== requestToken) {
+                        return;
+                    }
+
+                    renderResults(payload.results || []);
+                })
+                .catch(function () {
+                    if (currentToken !== requestToken) {
+                        return;
+                    }
+
+                    resultsBox.innerHTML = '<div class="kb-app__search-hit kb-app__search-hit--empty">Autosuggest momentan nicht verfügbar.</div>';
+                    resultsBox.hidden = false;
+                });
+        };
 
         var renderResults = function (results) {
             if (!Array.isArray(results) || results.length === 0) {
-                resultsBox.innerHTML = '';
-                resultsBox.hidden = true;
+                resultsBox.innerHTML = '<div class="kb-app__search-hit kb-app__search-hit--empty">Keine Vorschläge gefunden.</div>';
+                resultsBox.hidden = false;
                 return;
             }
 
@@ -28,43 +65,9 @@ document.addEventListener('DOMContentLoaded', function () {
         };
 
         if (searchInput && resultsBox) {
-            searchInput.addEventListener('input', function () {
-                var query = searchInput.value.trim();
-                requestToken += 1;
-                var currentToken = requestToken;
-
-                if (query.length < 2) {
-                    resultsBox.innerHTML = '';
-                    resultsBox.hidden = true;
-                    return;
-                }
-
-                var url = apiUrl
-                    + (apiUrl.indexOf('?') >= 0 ? '&' : '?')
-                    + 'knowledgebase_id=' + encodeURIComponent(knowledgebaseId)
-                    + '&q=' + encodeURIComponent(query)
-                    + '&limit=8';
-
-                fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                    .then(function (response) {
-                        return response.ok ? response.json() : { results: [] };
-                    })
-                    .then(function (payload) {
-                        if (currentToken !== requestToken) {
-                            return;
-                        }
-
-                        renderResults(payload.results || []);
-                    })
-                    .catch(function () {
-                        if (currentToken !== requestToken) {
-                            return;
-                        }
-
-                        resultsBox.innerHTML = '';
-                        resultsBox.hidden = true;
-                    });
-            });
+            searchInput.addEventListener('input', fetchSuggestions);
+            searchInput.addEventListener('keyup', fetchSuggestions);
+            searchInput.addEventListener('focus', fetchSuggestions);
 
             document.addEventListener('click', function (event) {
                 if (!app.contains(event.target)) {

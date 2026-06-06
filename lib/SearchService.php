@@ -46,7 +46,7 @@ final class SearchService
 
         $sql = rex_sql::factory();
         $sql->setQuery(
-            'SELECT id, title, nav_title, slug, intro, search_text '
+            'SELECT id, title, nav_title, slug, intro, search_text, content '
             . 'FROM ' . rex::getTable('knowledgebase_article') . ' '
             . 'WHERE knowledgebase_id = :knowledgebase_id AND online = 1 '
             . 'AND MATCH(search_text) AGAINST (:term IN BOOLEAN MODE) '
@@ -68,10 +68,10 @@ final class SearchService
     {
         $sql = rex_sql::factory();
         $sql->setQuery(
-            'SELECT id, title, nav_title, slug, intro, search_text '
+            'SELECT id, title, nav_title, slug, intro, search_text, content '
             . 'FROM ' . rex::getTable('knowledgebase_article') . ' '
             . 'WHERE knowledgebase_id = :knowledgebase_id AND online = 1 '
-            . 'AND (title LIKE :term OR nav_title LIKE :term OR intro LIKE :term OR search_text LIKE :term) '
+            . 'AND (title LIKE :term OR nav_title LIKE :term OR intro LIKE :term OR search_text LIKE :term OR content LIKE :term) '
             . 'ORDER BY priority ASC, title ASC '
             . 'LIMIT ' . $limit,
             [
@@ -94,6 +94,13 @@ final class SearchService
             $navTitle = trim((string) $row->getValue('nav_title'));
             $intro = trim((string) $row->getValue('intro'));
             $searchText = trim((string) $row->getValue('search_text'));
+            $content = trim((string) $row->getValue('content'));
+
+            $excerptSource = '' !== $searchText
+                ? $searchText
+                : ('' !== $intro
+                    ? $intro
+                    : ('' !== $content ? $content : $title));
 
             $results[] = [
                 'id' => (int) $row->getValue('id'),
@@ -101,7 +108,7 @@ final class SearchService
                 'nav_title' => $navTitle,
                 'slug' => (string) $row->getValue('slug'),
                 'intro' => $intro,
-                'excerpt' => self::buildExcerpt('' !== $searchText ? $searchText : ($intro !== '' ? $intro : $title), $query),
+                'excerpt' => self::buildExcerpt($excerptSource, $query),
             ];
         }
 
