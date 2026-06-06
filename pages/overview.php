@@ -96,15 +96,25 @@ $stats = [
 
 $dashboard = '';
 $dashboard .= '<style>';
-$dashboard .= '.kb-dashboard-card{position:relative;overflow:hidden;border:1px solid #e6e9ef;border-radius:10px;padding:14px;background:linear-gradient(160deg,#ffffff 0%,#f7fbff 100%);box-shadow:0 8px 20px rgba(15,35,60,.08);opacity:0;transform:translateY(14px) scale(.98);transition:transform .2s ease,box-shadow .25s ease,border-color .25s ease;}';
-$dashboard .= '.kb-dashboard-card:before{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:linear-gradient(90deg,#1f7fd0 0%,#4ea6e9 100%);opacity:.85;}';
-$dashboard .= '.kb-dashboard-card:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(15,35,60,.12);border-color:#cbd8ea;}';
+$dashboard .= '.kb-dashboard{--kb-card-bg-1:#ffffff;--kb-card-bg-2:#f7fbff;--kb-card-border:#e6e9ef;--kb-card-border-hover:#cbd8ea;--kb-card-shadow:0 8px 20px rgba(15,35,60,.08);--kb-card-shadow-hover:0 14px 28px rgba(15,35,60,.12);--kb-accent-1:#1f7fd0;--kb-accent-2:#4ea6e9;--kb-meta:#6b7280;--kb-panel-bg:#ffffff;--kb-panel-border:#dde4ee;--kb-panel-heading:#f6f9fc;--kb-table-head:#f3f6fa;--kb-table-text:#233044;--kb-table-row:#f8fafc;}';
+$dashboard .= 'body.rex-theme-dark .kb-dashboard{--kb-card-bg-1:#1f2933;--kb-card-bg-2:#25323f;--kb-card-border:#3a4654;--kb-card-border-hover:#4c5d70;--kb-card-shadow:0 10px 24px rgba(0,0,0,.35);--kb-card-shadow-hover:0 16px 32px rgba(0,0,0,.45);--kb-accent-1:#5ba7df;--kb-accent-2:#8cc8f0;--kb-meta:#b6c2cf;--kb-panel-bg:#1f2933;--kb-panel-border:#3a4654;--kb-panel-heading:#263443;--kb-table-head:#2b3a4a;--kb-table-text:#e8f0f7;--kb-table-row:#243240;}';
+$dashboard .= '@media (prefers-color-scheme: dark){body.rex-has-theme:not(.rex-theme-light) .kb-dashboard{--kb-card-bg-1:#1f2933;--kb-card-bg-2:#25323f;--kb-card-border:#3a4654;--kb-card-border-hover:#4c5d70;--kb-card-shadow:0 10px 24px rgba(0,0,0,.35);--kb-card-shadow-hover:0 16px 32px rgba(0,0,0,.45);--kb-accent-1:#5ba7df;--kb-accent-2:#8cc8f0;--kb-meta:#b6c2cf;--kb-panel-bg:#1f2933;--kb-panel-border:#3a4654;--kb-panel-heading:#263443;--kb-table-head:#2b3a4a;--kb-table-text:#e8f0f7;--kb-table-row:#243240;}}';
+$dashboard .= '.kb-dashboard-card{position:relative;overflow:hidden;border:1px solid var(--kb-card-border);border-radius:10px;padding:14px;background:linear-gradient(160deg,var(--kb-card-bg-1) 0%,var(--kb-card-bg-2) 100%);box-shadow:var(--kb-card-shadow);opacity:0;transform:translateY(14px) scale(.98);transition:transform .2s ease,box-shadow .25s ease,border-color .25s ease;}';
+$dashboard .= '.kb-dashboard-card:before{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:linear-gradient(90deg,var(--kb-accent-1) 0%,var(--kb-accent-2) 100%);opacity:.85;}';
+$dashboard .= '.kb-dashboard-card:hover{transform:translateY(-2px);box-shadow:var(--kb-card-shadow-hover);border-color:var(--kb-card-border-hover);}';
 $dashboard .= '.kb-dashboard-card.is-visible{animation:kbCardIn .55s cubic-bezier(.22,.61,.36,1) forwards;}';
-$dashboard .= '.kb-dashboard-meta{color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:.06em;}';
+$dashboard .= '.kb-dashboard-meta{color:var(--kb-meta);font-size:12px;text-transform:uppercase;letter-spacing:.06em;}';
 $dashboard .= '.kb-dashboard-value{font-size:30px;line-height:1.1;font-weight:700;margin:8px 0 10px;}';
 $dashboard .= '.kb-dashboard-link{margin-top:10px;display:inline-block;transition:transform .18s ease,box-shadow .2s ease;}';
 $dashboard .= '.kb-dashboard-link:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(15,35,60,.18);}';
 $dashboard .= '.kb-dashboard-list td{vertical-align:middle;}';
+$dashboard .= '.kb-dashboard .panel{background:var(--kb-panel-bg);border-color:var(--kb-panel-border);}';
+$dashboard .= '.kb-dashboard .panel-heading{background:var(--kb-panel-heading);color:var(--kb-table-text);border-color:var(--kb-panel-border);}';
+$dashboard .= '.kb-dashboard .table{color:var(--kb-table-text);}';
+$dashboard .= '.kb-dashboard .table>thead>tr>th{background:var(--kb-table-head);border-bottom-color:var(--kb-panel-border);}';
+$dashboard .= '.kb-dashboard .table-striped>tbody>tr:nth-of-type(odd){background:var(--kb-table-row);}';
+$dashboard .= '.kb-dashboard-progress{margin:8px 0 0;height:8px;background:rgba(120,145,170,.2);}';
+$dashboard .= '.kb-dashboard-progress .progress-bar{background:linear-gradient(90deg,var(--kb-accent-1) 0%,var(--kb-accent-2) 100%);}';
 $dashboard .= '.kb-dashboard-panel{opacity:0;transform:translateY(16px);}';
 $dashboard .= '.kb-dashboard-panel.is-visible{animation:kbPanelIn .5s ease forwards;}';
 $dashboard .= '.kb-dashboard-row{opacity:0;transform:translateX(-10px);}';
@@ -115,6 +125,7 @@ $dashboard .= '@keyframes kbRowIn{from{opacity:0;transform:translateX(-10px)}to{
 $dashboard .= '@media (prefers-reduced-motion: reduce){.kb-dashboard-card,.kb-dashboard-panel,.kb-dashboard-row{animation:none !important;opacity:1 !important;transform:none !important;transition:none !important;}}';
 $dashboard .= '</style>';
 
+$dashboard .= '<div class="kb-dashboard">';
 $dashboard .= '<p>' . rex_escape($addon->i18n('knowledgebase_overview_intro')) . '</p>';
 $dashboard .= '<div class="row">';
 
@@ -126,7 +137,7 @@ foreach ($stats as $index => $stat) {
     $dashboard .= '<div class="kb-dashboard-meta">' . rex_escape($stat['title']) . '</div>';
     $dashboard .= '<div class="kb-dashboard-value">' . rex_escape((string) $stat['total']) . '</div>';
     $dashboard .= '<div class="small text-muted">' . rex_escape((string) $stat['online']) . ' ' . rex_escape($stat['label']) . '</div>';
-    $dashboard .= '<div class="progress" style="margin:8px 0 0;height:8px;">';
+    $dashboard .= '<div class="progress kb-dashboard-progress">';
     $dashboard .= '<div class="progress-bar progress-bar-striped active" role="progressbar" style="width:' . $ratio . '%;"></div>';
     $dashboard .= '</div>';
     $safeStatLink = html_entity_decode((string) $stat['link'], ENT_QUOTES, 'UTF-8');
@@ -202,15 +213,18 @@ $dashboard .= '</div>';
 $dashboard .= '</div>';
 $dashboard .= '</div>';
 $dashboard .= '</div>';
+$dashboard .= '</div>';
 
 $dashboard .= '<script>';
 $dashboard .= '(function(){';
 $dashboard .= 'var prefersReduced=false;';
 $dashboard .= 'try{prefersReduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(e){}';
 $dashboard .= 'if(prefersReduced){return;}';
-$dashboard .= 'var cards=document.querySelectorAll(".kb-dashboard-card");';
-$dashboard .= 'var panel=document.querySelector(".kb-dashboard-panel");';
-$dashboard .= 'var rows=document.querySelectorAll(".kb-dashboard-row");';
+$dashboard .= 'var root=document.querySelector(".kb-dashboard");';
+$dashboard .= 'if(!root){return;}';
+$dashboard .= 'var cards=root.querySelectorAll(".kb-dashboard-card");';
+$dashboard .= 'var panel=root.querySelector(".kb-dashboard-panel");';
+$dashboard .= 'var rows=root.querySelectorAll(".kb-dashboard-row");';
 $dashboard .= 'cards.forEach(function(card,index){window.setTimeout(function(){card.classList.add("is-visible");},80+(index*90));});';
 $dashboard .= 'if(panel){window.setTimeout(function(){panel.classList.add("is-visible");},420);}';
 $dashboard .= 'rows.forEach(function(row,index){window.setTimeout(function(){row.classList.add("is-visible");},540+(index*55));});';
