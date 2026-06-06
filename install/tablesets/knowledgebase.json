@@ -232,9 +232,10 @@
       },
       {
         "type_id": "value",
-        "type_name": "text",
+        "type_name": "fields_inline",
         "name": "title",
         "label": "Titel",
+        "type": "text",
         "db_type": "varchar(191)",
         "search": 1,
         "list_hidden": 0,
@@ -242,9 +243,10 @@
       },
       {
         "type_id": "value",
-        "type_name": "text",
+        "type_name": "fields_inline",
         "name": "nav_title",
         "label": "Navigationstitel",
+        "type": "text",
         "db_type": "varchar(191)",
         "not_required": "1",
         "search": 1,
@@ -333,7 +335,7 @@
       },
       {
         "type_id": "value",
-        "type_name": "checkbox",
+        "type_name": "fields_inline_switch",
         "name": "online",
         "label": "Online",
         "db_type": "tinyint(1)",
