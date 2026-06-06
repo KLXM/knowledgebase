@@ -201,11 +201,11 @@ $wrapperClose->setVar('section_bg_image', $sectionBgImage, false);
             }
             ?>
             <li<?= $liClasses !== [] ? ' class="' . rex_escape(implode(' ', $liClasses)) . '"' : '' ?>>
-                <a class="uk-accordion-title<?= $isDisabled ? ' uk-text-muted' : '' ?>" href="#">
+                <a class="uk-padding-small uk-accordion-title<?= $isDisabled ? ' uk-text-muted' : '' ?>" href="#">
                     <?= $renderIcon((string) ($item['icon'] ?? '')) ?>
                     <?= rex_escape($title) ?>
                 </a>
-                <div class="uk-accordion-content">
+                <div class="uk-accordion-content uk-padding-small">
                     <?php if (!empty($item['image'])): ?>
                         <img src="<?= rex_url::media((string) $item['image']) ?>" alt="<?= rex_escape($title) ?>" class="uk-margin-bottom" loading="lazy">
                     <?php endif; ?>
