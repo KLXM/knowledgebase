@@ -39,6 +39,27 @@ Hinweis für Container-Setups:
 
 - Nach Änderungen an PHP-Dateien ggf. den OPcache leeren.
 
+## Troubleshooting
+
+### TinyMCE: automatischer Sprung zum Editor im Backend
+
+In einzelnen REDAXO-Backend-Formularen kann es vorkommen, dass der Cursor beim Laden automatisch in den ersten TinyMCE-Editor gesetzt wird. Dadurch springt die Seite sofort nach unten.
+
+Einordnung:
+
+- Das ist in der Regel kein isolierter Fehler eines einzelnen Knowledge-Base-Elements.
+- Meist ist es ein Zusammenspiel aus TinyMCE-Initialfokus, Formularaufbau und Browser-Scrollverhalten.
+
+Lösung im Add-on:
+
+- Für `knowledgebase/articles` (Ansicht `func=add`) wird ein gezielter Fokus-Schutz geladen.
+- Der initiale Editor-Fokus wird abgefangen, damit der Einstieg im Formular oben bleibt.
+
+Wichtig bei neuen Asset-Dateien:
+
+- Nach neuen Dateien unter `redaxo/src/addons/knowledgebase/assets` müssen die öffentlichen Add-on-Assets synchronisiert werden.
+- Wenn die Datei nicht unter `public/assets/addons/knowledgebase` verfügbar ist, kann der Fix im Backend scheinbar "nicht greifen".
+
 ## Backend-Bereiche
 
 - Übersicht
