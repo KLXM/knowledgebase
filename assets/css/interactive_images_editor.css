@@ -1,0 +1,133 @@
+.kb-intimg-editor {
+    margin-top: 12px;
+    border: 1px solid #d7e0ea;
+    border-radius: 8px;
+    background: #f8fbff;
+    padding: 12px;
+}
+
+.kb-intimg-editor__head h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.kb-intimg-editor__head p {
+    margin: 6px 0 0;
+    color: #5f7288;
+    font-size: 13px;
+}
+
+.kb-intimg-editor__layout {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+    gap: 12px;
+}
+
+.kb-intimg-editor__stage {
+    position: relative;
+    overflow: hidden;
+    border: 1px dashed #c5d0db;
+    border-radius: 8px;
+    cursor: crosshair;
+    background: #eef4f9;
+}
+
+.kb-intimg-editor__stage img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.kb-intimg-editor__dot {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    transform: translate(-50%, -50%);
+    border: 0;
+    border-radius: 999px;
+    background: #1e87f0;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.kb-intimg-editor__dot.is-active {
+    background: #182735;
+}
+
+.kb-intimg-editor__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.kb-intimg-editor__list {
+    display: grid;
+    gap: 5px;
+    margin-bottom: 8px;
+}
+
+.kb-intimg-editor__pick {
+    border: 1px solid #d4dce5;
+    background: #fff;
+    border-radius: 6px;
+    padding: 6px 8px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px;
+    text-align: left;
+    align-items: center;
+}
+
+.kb-intimg-editor__pick.is-active {
+    border-color: #1e87f0;
+    background: #eaf3ff;
+}
+
+.kb-intimg-editor__pick-no {
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: #1e87f0;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.kb-intimg-editor__fields {
+    display: grid;
+    gap: 6px;
+}
+
+.kb-intimg-editor__fields label {
+    font-size: 12px;
+    margin: 0;
+    color: #334155;
+}
+
+.kb-intimg-editor__empty,
+.kb-intimg-editor__empty-inline {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.kb-intimg-editor__raw-json textarea {
+    min-height: 130px;
+    font-family: Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+}
+
+.kb-intimg-editor__raw-json--hidden {
+    display: none !important;
+}
+
+@media (max-width: 992px) {
+    .kb-intimg-editor__layout {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,16 @@
+knowledgebase_title = Knowledge Base
+knowledgebase_overview_title = Overview
+knowledgebase_overview_intro = Manage multiple knowledge bases with chapters, navigation and search based on YForm and YForm Content Builder.
+knowledgebase_overview_bases = Knowledge bases
+knowledgebase_overview_bases_text = Create standalone knowledge bases with title, slug and display settings.
+knowledgebase_overview_articles = Articles and chapters
+knowledgebase_overview_articles_text = Maintain chapters, subpages and content builder content for all knowledge bases.
+knowledgebase_manage_bases = Manage knowledge bases
+knowledgebase_manage_articles = Manage articles
+knowledgebase_search_label = Search
+knowledgebase_search_submit = Full text search
+knowledgebase_nav_title = Table of contents
+knowledgebase_nav_toggle = Chapters
+knowledgebase_article_label = Chapter
+knowledgebase_nav_filter_label = Filter chapters
+knowledgebase_nav_filter_placeholder = Title or subchapter

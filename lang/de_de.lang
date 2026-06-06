@@ -1,0 +1,16 @@
+knowledgebase_title = Knowledge Base
+knowledgebase_overview_title = Übersicht
+knowledgebase_overview_intro = Verwalte hier mehrere Wissensbasen mit Kapiteln, Navigation und Suche auf Basis von YForm und YForm Content Builder.
+knowledgebase_overview_bases = Wissensbasen
+knowledgebase_overview_bases_text = Lege hier eigenständige Wikis bzw. Wissensbasen mit Titel, Slug und Darstellungseinstellungen an.
+knowledgebase_overview_articles = Beiträge und Kapitel
+knowledgebase_overview_articles_text = Pflege hier Kapitel, Unterseiten und Content-Builder-Inhalte für alle Wissensbasen.
+knowledgebase_manage_bases = Wissensbasen verwalten
+knowledgebase_manage_articles = Beiträge verwalten
+knowledgebase_search_label = Suche
+knowledgebase_search_submit = Volltextsuche
+knowledgebase_nav_title = Inhaltsverzeichnis
+knowledgebase_nav_toggle = Kapitel
+knowledgebase_article_label = Kapitel
+knowledgebase_nav_filter_label = Kapitel filtern
+knowledgebase_nav_filter_placeholder = Titel oder Unterkapitel

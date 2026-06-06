@@ -1,0 +1,4 @@
+kb_interactive_image_label = Interaktives Bild auswählen
+kb_interactive_image_description = Wählt ein interaktives Bild-Asset aus dem Knowledgebase-Backend aus.
+kb_interactive_image_field_asset = Interaktives Bild
+kb_interactive_image_field_asset_notice = Asset in Knowledgebase > Interaktive Bilder anlegen und hier auswählen.

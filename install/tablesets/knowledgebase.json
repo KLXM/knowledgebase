@@ -1,0 +1,699 @@
+{
+  "rex_knowledgebase": {
+    "table": {
+      "table_name": "rex_knowledgebase",
+      "name": "Knowledge Bases",
+      "description": "Mehrere Wissensbasen und Wikis",
+      "status": 1,
+      "list_amount": 50,
+      "list_sortfield": "title",
+      "list_sortorder": "ASC",
+      "prio": 1,
+      "search": 1,
+      "hidden": 0,
+      "export": 1,
+      "import": 1,
+      "mass_deletion": 0,
+      "mass_edit": 0,
+      "schema_overwrite": 1,
+      "history": 0
+    },
+    "fields": [
+      {
+        "type_id": "value",
+        "type_name": "text",
+        "name": "title",
+        "label": "Titel",
+        "db_type": "varchar(191)",
+        "search": 1,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase"
+      },
+      {
+        "type_id": "value",
+        "type_name": "knowledgebase_slug",
+        "name": "slug",
+        "label": "Slug",
+        "source_field": "title",
+        "visibility": "visible",
+        "db_type": "varchar(191)",
+        "search": 1,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase"
+      },
+      {
+        "type_id": "value",
+        "type_name": "textarea",
+        "name": "description",
+        "label": "Beschreibung",
+        "db_type": "text",
+        "not_required": "1",
+        "search": 1,
+        "list_hidden": 1,
+        "table_name": "rex_knowledgebase"
+      },
+      {
+        "type_id": "value",
+        "type_name": "text",
+        "name": "search_placeholder",
+        "label": "Suchfeld-Placeholder",
+        "db_type": "varchar(191)",
+        "not_required": "1",
+        "default": "Suche in dieser Wissensbasis …",
+        "search": 0,
+        "list_hidden": 1,
+        "table_name": "rex_knowledgebase"
+      },
+      {
+        "type_id": "value",
+        "type_name": "checkbox",
+        "name": "glossary_enabled",
+        "label": "Glossar aktivieren",
+        "db_type": "tinyint(1)",
+        "default": "0",
+        "search": 1,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase"
+      },
+      {
+        "type_id": "value",
+        "type_name": "choice",
+        "name": "article_sort_field",
+        "label": "Artikel-Sortierfeld",
+        "db_type": "varchar(32)",
+        "default": "priority",
+        "choices": "priority=Priorität,title=Titel,updatedate=Zuletzt aktualisiert",
+        "expanded": "0",
+        "multiple": "0",
+        "not_required": "1",
+        "search": 0,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase"
+      },
+      {
+        "type_id": "value",
+        "type_name": "choice",
+        "name": "article_sort_order",
+        "label": "Artikel-Sortierreihenfolge",
+        "db_type": "varchar(4)",
+        "default": "ASC",
+        "choices": "ASC=Aufsteigend,DESC=Absteigend",
+        "expanded": "0",
+        "multiple": "0",
+        "not_required": "1",
+        "search": 0,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase"
+      },
+      {
+        "type_id": "value",
+        "type_name": "checkbox",
+        "name": "status",
+        "label": "Online",
+        "db_type": "tinyint(1)",
+        "default": "1",
+        "search": 1,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase"
+      },
+      {
+        "type_id": "validate",
+        "type_name": "empty",
+        "name": "title",
+        "message": "Bitte einen Titel angeben."
+      },
+      {
+        "type_id": "validate",
+        "type_name": "unique",
+        "name": "slug",
+        "table": "rex_knowledgebase",
+        "message": "Dieser Slug ist bereits vergeben."
+      },
+      {
+        "type_id": "value",
+        "type_name": "datestamp",
+        "name": "createdate",
+        "label": "Erstellt am",
+        "db_type": "datetime",
+        "not_required": "1",
+        "format": "Y-m-d H:i:s",
+        "only_empty": "1",
+        "list_hidden": 1,
+        "search": 0,
+        "table_name": "rex_knowledgebase"
+      },
+      {
+        "type_id": "value",
+        "type_name": "be_user",
+        "name": "createuser",
+        "label": "Erstellt von",
+        "db_type": "varchar(191)",
+        "default": "",
+        "not_required": "1",
+        "list_hidden": 1,
+        "search": 0,
+        "table_name": "rex_knowledgebase"
+      },
+      {
+        "type_id": "value",
+        "type_name": "datestamp",
+        "name": "updatedate",
+        "label": "Aktualisiert am",
+        "db_type": "datetime",
+        "not_required": "1",
+        "only_empty": "2",
+        "list_hidden": 1,
+        "search": 0,
+        "table_name": "rex_knowledgebase"
+      },
+      {
+        "type_id": "value",
+        "type_name": "be_user",
+        "name": "updateuser",
+        "label": "Aktualisiert von",
+        "db_type": "varchar(191)",
+        "default": "",
+        "not_required": "1",
+        "list_hidden": 1,
+        "search": 0,
+        "table_name": "rex_knowledgebase"
+      }
+    ]
+  },
+  "rex_knowledgebase_article": {
+    "table": {
+      "table_name": "rex_knowledgebase_article",
+      "name": "Knowledge Base Beiträge",
+      "description": "Kapitel und Inhalte der Wissensbasen",
+      "status": 1,
+      "list_amount": 100,
+      "list_sortfield": "priority",
+      "list_sortorder": "ASC",
+      "prio": 2,
+      "search": 1,
+      "hidden": 0,
+      "export": 1,
+      "import": 1,
+      "mass_deletion": 0,
+      "mass_edit": 0,
+      "schema_overwrite": 1,
+      "history": 0
+    },
+    "fields": [
+      {
+        "type_id": "value",
+        "type_name": "be_manager_relation",
+        "name": "knowledgebase_id",
+        "label": "Wissensbasis",
+        "db_type": "int(10) unsigned",
+        "table": "rex_knowledgebase",
+        "field": "title",
+        "type": "0",
+        "empty_option": "0",
+        "search": 1,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase_article"
+      },
+      {
+        "type_id": "value",
+        "type_name": "text",
+        "name": "title",
+        "label": "Titel",
+        "db_type": "varchar(191)",
+        "search": 1,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase_article"
+      },
+      {
+        "type_id": "value",
+        "type_name": "text",
+        "name": "nav_title",
+        "label": "Navigationstitel",
+        "db_type": "varchar(191)",
+        "not_required": "1",
+        "search": 1,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase_article"
+      },
+      {
+        "type_id": "value",
+        "type_name": "knowledgebase_slug",
+        "name": "slug",
+        "label": "Slug",
+        "source_field": "title",
+        "visibility": "visible",
+        "db_type": "varchar(191)",
+        "search": 1,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase_article"
+      },
+      {
+        "type_id": "value",
+        "type_name": "text",
+        "name": "priority",
+        "label": "Sortierung",
+        "db_type": "int(10) unsigned",
+        "default": "0",
+        "not_required": "1",
+        "search": 0,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase_article"
+      },
+      {
+        "type_id": "value",
+        "type_name": "textarea",
+        "name": "intro",
+        "label": "Einleitung",
+        "db_type": "text",
+        "not_required": "1",
+        "search": 1,
+        "list_hidden": 1,
+        "table_name": "rex_knowledgebase_article"
+      },
+      {
+        "type_id": "value",
+        "type_name": "content_builder",
+        "name": "content",
+        "label": "Inhalt",
+        "db_type": "text",
+        "not_required": "1",
+        "default_framework": "uikit",
+        "description": "Knowledge Base Content",
+        "search": 0,
+        "list_hidden": 1,
+        "table_name": "rex_knowledgebase_article"
+      },
+      {
+        "type_id": "value",
+        "type_name": "textarea",
+        "name": "search_text",
+        "label": "Suchtext",
+        "db_type": "longtext",
+        "not_required": "1",
+        "search": 0,
+        "list_hidden": 1,
+        "table_name": "rex_knowledgebase_article"
+      },
+      {
+        "type_id": "value",
+        "type_name": "checkbox",
+        "name": "show_in_nav",
+        "label": "In Navigation anzeigen",
+        "db_type": "tinyint(1)",
+        "default": "1",
+        "search": 1,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase_article"
+      },
+      {
+        "type_id": "value",
+        "type_name": "checkbox",
+        "name": "online",
+        "label": "Online",
+        "db_type": "tinyint(1)",
+        "default": "1",
+        "search": 1,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase_article"
+      },
+      {
+        "type_id": "validate",
+        "type_name": "empty",
+        "name": "knowledgebase_id",
+        "message": "Bitte eine Wissensbasis auswählen."
+      },
+      {
+        "type_id": "validate",
+        "type_name": "empty",
+        "name": "title",
+        "message": "Bitte einen Titel angeben."
+      },
+      {
+        "type_id": "validate",
+        "type_name": "unique",
+        "name": "knowledgebase_id,slug",
+        "table": "rex_knowledgebase_article",
+        "message": "Dieser Slug ist in der Wissensbasis bereits vergeben."
+      },
+      {
+        "type_id": "value",
+        "type_name": "datestamp",
+        "name": "createdate",
+        "label": "Erstellt am",
+        "db_type": "datetime",
+        "not_required": "1",
+        "format": "Y-m-d H:i:s",
+        "only_empty": "1",
+        "list_hidden": 1,
+        "search": 0,
+        "table_name": "rex_knowledgebase_article"
+      },
+      {
+        "type_id": "value",
+        "type_name": "be_user",
+        "name": "createuser",
+        "label": "Erstellt von",
+        "db_type": "varchar(191)",
+        "default": "",
+        "not_required": "1",
+        "list_hidden": 1,
+        "search": 0,
+        "table_name": "rex_knowledgebase_article"
+      },
+      {
+        "type_id": "value",
+        "type_name": "datestamp",
+        "name": "updatedate",
+        "label": "Aktualisiert am",
+        "db_type": "datetime",
+        "not_required": "1",
+        "only_empty": "2",
+        "list_hidden": 1,
+        "search": 0,
+        "table_name": "rex_knowledgebase_article"
+      },
+      {
+        "type_id": "value",
+        "type_name": "be_user",
+        "name": "updateuser",
+        "label": "Aktualisiert von",
+        "db_type": "varchar(191)",
+        "default": "",
+        "not_required": "1",
+        "list_hidden": 1,
+        "search": 0,
+        "table_name": "rex_knowledgebase_article"
+      }
+    ]
+  },
+  "rex_knowledgebase_glossary": {
+    "table": {
+      "table_name": "rex_knowledgebase_glossary",
+      "name": "Knowledge Base Glossar",
+      "description": "Manuell gepflegte Glossar-Begriffe je Wissensbasis",
+      "status": 1,
+      "list_amount": 100,
+      "list_sortfield": "term",
+      "list_sortorder": "ASC",
+      "prio": 3,
+      "search": 1,
+      "hidden": 0,
+      "export": 1,
+      "import": 1,
+      "mass_deletion": 0,
+      "mass_edit": 0,
+      "schema_overwrite": 1,
+      "history": 0
+    },
+    "fields": [
+      {
+        "type_id": "value",
+        "type_name": "be_manager_relation",
+        "name": "knowledgebase_id",
+        "label": "Wissensbasis",
+        "db_type": "int(10) unsigned",
+        "table": "rex_knowledgebase",
+        "field": "title",
+        "type": "0",
+        "empty_option": "0",
+        "search": 1,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase_glossary"
+      },
+      {
+        "type_id": "value",
+        "type_name": "text",
+        "name": "term",
+        "label": "Begriff",
+        "db_type": "varchar(191)",
+        "search": 1,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase_glossary"
+      },
+      {
+        "type_id": "value",
+        "type_name": "text",
+        "name": "definition",
+        "label": "Kurzdefinition",
+        "db_type": "varchar(191)",
+        "not_required": "1",
+        "search": 1,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase_glossary"
+      },
+      {
+        "type_id": "value",
+        "type_name": "textarea",
+        "name": "description",
+        "label": "Beschreibung (Rich Text)",
+        "db_type": "mediumtext",
+        "not_required": "1",
+        "attributes": "{\"class\":\"tiny-editor\",\"data-profile\":\"default\"}",
+        "search": 1,
+        "list_hidden": 1,
+        "table_name": "rex_knowledgebase_glossary"
+      },
+      {
+        "type_id": "value",
+        "type_name": "checkbox",
+        "name": "online",
+        "label": "Online",
+        "db_type": "tinyint(1)",
+        "default": "1",
+        "search": 1,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase_glossary"
+      },
+      {
+        "type_id": "validate",
+        "type_name": "empty",
+        "name": "knowledgebase_id",
+        "message": "Bitte eine Wissensbasis auswählen."
+      },
+      {
+        "type_id": "validate",
+        "type_name": "empty",
+        "name": "term",
+        "message": "Bitte einen Glossar-Begriff angeben."
+      },
+      {
+        "type_id": "validate",
+        "type_name": "unique",
+        "name": "knowledgebase_id,term",
+        "table": "rex_knowledgebase_glossary",
+        "message": "Dieser Begriff ist in der Wissensbasis bereits vorhanden."
+      },
+      {
+        "type_id": "value",
+        "type_name": "datestamp",
+        "name": "createdate",
+        "label": "Erstellt am",
+        "db_type": "datetime",
+        "not_required": "1",
+        "format": "Y-m-d H:i:s",
+        "only_empty": "1",
+        "list_hidden": 1,
+        "search": 0,
+        "table_name": "rex_knowledgebase_glossary"
+      },
+      {
+        "type_id": "value",
+        "type_name": "be_user",
+        "name": "createuser",
+        "label": "Erstellt von",
+        "db_type": "varchar(191)",
+        "default": "",
+        "not_required": "1",
+        "list_hidden": 1,
+        "search": 0,
+        "table_name": "rex_knowledgebase_glossary"
+      },
+      {
+        "type_id": "value",
+        "type_name": "datestamp",
+        "name": "updatedate",
+        "label": "Aktualisiert am",
+        "db_type": "datetime",
+        "not_required": "1",
+        "only_empty": "2",
+        "list_hidden": 1,
+        "search": 0,
+        "table_name": "rex_knowledgebase_glossary"
+      },
+      {
+        "type_id": "value",
+        "type_name": "be_user",
+        "name": "updateuser",
+        "label": "Aktualisiert von",
+        "db_type": "varchar(191)",
+        "default": "",
+        "not_required": "1",
+        "list_hidden": 1,
+        "search": 0,
+        "table_name": "rex_knowledgebase_glossary"
+      }
+    ]
+  },
+  "rex_knowledgebase_interactive_image": {
+    "table": {
+      "table_name": "rex_knowledgebase_interactive_image",
+      "name": "Interaktive Bilder",
+      "description": "Wiederverwendbare interaktive Bild-Assets (Marker, Infografiken)",
+      "status": 1,
+      "list_amount": 100,
+      "list_sortfield": "title",
+      "list_sortorder": "ASC",
+      "prio": 4,
+      "search": 1,
+      "hidden": 0,
+      "export": 1,
+      "import": 1,
+      "mass_deletion": 0,
+      "mass_edit": 0,
+      "schema_overwrite": 1,
+      "history": 0
+    },
+    "fields": [
+      {
+        "type_id": "value",
+        "type_name": "text",
+        "name": "title",
+        "label": "Titel",
+        "db_type": "varchar(191)",
+        "search": 1,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase_interactive_image"
+      },
+      {
+        "type_id": "value",
+        "type_name": "choice",
+        "name": "type",
+        "label": "Typ",
+        "db_type": "varchar(32)",
+        "default": "marker_map",
+        "choices": "marker_map=Markerbild",
+        "expanded": "0",
+        "multiple": "0",
+        "search": 0,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase_interactive_image"
+      },
+      {
+        "type_id": "value",
+        "type_name": "be_media",
+        "name": "image",
+        "label": "Bild",
+        "db_type": "varchar(191)",
+        "search": 0,
+        "list_hidden": 1,
+        "table_name": "rex_knowledgebase_interactive_image"
+      },
+      {
+        "type_id": "value",
+        "type_name": "text",
+        "name": "image_alt",
+        "label": "Alternativtext",
+        "db_type": "varchar(191)",
+        "not_required": "1",
+        "search": 0,
+        "list_hidden": 1,
+        "table_name": "rex_knowledgebase_interactive_image"
+      },
+      {
+        "type_id": "value",
+        "type_name": "text",
+        "name": "menu_label",
+        "label": "Menü-Titel",
+        "db_type": "varchar(191)",
+        "default": "Marker-Menü",
+        "not_required": "1",
+        "search": 0,
+        "list_hidden": 1,
+        "table_name": "rex_knowledgebase_interactive_image"
+      },
+      {
+        "type_id": "value",
+        "type_name": "textarea",
+        "name": "markers_json",
+        "label": "Marker-Daten (JSON)",
+        "db_type": "longtext",
+        "not_required": "1",
+        "search": 0,
+        "list_hidden": 1,
+        "table_name": "rex_knowledgebase_interactive_image"
+      },
+      {
+        "type_id": "value",
+        "type_name": "checkbox",
+        "name": "online",
+        "label": "Online",
+        "db_type": "tinyint(1)",
+        "default": "1",
+        "search": 1,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase_interactive_image"
+      },
+      {
+        "type_id": "validate",
+        "type_name": "empty",
+        "name": "title",
+        "message": "Bitte einen Titel angeben."
+      },
+      {
+        "type_id": "validate",
+        "type_name": "empty",
+        "name": "image",
+        "message": "Bitte ein Bild auswählen."
+      },
+      {
+        "type_id": "value",
+        "type_name": "datestamp",
+        "name": "createdate",
+        "label": "Erstellt am",
+        "db_type": "datetime",
+        "not_required": "1",
+        "format": "Y-m-d H:i:s",
+        "only_empty": "1",
+        "list_hidden": 1,
+        "search": 0,
+        "table_name": "rex_knowledgebase_interactive_image"
+      },
+      {
+        "type_id": "value",
+        "type_name": "be_user",
+        "name": "createuser",
+        "label": "Erstellt von",
+        "db_type": "varchar(191)",
+        "default": "",
+        "not_required": "1",
+        "list_hidden": 1,
+        "search": 0,
+        "table_name": "rex_knowledgebase_interactive_image"
+      },
+      {
+        "type_id": "value",
+        "type_name": "datestamp",
+        "name": "updatedate",
+        "label": "Aktualisiert am",
+        "db_type": "datetime",
+        "not_required": "1",
+        "only_empty": "2",
+        "list_hidden": 1,
+        "search": 0,
+        "table_name": "rex_knowledgebase_interactive_image"
+      },
+      {
+        "type_id": "value",
+        "type_name": "be_user",
+        "name": "updateuser",
+        "label": "Aktualisiert von",
+        "db_type": "varchar(191)",
+        "default": "",
+        "not_required": "1",
+        "list_hidden": 1,
+        "search": 0,
+        "table_name": "rex_knowledgebase_interactive_image"
+      }
+    ]
+  }
+}

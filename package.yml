@@ -1,0 +1,47 @@
+package: knowledgebase
+version: '0.1.0-dev'
+author: Friends Of REDAXO
+supportpage: https://github.com/FriendsOfREDAXO
+
+requires:
+    redaxo: ^5.18
+    php: ^8.2
+    yform: ^5.0
+    packages:
+        yform_content_builder: '*'
+
+page:
+    title: 'Knowledge Base'
+    perm: admin[]
+    icon: rex-icon fa-book
+    subpages:
+        overview:
+            title: 'Übersicht'
+        settings:
+            title: 'Frontend-Texte'
+        bases:
+            title: 'Wissensbasen'
+            subPath: pages/yform.php
+        glossary:
+            title: 'Glossar'
+            subPath: pages/yform.php
+        interactive_images:
+            title: 'Interaktive Bilder'
+            subPath: pages/yform.php
+        articles:
+            title: 'Beiträge'
+            subPath: pages/articles.php
+
+autoload:
+    classes:
+        FriendsOfREDAXO\Knowledgebase\: lib/
+
+yform:
+    knowledgebase/bases:
+        table_name: knowledgebase
+    knowledgebase/articles:
+        table_name: knowledgebase_article
+    knowledgebase/glossary:
+        table_name: knowledgebase_glossary
+    knowledgebase/interactive_images:
+        table_name: knowledgebase_interactive_image

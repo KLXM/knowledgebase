@@ -1,0 +1,8 @@
+kb_chapter_nav_label = KB Kapitelanker
+kb_chapter_nav_description = Definiert eine Kapitel-Ueberschrift inkl. Anker fuer TOC und Navigation.
+kb_chapter_nav_group_content = Inhalt
+kb_chapter_nav_field_title = Titel
+kb_chapter_nav_field_text = Kurzbeschreibung
+kb_chapter_nav_field_badge = Badge / Kapitelnummer
+kb_chapter_nav_field_anchor_id = Anchor-ID (optional)
+kb_chapter_nav_field_anchor_notice = Leer lassen = wird automatisch aus dem Titel erzeugt.
