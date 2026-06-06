@@ -16,7 +16,7 @@ page:
     perm: knowledgebase[]
     icon: rex-icon fa-book
     block: system
-    prio: 5
+    prio: 500
     subpages:
         overview:
             title: 'Übersicht'
