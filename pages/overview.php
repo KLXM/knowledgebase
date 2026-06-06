@@ -96,23 +96,33 @@ $stats = [
 
 $dashboard = '';
 $dashboard .= '<style>';
-$dashboard .= '.kb-dashboard-card{border:1px solid #e6e9ef;border-radius:8px;padding:14px;background:#fff;box-shadow:0 6px 14px rgba(15,35,60,.06);animation:kbFadeIn .45s ease both;}';
+$dashboard .= '.kb-dashboard-card{position:relative;overflow:hidden;border:1px solid #e6e9ef;border-radius:10px;padding:14px;background:linear-gradient(160deg,#ffffff 0%,#f7fbff 100%);box-shadow:0 8px 20px rgba(15,35,60,.08);opacity:0;transform:translateY(14px) scale(.98);transition:transform .2s ease,box-shadow .25s ease,border-color .25s ease;}';
+$dashboard .= '.kb-dashboard-card:before{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:linear-gradient(90deg,#1f7fd0 0%,#4ea6e9 100%);opacity:.85;}';
+$dashboard .= '.kb-dashboard-card:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(15,35,60,.12);border-color:#cbd8ea;}';
+$dashboard .= '.kb-dashboard-card.is-visible{animation:kbCardIn .55s cubic-bezier(.22,.61,.36,1) forwards;}';
 $dashboard .= '.kb-dashboard-meta{color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:.06em;}';
 $dashboard .= '.kb-dashboard-value{font-size:30px;line-height:1.1;font-weight:700;margin:8px 0 10px;}';
-$dashboard .= '.kb-dashboard-link{margin-top:10px;display:inline-block;}';
+$dashboard .= '.kb-dashboard-link{margin-top:10px;display:inline-block;transition:transform .18s ease,box-shadow .2s ease;}';
+$dashboard .= '.kb-dashboard-link:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(15,35,60,.18);}';
 $dashboard .= '.kb-dashboard-list td{vertical-align:middle;}';
-$dashboard .= '@keyframes kbFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}';
+$dashboard .= '.kb-dashboard-panel{opacity:0;transform:translateY(16px);}';
+$dashboard .= '.kb-dashboard-panel.is-visible{animation:kbPanelIn .5s ease forwards;}';
+$dashboard .= '.kb-dashboard-row{opacity:0;transform:translateX(-10px);}';
+$dashboard .= '.kb-dashboard-row.is-visible{animation:kbRowIn .35s ease forwards;}';
+$dashboard .= '@keyframes kbCardIn{0%{opacity:0;transform:translateY(14px) scale(.98)}100%{opacity:1;transform:translateY(0) scale(1)}}';
+$dashboard .= '@keyframes kbPanelIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}';
+$dashboard .= '@keyframes kbRowIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}';
+$dashboard .= '@media (prefers-reduced-motion: reduce){.kb-dashboard-card,.kb-dashboard-panel,.kb-dashboard-row{animation:none !important;opacity:1 !important;transform:none !important;transition:none !important;}}';
 $dashboard .= '</style>';
 
 $dashboard .= '<p>' . rex_escape($addon->i18n('knowledgebase_overview_intro')) . '</p>';
 $dashboard .= '<div class="row">';
 
 foreach ($stats as $index => $stat) {
-    $delay = ($index + 1) * 0.06;
     $ratio = $stat['total'] > 0 ? (int) round(($stat['online'] / $stat['total']) * 100) : 0;
 
     $dashboard .= '<div class="col-sm-6 col-lg-3">';
-    $dashboard .= '<div class="kb-dashboard-card" style="animation-delay:' . rex_escape((string) $delay) . 's">';
+    $dashboard .= '<div class="kb-dashboard-card" data-card-index="' . rex_escape((string) $index) . '">';
     $dashboard .= '<div class="kb-dashboard-meta">' . rex_escape($stat['title']) . '</div>';
     $dashboard .= '<div class="kb-dashboard-value">' . rex_escape((string) $stat['total']) . '</div>';
     $dashboard .= '<div class="small text-muted">' . rex_escape((string) $stat['online']) . ' ' . rex_escape($stat['label']) . '</div>';
@@ -129,7 +139,7 @@ $dashboard .= '</div>';
 
 $dashboard .= '<div class="row" style="margin-top:16px;">';
 $dashboard .= '<div class="col-sm-12">';
-$dashboard .= '<div class="panel panel-default">';
+$dashboard .= '<div class="panel panel-default kb-dashboard-panel">';
 $dashboard .= '<div class="panel-heading"><strong>Neueste Beiträge</strong></div>';
 $dashboard .= '<div class="table-responsive">';
 $dashboard .= '<table class="table table-striped kb-dashboard-list" style="margin-bottom:0;">';
@@ -176,7 +186,7 @@ if ([] === $recentArticles) {
         ] + $articleCsrfParams);
         $safeEditUrl = html_entity_decode($editUrl, ENT_QUOTES, 'UTF-8');
 
-        $dashboard .= '<tr>';
+        $dashboard .= '<tr class="kb-dashboard-row">';
         $dashboard .= '<td><strong>' . rex_escape($title) . '</strong></td>';
         $dashboard .= '<td>' . rex_escape((string) ($baseTitleMap[$kbId] ?? 'Unbekannt')) . '</td>';
         $dashboard .= '<td>' . $statusBadge . '</td>';
@@ -192,6 +202,20 @@ $dashboard .= '</div>';
 $dashboard .= '</div>';
 $dashboard .= '</div>';
 $dashboard .= '</div>';
+
+$dashboard .= '<script>';
+$dashboard .= '(function(){';
+$dashboard .= 'var prefersReduced=false;';
+$dashboard .= 'try{prefersReduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(e){}';
+$dashboard .= 'if(prefersReduced){return;}';
+$dashboard .= 'var cards=document.querySelectorAll(".kb-dashboard-card");';
+$dashboard .= 'var panel=document.querySelector(".kb-dashboard-panel");';
+$dashboard .= 'var rows=document.querySelectorAll(".kb-dashboard-row");';
+$dashboard .= 'cards.forEach(function(card,index){window.setTimeout(function(){card.classList.add("is-visible");},80+(index*90));});';
+$dashboard .= 'if(panel){window.setTimeout(function(){panel.classList.add("is-visible");},420);}';
+$dashboard .= 'rows.forEach(function(row,index){window.setTimeout(function(){row.classList.add("is-visible");},540+(index*55));});';
+$dashboard .= '})();';
+$dashboard .= '</script>';
 
 $fragment = new rex_fragment();
 $fragment->setVar('title', $addon->i18n('knowledgebase_overview_title'), false);
