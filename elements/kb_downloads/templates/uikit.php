@@ -7,7 +7,6 @@
  */
 
 // Daten extrahieren
-$headline = $elementData['headline'] ?? '';
 $description = $elementData['description'] ?? '';
 $layout = $elementData['layout'] ?? 'list';
 $cardStyle = $elementData['card_style'] ?? 'uk-card-default';
@@ -214,14 +213,9 @@ $gapClass = $gap === 'collapse' ? '' : 'uk-grid-' . $gap;
 
 <?= $wrapper->parse('kb_elements/wrapper.php') ?>
     
-    <?php if ($headline || $description): ?>
+    <?php if ($description): ?>
         <div class="uk-margin-medium-bottom">
-            <?php if ($headline): ?>
-                <h2 class="uk-heading-line"><span><?= rex_escape($headline) ?></span></h2>
-            <?php endif; ?>
-            <?php if ($description): ?>
-                <p class="uk-text-lead"><?= rex_escape($description) ?></p>
-            <?php endif; ?>
+            <p class="uk-text-lead"><?= rex_escape($description) ?></p>
         </div>
     <?php endif; ?>
     

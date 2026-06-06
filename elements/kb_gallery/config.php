@@ -32,11 +32,6 @@ return [
         
         // Element-spezifische Felder
         [
-            'headline' => [
-                'type' => 'text',
-                'label' => 'Überschrift',
-                'notice' => 'Optional: Überschrift für die Galerie'
-            ],
             'layout' => [
                 'type' => 'choice',
                 'label' => 'Layout',

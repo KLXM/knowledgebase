@@ -1,6 +1,4 @@
 <?php
-$headline = (string) ($elementData['headline'] ?? '');
-$headlineTag = 'h3';
 $text = (string) ($elementData['text'] ?? '');
 
 $sectionBg = (string) ($elementData['section_bg'] ?? '');
@@ -10,7 +8,7 @@ $sectionLight = !empty($elementData['section_light']);
 $enableSection = !empty($elementData['enable_section']);
 $enableContainer = !empty($elementData['enable_container']);
 
-if ($headline === '' && trim(strip_tags($text)) === '') {
+if (trim(strip_tags($text)) === '') {
     return;
 }
 
@@ -29,9 +27,6 @@ $wrapperClose->setVar('enable_container', $enableContainer, false);
 $wrapperClose->setVar('container_width', $containerWidth, false);
 ?>
 <?= $wrapper->parse('kb_elements/wrapper.php') ?>
-        <?php if ($headline !== ''): ?>
-            <<?= $headlineTag ?> class="uk-margin-small-bottom"><?= rex_escape($headline) ?></<?= $headlineTag ?>>
-        <?php endif; ?>
         <?php if ($text !== ''): ?>
             <div><?= $text ?></div>
         <?php endif; ?>

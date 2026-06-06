@@ -17,7 +17,7 @@ return [
         'content_tab' => [
             'label' => 'Inhalt',
             'icon' => 'fa-file-text-o',
-            'fields' => ['headline', 'text'],
+            'fields' => ['text'],
         ],
         'section_settings_tab' => [
             'label' => 'Sektion',
@@ -29,10 +29,6 @@ return [
         ],
     ],
     'fields' => array_merge([
-        'headline' => [
-            'type' => 'text',
-            'label' => 'Ueberschrift',
-        ],
         'text' => [
             'type' => 'tinymce',
             'profile' => 'default',

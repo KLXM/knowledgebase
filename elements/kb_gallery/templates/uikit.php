@@ -5,7 +5,6 @@
  * @var array $elementData
  */
 
-$headline = $elementData['headline'] ?? '';
 $layout = $elementData['layout'] ?? 'grid';
 $columns = intval($elementData['columns'] ?? 3);
 $columnsTablet = intval($elementData['columns_tablet'] ?? 2);
@@ -99,10 +98,6 @@ $lightboxId = 'gallery-' . uniqid();
 <?= $wrapper->parse('kb_elements/wrapper.php') ?>
 
 <div class="gallery-element">
-    <?php if ($headline): ?>
-        <h3 class="uk-heading-line uk-margin-medium-bottom"><span><?= rex_escape($headline) ?></span></h3>
-    <?php endif; ?>
-    
     <div class="<?= $gridClassStr ?>" <?= $gridAttrs ?><?php if ($lightbox): ?> uk-lightbox="animation: slide"<?php endif; ?>>
         <?php foreach ($items as $index => $item): ?>
             <?php 

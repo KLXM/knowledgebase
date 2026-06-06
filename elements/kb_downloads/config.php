@@ -60,11 +60,6 @@ return [
         
         // Element-spezifische Felder
         [
-            'headline' => [
-                'type' => 'text',
-                'label' => 'Überschrift',
-                'notice' => 'Optional: Überschrift für den Download-Bereich'
-            ],
             'description' => [
                 'type' => 'textarea',
                 'label' => 'Beschreibung',
