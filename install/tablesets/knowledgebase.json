@@ -255,9 +255,10 @@
       },
       {
         "type_id": "value",
-        "type_name": "text",
+        "type_name": "fields_inline",
         "name": "nav_badge",
         "label": "Navigation-Badge",
+        "type": "text",
         "db_type": "varchar(64)",
         "not_required": "1",
         "notice": "Optional: Zahl 1-99 oder UIKit3-Iconname (z.B. file-text, bookmark, info, question, tag, star).",
