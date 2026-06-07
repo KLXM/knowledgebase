@@ -10,6 +10,16 @@
         return;
     }
 
+    // Titel-Input direkt nach dem Laden fokussieren – unabhängig vom TinyMCE-Kampf
+    function focusTitleDirectly() {
+        var target = getTargetInput();
+        if (target) {
+            target.setAttribute('autofocus', 'autofocus');
+            target.focus({ preventScroll: true });
+            window.scrollTo(0, 0);
+        }
+    }
+
     var stopEnforcement = false;
     var startedAt = Date.now();
     var maxRuntimeMs = 2800;
@@ -88,6 +98,7 @@
     }, true);
 
     window.addEventListener('load', function () {
+        focusTitleDirectly();
         window.setTimeout(startEnforcementLoop, 120);
     });
 })();
