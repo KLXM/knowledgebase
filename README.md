@@ -40,6 +40,37 @@ Hinweis für Container-Setups:
 
 - Nach Änderungen an PHP-Dateien ggf. den OPcache leeren.
 
+## URL-Addon-Integration: automatische URL-Profil-Generierung
+
+Ja, das Add-on kann URL-Profile automatisch für Wissensbasen erzeugen und synchron halten. Damit entstehen saubere Frontend-URLs ohne manuelle Profilpflege pro Datensatz.
+
+### Voraussetzungen
+
+- url Add-on (v2) aktiv
+- Eine Seite, auf der das Knowledgebase-Modul eingebunden ist
+
+### Was automatisch passiert
+
+1. Im Backend-Bereich "URL-Profile & Sitemap" wird eine Wissensbasis einem REDAXO-Artikel (Modul-Seite) zugeordnet.
+2. Beim Speichern wird automatisch ein Profil mit Namespace `knowledgebase_{id}` angelegt oder aktualisiert.
+3. Das Profil wird auf die jeweilige Wissensbasis eingegrenzt (`knowledgebase_id = {id}`).
+4. URLs werden direkt neu aufgebaut.
+5. Beim Entfernen einer Zuordnung wird das zugehörige Profil wieder gelöscht.
+
+### Zusätzlich erzeugte Routen
+
+Neben den Artikel-URLs erzeugt das Add-on auch eigene Pfade für zentrale Ansichten:
+
+- Glossar: `/.../glossar/`
+- Inhaltsverzeichnis: `/.../inhaltsverzeichnis/`
+- Suche: `/.../suche/?q=...`
+
+Die Suche verwendet bei aktivem Profil automatisch den sauberen Suchpfad und nicht mehr die alten `kb_*`-Queryparameter.
+
+### Wichtige Regel
+
+Ein REDAXO-Artikel darf nur einer Wissensbasis zugeordnet werden. Doppelte Zuordnungen werden serverseitig validiert und mit Fehlermeldung abgewiesen.
+
 ## Troubleshooting
 
 ### TinyMCE: automatischer Sprung zum Editor im Backend
