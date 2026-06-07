@@ -452,7 +452,7 @@ final class FrontendRenderer
                 continue;
             }
 
-            $isCurrent = $article->getId() === $currentId;
+            $isCurrent = $article->getId() === $currentId && !$glossaryActive && !$tocActive && !$tagModeActive;
             $items .= '<li class="kb-app__nav-main-item" data-kb-nav-main>';
             $chapters = self::extractArticleChapters($article);
             $hasChapters = count($chapters) > 0;
@@ -488,8 +488,11 @@ final class FrontendRenderer
         }
 
         $items .= '<li class="kb-app__nav-main-item kb-app__nav-main-item--toc" data-kb-nav-main>';
-        $tocUrlParams = $baseParams;
-        $tocUrlParams[$tocParam] = 1;
+        $tocUrlParams = [
+            $tocParam => 1,
+            $tagParam => null,
+            $tagsParam => null,
+        ];
         $items .= '<a class="kb-app__nav-link kb-app__nav-link--toc' . ($tocActive ? ' is-current is-trail' : '') . '" data-kb-nav-main-link href="' . rex_escape(self::buildUrl($tocUrlParams)) . '">';
         $items .= self::renderNavBadgeIcon('list');
         $items .= '<span>' . rex_escape($tocLabel) . '</span>';
@@ -564,8 +567,11 @@ final class FrontendRenderer
 
         if ($glossaryEnabled) {
             $items .= '<li class="kb-app__nav-main-item kb-app__nav-main-item--glossary" data-kb-nav-main>';
-            $glossaryUrlParams = $baseParams;
-            $glossaryUrlParams[$glossaryParam] = 1;
+            $glossaryUrlParams = [
+                $glossaryParam => 1,
+                $tagParam => null,
+                $tagsParam => null,
+            ];
             $items .= '<a class="kb-app__nav-link kb-app__nav-link--glossary' . ($glossaryActive ? ' is-current is-trail' : '') . '" data-kb-nav-main-link href="' . rex_escape(self::buildUrl($glossaryUrlParams)) . '">';
             $items .= '<span class="kb-app__nav-badge">' . rex_escape($glossaryBadgeLabel) . '</span>';
             $items .= '<span>' . rex_escape($glossaryLabel) . '</span>';
@@ -1065,18 +1071,12 @@ final class FrontendRenderer
 
             $glossaryValue = $params[$glossaryKey] ?? null;
             if ((is_scalar($glossaryValue) && (int) $glossaryValue === 1) || $glossaryValue === true) {
-                $url = KnowledgebaseUrl::getGlossaryUrl($kbId);
-                $url = self::appendOptionalQueryParam($url, $tagKey, $tagValue);
-
-                return self::appendOptionalQueryParam($url, $tagsKey, $tagsValue);
+                return KnowledgebaseUrl::getGlossaryUrl($kbId);
             }
 
             $tocValue = $params[$tocKey] ?? null;
             if ((is_scalar($tocValue) && (int) $tocValue === 1) || $tocValue === true) {
-                $url = KnowledgebaseUrl::getTocUrl($kbId);
-                $url = self::appendOptionalQueryParam($url, $tagKey, $tagValue);
-
-                return self::appendOptionalQueryParam($url, $tagsKey, $tagsValue);
+                return KnowledgebaseUrl::getTocUrl($kbId);
             }
 
             $articleValue = $params[$articleKey] ?? null;

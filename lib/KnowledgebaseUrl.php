@@ -270,14 +270,31 @@ final class KnowledgebaseUrl
 
         $dataId = (int) $rows[0]['id'];
 
-        // URL aus url_generator_url-Tabelle holen
+        // URLs aus url_generator_url-Tabelle holen.
+        // Es koennen mehrere Treffer existieren (z. B. Sektionen wie /glossar/),
+        // deshalb den zur Article-Slug passenden Pfad bevorzugen.
         $urlRows = $sql->getArray(
             'SELECT url FROM ' . rex::getTable('url_generator_url')
-            . ' WHERE profile_id = :pid AND data_id = :did LIMIT 1',
+            . ' WHERE profile_id = :pid AND data_id = :did',
             ['pid' => $profileId, 'did' => $dataId],
         );
 
-        return isset($urlRows[0]['url']) ? (string) $urlRows[0]['url'] : '';
+        if ([] === $urlRows) {
+            return '';
+        }
+
+        $needle = '/' . trim($slug, '/') . '/';
+        foreach ($urlRows as $urlRow) {
+            $candidate = (string) ($urlRow['url'] ?? '');
+            $candidatePath = self::normalizePath((string) parse_url($candidate, PHP_URL_PATH));
+
+            if (str_contains($candidatePath, $needle)) {
+                return $candidate;
+            }
+        }
+
+        // Fallback fuer historische Datensaetze ohne eindeutigen Slug-Treffer.
+        return (string) ($urlRows[0]['url'] ?? '');
     }
 
     /**

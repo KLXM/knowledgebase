@@ -317,6 +317,16 @@ final class UrlProfileManager
         }
     }
 
+    public static function rebuildForKnowledgebase(int $knowledgebaseId): void
+    {
+        if ($knowledgebaseId <= 0 || !self::isAvailable()) {
+            return;
+        }
+
+        self::rebuildUrls(KnowledgebaseUrl::buildNamespace($knowledgebaseId));
+        self::$ensuredSectionRoutes[$knowledgebaseId] = true;
+    }
+
     private static function rebuildUrls(string $namespace): void
     {
         if (!self::isAvailable()) {

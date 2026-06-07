@@ -128,13 +128,7 @@ if (rex_addon::get('url')->isAvailable() && class_exists(\Url\Profile::class)) {
         }
         $kbId = (int) $dataset->getValue('knowledgebase_id');
         if ($kbId > 0 && \FriendsOfREDAXO\Knowledgebase\KnowledgebaseUrl::hasProfile($kbId)) {
-            $namespace = \FriendsOfREDAXO\Knowledgebase\KnowledgebaseUrl::buildNamespace($kbId);
-            foreach (\Url\Profile::getAll() as $profile) {
-                if ($profile->getNamespace() === $namespace) {
-                    $profile->buildUrlsByDatasetId((int) $dataset->getId());
-                    break;
-                }
-            }
+            \FriendsOfREDAXO\Knowledgebase\UrlProfileManager::rebuildForKnowledgebase($kbId);
         }
     });
 
@@ -152,14 +146,27 @@ if (rex_addon::get('url')->isAvailable() && class_exists(\Url\Profile::class)) {
         }
         $kbId = (int) $dataset->getValue('knowledgebase_id');
         if ($kbId > 0 && \FriendsOfREDAXO\Knowledgebase\KnowledgebaseUrl::hasProfile($kbId)) {
-            $namespace = \FriendsOfREDAXO\Knowledgebase\KnowledgebaseUrl::buildNamespace($kbId);
-            foreach (\Url\Profile::getAll() as $profile) {
-                if ($profile->getNamespace() === $namespace) {
-                    $profile->deleteUrlsByDatasetId((int) $dataset->getId());
-                    $profile->buildUrlsByDatasetId((int) $dataset->getId());
-                    break;
-                }
-            }
+            \FriendsOfREDAXO\Knowledgebase\UrlProfileManager::rebuildForKnowledgebase($kbId);
+        }
+    });
+
+    rex_extension::register('YFORM_DATA_DELETED', static function (rex_extension_point $ep): void {
+        $table = $ep->getParam('table');
+        if (!$table instanceof rex_yform_manager_table) {
+            return;
+        }
+        if ($table->getTableName() !== rex::getTable('knowledgebase_article')) {
+            return;
+        }
+
+        $dataset = $ep->getSubject();
+        if (!$dataset instanceof rex_yform_manager_dataset) {
+            return;
+        }
+
+        $kbId = (int) $dataset->getValue('knowledgebase_id');
+        if ($kbId > 0 && \FriendsOfREDAXO\Knowledgebase\KnowledgebaseUrl::hasProfile($kbId)) {
+            \FriendsOfREDAXO\Knowledgebase\UrlProfileManager::rebuildForKnowledgebase($kbId);
         }
     });
 
