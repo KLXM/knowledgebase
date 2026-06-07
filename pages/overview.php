@@ -26,7 +26,7 @@ if ($articleTableObj instanceof rex_yform_manager_table) {
 }
 
 $baseCount = $getCount($baseTable);
-$baseActiveCount = $getCount($baseTable, 'status = 1');
+$baseActiveCount = $getCount($baseTable, 'online = 1');
 $articleCount = $getCount($articleTable);
 $articleOnlineCount = $getCount($articleTable, 'online = 1');
 $glossaryCount = $getCount($glossaryTable);

@@ -222,7 +222,7 @@
       {
         "type_id": "value",
         "type_name": "fields_inline_switch",
-        "name": "status",
+        "name": "online",
         "label": "Online",
         "db_type": "tinyint(1)",
         "values": "0,1",

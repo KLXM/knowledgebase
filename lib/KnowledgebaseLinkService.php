@@ -20,7 +20,7 @@ final class KnowledgebaseLinkService
             . 'a.id AS article_id, a.title AS article_title, a.nav_title AS article_nav_title, a.slug AS article_slug, a.online AS article_online, a.content AS article_content '
             . 'FROM ' . rex::getTable('knowledgebase') . ' kb '
             . 'LEFT JOIN ' . rex::getTable('knowledgebase_article') . ' a ON a.knowledgebase_id = kb.id '
-            . 'WHERE kb.status = 1 '
+            . 'WHERE kb.online = 1 '
             . 'ORDER BY kb.title ASC, a.priority ASC, a.title ASC'
         );
 

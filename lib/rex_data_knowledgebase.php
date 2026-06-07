@@ -22,7 +22,11 @@ class rex_data_knowledgebase extends rex_yform_manager_dataset
             return null;
         }
 
-        return (int) $dataset->getValue('status') === 1 ? $dataset : null;
+        $onlineValue = $dataset->hasValue('online')
+            ? $dataset->getValue('online')
+            : $dataset->getValue('status');
+
+        return (int) $onlineValue === 1 ? $dataset : null;
     }
 
     public function getPlaceholder(): string

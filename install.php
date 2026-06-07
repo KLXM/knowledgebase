@@ -22,6 +22,31 @@ if (is_string($tablesetContent) && '' !== $tablesetContent) {
 // Choice-Migration: historische Label-/Trunkatwerte auf stabile Keys normalisieren.
 $knowledgebaseTable = rex::getTable('knowledgebase');
 $sql = rex_sql::factory();
+
+// Legacy-Migration: alte Status-Spalte in das neue Online-Feld übernehmen.
+try {
+    $columns = $sql->getArray('SHOW COLUMNS FROM ' . $sql->escapeIdentifier($knowledgebaseTable));
+    $hasStatus = false;
+    $hasOnline = false;
+    foreach ($columns as $column) {
+        $fieldName = (string) ($column['Field'] ?? '');
+        if ($fieldName === 'status') {
+            $hasStatus = true;
+        }
+        if ($fieldName === 'online') {
+            $hasOnline = true;
+        }
+    }
+
+    if ($hasStatus && $hasOnline) {
+        $sql->setQuery(
+            'UPDATE ' . $knowledgebaseTable . ' SET online = status'
+        );
+    }
+} catch (Throwable) {
+    // Ignore on fresh installs / unexpected schema states.
+}
+
 $sql->setQuery(
     'UPDATE ' . $knowledgebaseTable . ' '
     . 'SET layout_mode = CASE '
@@ -79,7 +104,7 @@ rex_sql::factory()->setQuery(
 
 rex_sql_table::get(rex::getTable('knowledgebase'))
     ->ensureIndex(new rex_sql_index('knowledgebase_slug', ['slug'], rex_sql_index::UNIQUE))
-    ->ensureIndex(new rex_sql_index('knowledgebase_status', ['status']))
+    ->ensureIndex(new rex_sql_index('knowledgebase_online', ['online']))
     ->ensureIndex(new rex_sql_index('knowledgebase_glossary_enabled', ['glossary_enabled']))
     ->ensureIndex(new rex_sql_index('knowledgebase_article_sort', ['article_sort_field', 'article_sort_order']))
     ->ensure();
