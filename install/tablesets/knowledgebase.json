@@ -225,6 +225,7 @@
         "name": "status",
         "label": "Online",
         "db_type": "tinyint(1)",
+        "values": "0,1",
         "default": "1",
         "search": 1,
         "list_hidden": 0,
