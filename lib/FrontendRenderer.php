@@ -6,12 +6,15 @@ namespace FriendsOfREDAXO\Knowledgebase;
 
 use rex;
 use rex_addon;
+use rex_backend_login;
+use rex_csrf_token;
 use rex_escape;
 use rex_fragment;
 use rex_media;
 use rex_path;
 use rex_server;
 use rex_url;
+use rex_yform_manager_table;
 use rex_yform_manager_dataset;
 
 final class FrontendRenderer
@@ -760,6 +763,7 @@ final class FrontendRenderer
         $intro = trim((string) $article->getValue('intro'));
         $introHtml = '' !== $intro ? '<div class="kb-app__intro">' . $intro . '</div>' : '';
         $breadcrumbs = self::renderBreadcrumbs($knowledgebase, $article);
+        $editButton = self::renderBackendEditButton($article);
         $articleBody = GlossaryService::enhanceArticleHtml($knowledgebase, $article->renderContent());
         $recommendationBlocks = '';
 
@@ -777,12 +781,67 @@ final class FrontendRenderer
 
         return '<article class="kb-app__article">'
             . $breadcrumbs
+            . $editButton
             . '<div class="kb-app__article-meta">' . rex_escape(FrontendI18n::msg('knowledgebase_article_label', 'Kapitel')) . '</div>'
             . '<h1 class="kb-app__article-title">' . rex_escape((string) $article->getValue('title')) . '</h1>'
             . $introHtml
             . '<div class="kb-app__article-body">' . $articleBody . '</div>'
             . $recommendations
             . '</article>';
+    }
+
+    private static function renderBackendEditButton(\rex_data_knowledgebase_article $article): string
+    {
+        if (PHP_SAPI === 'cli' || !rex_backend_login::hasSession()) {
+            return '';
+        }
+
+        $tableName = rex::getTable('knowledgebase_article');
+        $kbId = (int) $article->getValue('knowledgebase_id');
+
+        $params = [
+            'table_name' => $tableName,
+            'func' => 'edit',
+            'data_id' => (string) $article->getId(),
+            'knowledgebase_id' => (string) $kbId,
+        ];
+
+        $csrfToken = self::buildBackendCsrfTokenForTable($tableName);
+        if ($csrfToken !== '') {
+            $params['_csrf_token'] = $csrfToken;
+        }
+
+        $url = rex_url::backendPage('knowledgebase/articles', $params);
+
+        return '<div class="kb-app__article-tools">'
+            . '<a class="kb-app__article-edit-button uk-button uk-button-default uk-button-small" href="' . rex_escape($url) . '" target="_blank" rel="noopener">'
+            . rex_escape(FrontendI18n::msg('knowledgebase_edit_button', 'Bearbeiten'))
+            . '</a>'
+            . '</div>';
+    }
+
+    private static function buildBackendCsrfTokenForTable(string $tableName): string
+    {
+        if (PHP_SAPI === 'cli') {
+            return '';
+        }
+
+        $wasBackendContext = rex::isBackend();
+        rex::setProperty('redaxo', true);
+
+        try {
+            $table = rex_yform_manager_table::get($tableName);
+            if (!$table instanceof rex_yform_manager_table) {
+                return '';
+            }
+
+            $csrfParams = rex_csrf_token::factory($table->getCSRFKey())->getUrlParams();
+            return (string) ($csrfParams['_csrf_token'] ?? '');
+        } catch (\Throwable) {
+            return '';
+        } finally {
+            rex::setProperty('redaxo', $wasBackendContext);
+        }
     }
 
     /**

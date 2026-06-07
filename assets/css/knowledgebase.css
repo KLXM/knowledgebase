@@ -71,6 +71,16 @@
     line-height: 1.1;
 }
 
+.kb-app__article-tools {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.45rem;
+}
+
+.kb-app__article-edit-button {
+    white-space: nowrap;
+}
+
 .kb-app__title {
     margin: 0;
     font-size: clamp(1.4rem, 2.8vw, 2rem);
