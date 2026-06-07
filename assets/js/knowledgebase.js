@@ -246,9 +246,90 @@ document.addEventListener('DOMContentLoaded', function () {
             updateExpandToggleLabel();
         });
 
+        initResponsiveSidebarState(app);
         initStickyNavigation(app);
     });
 });
+
+function initResponsiveSidebarState(app) {
+    var sidebar = app.querySelector('.kb-app__sidebar');
+    var offcanvas = app.querySelector('[uk-offcanvas]');
+    var stickyMedia = parseInt(app.getAttribute('data-kb-sticky-media') || '960', 10);
+
+    if (!sidebar) {
+        return;
+    }
+
+    if (isNaN(stickyMedia) || stickyMedia < 1) {
+        stickyMedia = 960;
+    }
+
+    var closeOffcanvasIfOpen = function () {
+        var openOffcanvas = Array.prototype.slice.call(document.querySelectorAll('.uk-offcanvas.uk-open'));
+        if (offcanvas && openOffcanvas.indexOf(offcanvas) < 0) {
+            openOffcanvas.push(offcanvas);
+        }
+
+        openOffcanvas = openOffcanvas.filter(function (node) {
+            if (!node || !node.id) {
+                return false;
+            }
+
+            return node.id === 'mobile-nav' || node.id.indexOf('kb-app-') === 0;
+        });
+
+        openOffcanvas.forEach(function (node) {
+            if (document.activeElement && node.contains(document.activeElement) && typeof document.activeElement.blur === 'function') {
+                document.activeElement.blur();
+            }
+
+            if (typeof window.UIkit !== 'undefined' && typeof window.UIkit.offcanvas === 'function') {
+                var instance = window.UIkit.offcanvas(node);
+                if (instance && typeof instance.hide === 'function') {
+                    instance.hide();
+                }
+            }
+
+            node.classList.remove('uk-open');
+
+            var dialogNode = node.closest('[role="dialog"], dialog');
+            if (dialogNode) {
+                dialogNode.classList.remove('uk-open');
+            }
+        });
+
+        document.documentElement.classList.remove('uk-offcanvas-page');
+        document.body.classList.remove('uk-offcanvas-page');
+        document.body.classList.remove('uk-offcanvas-container');
+    };
+
+    var syncSidebar = function () {
+        var isDesktop = window.innerWidth >= stickyMedia;
+        if (!isDesktop) {
+            sidebar.style.display = '';
+            return;
+        }
+
+        closeOffcanvasIfOpen();
+        sidebar.hidden = false;
+        sidebar.style.display = '';
+    };
+
+    var resizeTimer = null;
+    var onResize = function () {
+        if (resizeTimer) {
+            window.clearTimeout(resizeTimer);
+        }
+
+        resizeTimer = window.setTimeout(function () {
+            syncSidebar();
+        }, 120);
+    };
+
+    syncSidebar();
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+}
 
 function initStickyNavigation(app) {
     var navShell = app.querySelector('.kb-app__sidebar .kb-app__nav-shell');
