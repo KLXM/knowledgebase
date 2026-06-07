@@ -10,7 +10,7 @@
       "list_sortorder": "ASC",
       "prio": 1,
       "search": 1,
-      "hidden": 0,
+      "hidden": 1,
       "export": 1,
       "import": 1,
       "mass_deletion": 0,
@@ -21,9 +21,10 @@
     "fields": [
       {
         "type_id": "value",
-        "type_name": "text",
+        "type_name": "fields_inline",
         "name": "title",
         "label": "Titel",
+        "type": "text",
         "db_type": "varchar(191)",
         "search": 1,
         "list_hidden": 0,
@@ -85,7 +86,7 @@
           "db_type": "tinyint(1)",
           "default": "0",
           "search": 1,
-          "list_hidden": 0,
+          "list_hidden": 1,
           "table_name": "rex_knowledgebase"
         },
         {
@@ -96,7 +97,7 @@
           "db_type": "tinyint(1)",
           "default": "1",
           "search": 1,
-          "list_hidden": 0,
+          "list_hidden": 1,
           "table_name": "rex_knowledgebase"
         },
         {
@@ -107,7 +108,7 @@
           "db_type": "tinyint(1)",
           "default": "0",
           "search": 1,
-          "list_hidden": 0,
+          "list_hidden": 1,
           "table_name": "rex_knowledgebase"
         },
         {
@@ -133,7 +134,7 @@
           "db_type": "tinyint(1)",
           "default": "1",
           "search": 0,
-          "list_hidden": 0,
+          "list_hidden": 1,
           "table_name": "rex_knowledgebase"
         },
         {
@@ -148,7 +149,7 @@
           "multiple": "0",
           "not_required": "1",
           "search": 0,
-          "list_hidden": 0,
+          "list_hidden": 1,
           "table_name": "rex_knowledgebase"
         },
         {
@@ -159,7 +160,7 @@
           "db_type": "tinyint(1)",
           "default": "1",
           "search": 0,
-          "list_hidden": 0,
+          "list_hidden": 1,
           "table_name": "rex_knowledgebase"
         },
         {
@@ -170,7 +171,7 @@
           "db_type": "tinyint(1)",
           "default": "1",
           "search": 0,
-          "list_hidden": 0,
+          "list_hidden": 1,
           "table_name": "rex_knowledgebase"
         },
         {
@@ -185,7 +186,7 @@
           "multiple": "0",
           "not_required": "1",
           "search": 0,
-          "list_hidden": 0,
+          "list_hidden": 1,
           "table_name": "rex_knowledgebase"
         },
       {
@@ -200,7 +201,7 @@
         "multiple": "0",
         "not_required": "1",
         "search": 0,
-        "list_hidden": 0,
+        "list_hidden": 1,
         "table_name": "rex_knowledgebase"
       },
       {
@@ -215,12 +216,12 @@
         "multiple": "0",
         "not_required": "1",
         "search": 0,
-        "list_hidden": 0,
+        "list_hidden": 1,
         "table_name": "rex_knowledgebase"
       },
       {
         "type_id": "value",
-        "type_name": "checkbox",
+        "type_name": "fields_inline_switch",
         "name": "status",
         "label": "Online",
         "db_type": "tinyint(1)",
@@ -304,7 +305,7 @@
       "list_sortorder": "ASC",
       "prio": 2,
       "search": 1,
-      "hidden": 0,
+      "hidden": 1,
       "export": 1,
       "import": 1,
       "mass_deletion": 0,
@@ -414,6 +415,7 @@
         "default": "",
         "fields": "title,nav_title",
         "scope": "knowledgebase_id",
+        "attributes": "class=\"selectpicker\" data-mobile=\"true\" data-live-search=\"true\" data-size=\"4\"",
         "not_required": "1",
         "search": 0,
         "list_hidden": 0,
@@ -603,7 +605,7 @@
       "list_sortorder": "ASC",
       "prio": 3,
       "search": 1,
-      "hidden": 0,
+      "hidden": 1,
       "export": 1,
       "import": 1,
       "mass_deletion": 0,
@@ -751,7 +753,7 @@
       "list_sortorder": "ASC",
       "prio": 4,
       "search": 1,
-      "hidden": 0,
+      "hidden": 1,
       "export": 1,
       "import": 1,
       "mass_deletion": 0,
