@@ -19,6 +19,50 @@ if (is_string($tablesetContent) && '' !== $tablesetContent) {
     rex_yform_manager_table_api::importTablesets($tablesetContent);
 }
 
+// Choice-Migration: historische Label-/Trunkatwerte auf stabile Keys normalisieren.
+$knowledgebaseTable = rex::getTable('knowledgebase');
+$sql = rex_sql::factory();
+$sql->setQuery(
+    'UPDATE ' . $knowledgebaseTable . ' '
+    . 'SET layout_mode = CASE '
+    . '    WHEN LOWER(layout_mode) LIKE :layout_classic THEN :layout_classic_value '
+    . '    WHEN LOWER(layout_mode) LIKE :layout_compact THEN :layout_compact_value '
+    . '    WHEN LOWER(layout_mode) LIKE :layout_focus THEN :layout_focus_value '
+    . '    ELSE layout_mode '
+    . 'END, '
+    . 'article_sort_field = CASE '
+    . '    WHEN LOWER(article_sort_field) LIKE :sort_priority THEN :sort_priority_value '
+    . '    WHEN LOWER(article_sort_field) LIKE :sort_title THEN :sort_title_value '
+    . '    WHEN LOWER(article_sort_field) LIKE :sort_updatedate THEN :sort_updatedate_value '
+    . '    ELSE article_sort_field '
+    . 'END, '
+    . 'article_sort_order = CASE '
+    . '    WHEN LOWER(article_sort_order) LIKE :order_asc THEN :order_asc_value '
+    . '    WHEN LOWER(article_sort_order) LIKE :order_asc_short THEN :order_asc_value '
+    . '    WHEN LOWER(article_sort_order) LIKE :order_desc THEN :order_desc_value '
+    . '    ELSE article_sort_order '
+    . 'END',
+    [
+        'layout_classic' => 'klassisch%',
+        'layout_classic_value' => 'classic',
+        'layout_compact' => 'kompakt%',
+        'layout_compact_value' => 'compact',
+        'layout_focus' => 'fokus%',
+        'layout_focus_value' => 'focus',
+        'sort_priority' => 'priorit%',
+        'sort_priority_value' => 'priority',
+        'sort_title' => 'titel%',
+        'sort_title_value' => 'title',
+        'sort_updatedate' => 'zuletzt aktualisiert%',
+        'sort_updatedate_value' => 'updatedate',
+        'order_asc' => 'aufst%',
+        'order_asc_short' => 'aufs%',
+        'order_asc_value' => 'ASC',
+        'order_desc' => 'abst%',
+        'order_desc_value' => 'DESC',
+    ],
+);
+
 // Sicherstellen, dass das Tagging-Feld eine Quelle für Vorschläge hat.
 rex_sql::factory()->setQuery(
     'UPDATE ' . rex::getTable('yform_field') . '

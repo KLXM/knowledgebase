@@ -119,6 +119,7 @@ class rex_data_knowledgebase extends rex_yform_manager_dataset
     public function getLayoutMode(): string
     {
         $mode = trim((string) $this->getOptionalValue('layout_mode'));
+        $mode = self::normalizeLayoutMode($mode);
 
         return in_array($mode, ['classic', 'compact', 'focus'], true) ? $mode : 'classic';
     }
@@ -126,6 +127,7 @@ class rex_data_knowledgebase extends rex_yform_manager_dataset
     public function getArticleSortField(): string
     {
         $field = trim((string) $this->getOptionalValue('article_sort_field'));
+        $field = self::normalizeArticleSortField($field);
         $allowedFields = ['priority', 'title', 'updatedate'];
 
         return in_array($field, $allowedFields, true) ? $field : 'priority';
@@ -137,8 +139,44 @@ class rex_data_knowledgebase extends rex_yform_manager_dataset
     public function getArticleSortOrder(): string
     {
         $order = strtoupper(trim((string) $this->getOptionalValue('article_sort_order')));
+        $order = self::normalizeArticleSortOrder($order);
 
         return in_array($order, ['ASC', 'DESC'], true) ? $order : 'ASC';
+    }
+
+    private static function normalizeLayoutMode(string $mode): string
+    {
+        $value = mb_strtolower(trim($mode));
+
+        return match (true) {
+            $value === 'classic', str_starts_with($value, 'klassisch') => 'classic',
+            $value === 'compact', str_starts_with($value, 'kompakt') => 'compact',
+            $value === 'focus', str_starts_with($value, 'fokus') => 'focus',
+            default => $mode,
+        };
+    }
+
+    private static function normalizeArticleSortField(string $field): string
+    {
+        $value = mb_strtolower(trim($field));
+
+        return match (true) {
+            $value === 'priority', str_starts_with($value, 'priorit') => 'priority',
+            $value === 'title', str_starts_with($value, 'titel') => 'title',
+            $value === 'updatedate', str_starts_with($value, 'zuletzt aktualisiert') => 'updatedate',
+            default => $field,
+        };
+    }
+
+    private static function normalizeArticleSortOrder(string $order): string
+    {
+        $value = mb_strtolower(trim($order));
+
+        return match (true) {
+            $value === 'asc', str_starts_with($value, 'aufst'), str_starts_with($value, 'aufs') => 'ASC',
+            $value === 'desc', str_starts_with($value, 'abst') => 'DESC',
+            default => $order,
+        };
     }
 
     /**
