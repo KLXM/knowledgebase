@@ -32,6 +32,17 @@ class rex_data_knowledgebase extends rex_yform_manager_dataset
         return '' !== $placeholder ? $placeholder : 'Suche in dieser Wissensbasis …';
     }
 
+    public function getHeaderLogo(): string
+    {
+        $file = trim((string) $this->getOptionalValue('header_logo'));
+
+        if ($file === '') {
+            return '';
+        }
+
+        return \rex_file::extension($file) === 'svg' ? $file : '';
+    }
+
     public function isGlossaryEnabled(): bool
     {
         return (int) $this->getValue('glossary_enabled') === 1;

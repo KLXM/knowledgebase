@@ -55,6 +55,18 @@
       },
       {
         "type_id": "value",
+        "type_name": "be_media",
+        "name": "header_logo",
+        "label": "Header-Logo (SVG)",
+        "notice": "Optionales SVG-Logo aus dem Medienpool fuer den Header.",
+        "db_type": "varchar(191)",
+        "not_required": "1",
+        "search": 0,
+        "list_hidden": 1,
+        "table_name": "rex_knowledgebase"
+      },
+      {
+        "type_id": "value",
         "type_name": "text",
         "name": "search_placeholder",
         "label": "Suchfeld-Placeholder",

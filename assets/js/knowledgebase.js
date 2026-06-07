@@ -374,8 +374,77 @@ document.addEventListener('DOMContentLoaded', function () {
         initStickyNavigation(app);
         initAnchorNavigation(app);
         initArticleRecommendations(app);
+        initScrollToTopButton(app);
     });
 });
+
+function initScrollToTopButton(app) {
+    var article = app.querySelector('.kb-app__article');
+    if (!article) {
+        return;
+    }
+
+    var content = app.querySelector('.kb-app__content');
+    if (!content) {
+        return;
+    }
+
+    var reduceMotion = false;
+    if (typeof window.matchMedia === 'function') {
+        reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+
+    var getScrollTop = function () {
+        return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    };
+
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'kb-app__scroll-top';
+    button.setAttribute('aria-label', 'Nach oben');
+    button.setAttribute('title', 'Nach oben');
+    button.innerHTML = '<span class="kb-app__scroll-top-icon" uk-icon="icon: chevron-up; ratio: 0.9" aria-hidden="true"></span>'
+        + '<span class="kb-app__scroll-top-label">Nach oben</span>';
+    document.body.appendChild(button);
+
+    var isLongArticle = function () {
+        var articleHeight = article.scrollHeight;
+        var contentHeight = content.scrollHeight;
+        var minHeight = window.innerHeight * 1.35;
+        return Math.max(articleHeight, contentHeight) > minHeight;
+    };
+
+    var applyVisibility = function () {
+        var show = isLongArticle() && getScrollTop() > window.innerHeight;
+        button.classList.toggle('is-visible', show);
+    };
+
+    button.addEventListener('click', function () {
+        var startY = getScrollTop();
+        window.scrollTo({
+            top: 0,
+            behavior: reduceMotion ? 'auto' : 'smooth'
+        });
+
+        if (!reduceMotion && startY > 0) {
+            window.setTimeout(function () {
+                if (getScrollTop() === startY) {
+                    window.scrollTo(0, 0);
+                }
+            }, 220);
+        }
+    });
+
+    var onViewportChange = function () {
+        applyVisibility();
+    };
+
+    window.addEventListener('scroll', onViewportChange, { passive: true });
+    window.addEventListener('resize', onViewportChange);
+    window.addEventListener('orientationchange', onViewportChange);
+    window.setInterval(onViewportChange, 280);
+    applyVisibility();
+}
 
 function initArticleRecommendations(app) {
     var currentSlug = (app.getAttribute('data-kb-current-article') || '').trim();

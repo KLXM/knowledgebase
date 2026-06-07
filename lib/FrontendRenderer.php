@@ -8,6 +8,7 @@ use rex;
 use rex_addon;
 use rex_escape;
 use rex_fragment;
+use rex_media;
 use rex_path;
 use rex_server;
 use rex_url;
@@ -229,6 +230,7 @@ final class FrontendRenderer
         $title = rex_escape((string) $knowledgebase->getValue('title'));
         $description = trim((string) $knowledgebase->getValue('description'));
         $descriptionHtml = '' !== $description ? '<p class="kb-app__description">' . rex_escape($description) . '</p>' : '';
+        $headerLogoHtml = self::renderHeaderLogo($knowledgebase);
         $usesCleanProfile = KnowledgebaseUrl::hasProfile($knowledgebase->getId());
         $searchFormAction = $usesCleanProfile ? KnowledgebaseUrl::getSearchBaseUrl($knowledgebase->getId()) : $basePath;
         $searchFieldName = $usesCleanProfile ? 'q' : $searchParam;
@@ -260,10 +262,13 @@ final class FrontendRenderer
             . '<section id="' . rex_escape($instanceId) . '" class="kb-app uk-card uk-card-default' . $layoutClass . '" data-kb-base-path="' . rex_escape($basePath) . '" data-kb-id="' . $knowledgebase->getId() . '" data-kb-article-param="' . rex_escape($articleParam) . '" data-kb-search-param="' . rex_escape($searchParam) . '" data-kb-tag-param="' . rex_escape($tagFilterEnabled ? $tagParam : '') . '" data-kb-tags-param="' . rex_escape($tagFilterEnabled ? $tagsParam : '') . '" data-kb-tag-selected="' . rex_escape($selectedTag) . '" data-kb-tags-selected="' . rex_escape(self::serializeTagList($selectedTags)) . '" data-kb-api="' . rex_escape(self::buildUrl(['rex-api-call' => 'knowledgebase_search'])) . '" data-kb-sticky-header-offset="' . $stickyHeaderOffset . '" data-kb-sticky-nav-offset="' . $stickyNavOffset . '" data-kb-sticky-offset="' . $stickyOffsetTotal . '" data-kb-sticky-media="960" data-kb-suggest-unavailable="' . rex_escape($suggestUnavailable) . '" data-kb-suggest-empty="' . rex_escape($suggestEmpty) . '" data-kb-search-history-enabled="' . ($searchHistoryEnabled ? '1' : '0') . '" data-kb-recent-enabled="' . ($recentEnabled ? '1' : '0') . '" data-kb-recent-limit="' . max(1, $recentLimit) . '" data-kb-related-enabled="' . ($relatedEnabled ? '1' : '0') . '" data-kb-related-limit="' . max(1, $relatedLimit) . '" data-kb-current-article="' . rex_escape($currentArticleSlug) . '" data-kb-articles="' . rex_escape($articleIndexJson) . '" data-kb-history-label="' . rex_escape($historyLabel) . '" data-kb-history-heading="' . rex_escape($historyHeading) . '" data-kb-history-empty="' . rex_escape($historyEmpty) . '" data-kb-related-empty="' . rex_escape($relatedEmpty) . '" data-kb-related-heading="' . rex_escape($relatedHeading) . '">'
             . '<div class="kb-app__hero uk-section uk-section-xsmall uk-section-muted">'
             . '<div class="kb-app__hero-inner uk-grid-small" uk-grid>'
-            . '<div>'
+            . '<div class="kb-app__hero-brand">'
+            . $headerLogoHtml
+            . '<div class="kb-app__hero-copy">'
             . '<div class="kb-app__eyebrow">' . rex_escape($eyebrow) . '</div>'
             . '<div class="kb-app__title uk-margin-remove">' . $title . '</div>'
             . $descriptionHtml
+            . '</div>'
             . '</div>'
             . '<div class="kb-app__search-panel">'
             . '<form class="kb-app__search-form" method="get" action="' . rex_escape($searchFormAction) . '">'
@@ -1266,6 +1271,27 @@ final class FrontendRenderer
         $path = parse_url($requestUri, PHP_URL_PATH);
 
         return is_string($path) && '' !== $path ? $path : '/';
+    }
+
+    private static function renderHeaderLogo(\rex_data_knowledgebase $knowledgebase): string
+    {
+        $logoFile = trim((string) $knowledgebase->getValue('header_logo'));
+        if ($logoFile !== '' && \rex_file::extension($logoFile) !== 'svg') {
+            $logoFile = '';
+        }
+
+        if ($logoFile === '') {
+            return '';
+        }
+
+        $media = rex_media::get($logoFile);
+        if (!$media instanceof rex_media) {
+            return '';
+        }
+
+        return '<div class="kb-app__hero-logo">'
+            . '<img class="kb-app__hero-logo-image" src="' . rex_escape(rex_url::media($logoFile)) . '" alt="' . rex_escape((string) $knowledgebase->getValue('title')) . '">'
+            . '</div>';
     }
 
     private static function renderAssets(): string
