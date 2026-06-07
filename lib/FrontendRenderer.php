@@ -7,12 +7,14 @@ namespace FriendsOfREDAXO\Knowledgebase;
 use rex;
 use rex_addon;
 use rex_backend_login;
+use rex_csrf_token;
 use rex_escape;
 use rex_fragment;
 use rex_media;
 use rex_path;
 use rex_server;
 use rex_url;
+use rex_yform_manager_table;
 use rex_yform_manager_dataset;
 
 final class FrontendRenderer
@@ -797,20 +799,52 @@ final class FrontendRenderer
         $tableName = rex::getTable('knowledgebase_article');
         $kbId = (int) $article->getValue('knowledgebase_id');
 
-        $params = [
-            'table_name' => $tableName,
-            'func' => 'edit',
-            'data_id' => (string) $article->getId(),
-            'knowledgebase_id' => (string) $kbId,
-        ];
+        // CSRF-Token im Backend-Kontext erzeugen – exakt wie overview.php
+        $csrfParams = self::buildBackendCsrfParamsForTable($tableName);
 
-        $url = rex_url::backendPage('knowledgebase/articles', $params);
+        $editUrl = rex_url::backendPage('knowledgebase/articles', [
+            'table_name'      => $tableName,
+            'knowledgebase_id' => $kbId,
+            'func'            => 'edit',
+            'data_id'         => (string) $article->getId(),
+            'rex_yform_filter' => ['knowledgebase_id' => $kbId],
+            'rex_yform_set'   => ['knowledgebase_id' => $kbId],
+        ] + $csrfParams);
+
+        // html_entity_decode wie overview.php, da rex_url backendPage die & kodiert
+        $url = html_entity_decode($editUrl, ENT_QUOTES, 'UTF-8');
 
         return '<div class="kb-app__article-tools">'
             . '<a class="kb-app__article-edit-button uk-button uk-button-default uk-button-small" href="' . rex_escape($url) . '" target="_blank" rel="noopener">'
             . rex_escape(FrontendI18n::msg('knowledgebase_edit_button', 'Bearbeiten'))
             . '</a>'
             . '</div>';
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function buildBackendCsrfParamsForTable(string $tableName): array
+    {
+        if (PHP_SAPI === 'cli') {
+            return [];
+        }
+
+        $wasBackendContext = rex::isBackend();
+        rex::setProperty('redaxo', true);
+
+        try {
+            $table = rex_yform_manager_table::get($tableName);
+            if (!$table instanceof rex_yform_manager_table) {
+                return [];
+            }
+
+            return rex_csrf_token::factory($table->getCSRFKey())->getUrlParams();
+        } catch (\Throwable) {
+            return [];
+        } finally {
+            rex::setProperty('redaxo', $wasBackendContext);
+        }
     }
 
     /**
