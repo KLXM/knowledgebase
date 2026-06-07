@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var knowledgebaseId = app.getAttribute('data-kb-id') || '';
         var articleParam = app.getAttribute('data-kb-article-param') || '';
         var basePath = app.getAttribute('data-kb-base-path') || window.location.pathname;
+        var suggestUnavailableText = app.getAttribute('data-kb-suggest-unavailable') || 'Autosuggest momentan nicht verfügbar.';
+        var suggestEmptyText = app.getAttribute('data-kb-suggest-empty') || 'Keine Vorschläge gefunden.';
         var requestToken = 0;
         var fetchSuggestions = function () {
             var query = searchInput.value.trim();
@@ -40,14 +42,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
 
-                    resultsBox.innerHTML = '<div class="kb-app__search-hit kb-app__search-hit--empty">Autosuggest momentan nicht verfügbar.</div>';
+                    resultsBox.innerHTML = '<div class="kb-app__search-hit kb-app__search-hit--empty">' + escapeHtml(suggestUnavailableText) + '</div>';
                     resultsBox.hidden = false;
                 });
         };
 
         var renderResults = function (results) {
             if (!Array.isArray(results) || results.length === 0) {
-                resultsBox.innerHTML = '<div class="kb-app__search-hit kb-app__search-hit--empty">Keine Vorschläge gefunden.</div>';
+                resultsBox.innerHTML = '<div class="kb-app__search-hit kb-app__search-hit--empty">' + escapeHtml(suggestEmptyText) + '</div>';
                 resultsBox.hidden = false;
                 return;
             }

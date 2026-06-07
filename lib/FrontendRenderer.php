@@ -121,6 +121,10 @@ final class FrontendRenderer
         $usesCleanProfile = KnowledgebaseUrl::hasProfile($knowledgebase->getId());
         $searchFormAction = $usesCleanProfile ? KnowledgebaseUrl::getSearchBaseUrl($knowledgebase->getId()) : $basePath;
         $searchFieldName = $usesCleanProfile ? 'q' : $searchParam;
+        $eyebrow = FrontendI18n::msg('knowledgebase_eyebrow', 'Knowledge Base');
+        $glossaryBadgeLabel = FrontendI18n::msg('knowledgebase_nav_glossary_badge', 'A-Z');
+        $suggestUnavailable = FrontendI18n::msg('knowledgebase_suggest_unavailable', 'Autosuggest momentan nicht verfuegbar.');
+        $suggestEmpty = FrontendI18n::msg('knowledgebase_suggest_empty', 'Keine Vorschlaege gefunden.');
         $searchStateInputs = $usesCleanProfile
             ? ''
             : '<input type="hidden" name="' . rex_escape($glossaryParam) . '" value="0">'
@@ -128,11 +132,11 @@ final class FrontendRenderer
 
         $offcanvasId = $instanceId . '-nav';
 
-        return '<section id="' . rex_escape($instanceId) . '" class="kb-app uk-card uk-card-default" data-kb-base-path="' . rex_escape($basePath) . '" data-kb-id="' . $knowledgebase->getId() . '" data-kb-article-param="' . rex_escape($articleParam) . '" data-kb-search-param="' . rex_escape($searchParam) . '" data-kb-api="' . rex_escape(self::buildUrl(['rex-api-call' => 'knowledgebase_search'])) . '" data-kb-sticky-header-offset="' . $stickyHeaderOffset . '" data-kb-sticky-nav-offset="' . $stickyNavOffset . '" data-kb-sticky-offset="' . $stickyOffsetTotal . '" data-kb-sticky-media="960">'
+        return '<section id="' . rex_escape($instanceId) . '" class="kb-app uk-card uk-card-default" data-kb-base-path="' . rex_escape($basePath) . '" data-kb-id="' . $knowledgebase->getId() . '" data-kb-article-param="' . rex_escape($articleParam) . '" data-kb-search-param="' . rex_escape($searchParam) . '" data-kb-api="' . rex_escape(self::buildUrl(['rex-api-call' => 'knowledgebase_search'])) . '" data-kb-sticky-header-offset="' . $stickyHeaderOffset . '" data-kb-sticky-nav-offset="' . $stickyNavOffset . '" data-kb-sticky-offset="' . $stickyOffsetTotal . '" data-kb-sticky-media="960" data-kb-suggest-unavailable="' . rex_escape($suggestUnavailable) . '" data-kb-suggest-empty="' . rex_escape($suggestEmpty) . '">'
             . '<div class="kb-app__hero uk-section uk-section-xsmall uk-section-muted">'
             . '<div class="kb-app__hero-inner uk-grid-small" uk-grid>'
             . '<div>'
-            . '<div class="kb-app__eyebrow">Knowledge Base</div>'
+            . '<div class="kb-app__eyebrow">' . rex_escape($eyebrow) . '</div>'
             . '<div class="kb-app__title uk-margin-remove">' . $title . '</div>'
             . $descriptionHtml
             . '</div>'
@@ -174,6 +178,7 @@ final class FrontendRenderer
         $expandLabel = FrontendI18n::msg('knowledgebase_nav_expand_all', 'Alle aufklappen');
         $collapseLabel = FrontendI18n::msg('knowledgebase_nav_collapse_all', 'Alle einklappen');
         $glossaryLabel = FrontendI18n::msg('knowledgebase_nav_glossary', 'Glossar');
+        $glossaryBadgeLabel = FrontendI18n::msg('knowledgebase_nav_glossary_badge', 'A-Z');
         $tocLabel = FrontendI18n::msg('knowledgebase_nav_all_levels', 'Inhaltsverzeichnis (alle Ebenen)');
         $items = '<ul class="kb-app__nav-list">';
 
@@ -221,7 +226,7 @@ final class FrontendRenderer
         if ($glossaryEnabled) {
             $items .= '<li class="kb-app__nav-main-item kb-app__nav-main-item--glossary" data-kb-nav-main>';
             $items .= '<a class="kb-app__nav-link kb-app__nav-link--glossary' . ($glossaryActive ? ' is-current is-trail' : '') . '" data-kb-nav-main-link href="' . rex_escape(self::buildUrl([$glossaryParam => 1])) . '">';
-            $items .= '<span class="kb-app__nav-badge">A-Z</span>';
+            $items .= '<span class="kb-app__nav-badge">' . rex_escape($glossaryBadgeLabel) . '</span>';
             $items .= '<span>' . rex_escape($glossaryLabel) . '</span>';
             $items .= '</a>';
             $items .= '</li>';

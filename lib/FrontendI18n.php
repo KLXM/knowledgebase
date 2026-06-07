@@ -13,9 +13,12 @@ final class FrontendI18n
      * @var list<string>
      */
     private const MANAGED_KEYS = [
+        'knowledgebase_eyebrow',
         'knowledgebase_frontend_missing_base',
         'knowledgebase_search_label',
         'knowledgebase_search_submit',
+        'knowledgebase_suggest_unavailable',
+        'knowledgebase_suggest_empty',
         'knowledgebase_nav_toggle',
         'knowledgebase_nav_title',
         'knowledgebase_nav_filter_label',
@@ -23,6 +26,7 @@ final class FrontendI18n
         'knowledgebase_nav_expand_all',
         'knowledgebase_nav_collapse_all',
         'knowledgebase_nav_glossary',
+        'knowledgebase_nav_glossary_badge',
         'knowledgebase_nav_all_levels',
         'knowledgebase_frontend_missing_article',
         'knowledgebase_article_label',
@@ -38,9 +42,12 @@ final class FrontendI18n
      */
     private const DEFAULT_TRANSLATIONS = [
         'de' => [
-            'knowledgebase_frontend_missing_base' => 'Die Wissensbasis ist nicht verfuegbar.',
+            'knowledgebase_eyebrow' => 'Wissensbasis',
+            'knowledgebase_frontend_missing_base' => 'Die Wissensbasis ist nicht verfügbar.',
             'knowledgebase_search_label' => 'Suche',
             'knowledgebase_search_submit' => 'Volltextsuche',
+            'knowledgebase_suggest_unavailable' => 'Autosuggest momentan nicht verfügbar.',
+            'knowledgebase_suggest_empty' => 'Keine Vorschläge gefunden.',
             'knowledgebase_nav_toggle' => 'Kapitel',
             'knowledgebase_nav_title' => 'Inhaltsverzeichnis',
             'knowledgebase_nav_filter_label' => 'Kapitel filtern',
@@ -48,6 +55,7 @@ final class FrontendI18n
             'knowledgebase_nav_expand_all' => 'Alle aufklappen',
             'knowledgebase_nav_collapse_all' => 'Alle einklappen',
             'knowledgebase_nav_glossary' => 'Glossar',
+            'knowledgebase_nav_glossary_badge' => 'A-Z',
             'knowledgebase_nav_all_levels' => 'Inhaltsverzeichnis (alle Ebenen)',
             'knowledgebase_frontend_missing_article' => 'Es ist noch kein Beitrag vorhanden.',
             'knowledgebase_article_label' => 'Kapitel',
@@ -58,9 +66,12 @@ final class FrontendI18n
             'knowledgebase_toc_empty' => 'Für diesen Beitrag sind noch keine Kapitelmarken vorhanden.',
         ],
         'en' => [
+            'knowledgebase_eyebrow' => 'Knowledge Base',
             'knowledgebase_frontend_missing_base' => 'The knowledge base is not available.',
             'knowledgebase_search_label' => 'Search',
             'knowledgebase_search_submit' => 'Full text search',
+            'knowledgebase_suggest_unavailable' => 'Autosuggest is currently unavailable.',
+            'knowledgebase_suggest_empty' => 'No suggestions found.',
             'knowledgebase_nav_toggle' => 'Chapters',
             'knowledgebase_nav_title' => 'Table of contents',
             'knowledgebase_nav_filter_label' => 'Filter chapters',
@@ -68,6 +79,7 @@ final class FrontendI18n
             'knowledgebase_nav_expand_all' => 'Expand all',
             'knowledgebase_nav_collapse_all' => 'Collapse all',
             'knowledgebase_nav_glossary' => 'Glossary',
+            'knowledgebase_nav_glossary_badge' => 'A-Z',
             'knowledgebase_nav_all_levels' => 'Table of contents (all levels)',
             'knowledgebase_frontend_missing_article' => 'No article is available yet.',
             'knowledgebase_article_label' => 'Chapter',

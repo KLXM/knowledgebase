@@ -22,7 +22,7 @@ if ('save' === rex_request('func', 'string') && $csrfToken->isValid()) {
     FrontendI18n::saveConfigTranslations($translations);
     echo rex_view::success('Frontend-Texte wurden gespeichert.');
 } elseif ('save' === rex_request('func', 'string')) {
-    echo rex_view::error('CSRF-Token ist ungueltig. Bitte Seite neu laden.');
+    echo rex_view::error('CSRF-Token ist ungültig. Bitte Seite neu laden.');
 }
 
 $currentConfig = FrontendI18n::getConfigTranslations();
@@ -34,9 +34,12 @@ if (count($languages) === 0) {
 }
 
 $labels = [
-    'knowledgebase_frontend_missing_base' => 'Fehlertext: Wissensbasis nicht verfuegbar',
+    'knowledgebase_eyebrow' => 'Titelzeile: Wissensbasis (z. B. Knowledge Base)',
+    'knowledgebase_frontend_missing_base' => 'Fehlertext: Wissensbasis nicht verfügbar',
     'knowledgebase_search_label' => 'Label: Suche',
     'knowledgebase_search_submit' => 'Button: Volltextsuche',
+    'knowledgebase_suggest_unavailable' => 'Hinweis: Autosuggest nicht verfügbar',
+    'knowledgebase_suggest_empty' => 'Hinweis: Keine Vorschläge (Autosuggest)',
     'knowledgebase_nav_toggle' => 'Button: Kapitel (mobil)',
     'knowledgebase_nav_title' => 'Titel: Inhaltsverzeichnis',
     'knowledgebase_nav_filter_label' => 'Label: Kapitel filtern',
@@ -44,6 +47,8 @@ $labels = [
     'knowledgebase_nav_expand_all' => 'Button: Alle aufklappen',
     'knowledgebase_nav_collapse_all' => 'Button: Alle einklappen',
     'knowledgebase_nav_glossary' => 'Button/Link: Glossar',
+    'knowledgebase_nav_glossary_badge' => 'Badge: Glossar (z. B. A-Z)',
+    'knowledgebase_nav_all_levels' => 'Button/Link: Inhaltsverzeichnis (alle Ebenen)',
     'knowledgebase_frontend_missing_article' => 'Hinweis: Kein Beitrag vorhanden',
     'knowledgebase_article_label' => 'Label: Kapitel',
     'knowledgebase_glossary_title' => 'Titel: Glossar',
