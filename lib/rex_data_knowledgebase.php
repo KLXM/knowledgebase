@@ -44,6 +44,16 @@ class rex_data_knowledgebase extends rex_yform_manager_dataset
         return (int) $value === 1;
     }
 
+    /**
+     * @return 'classic'|'compact'|'focus'
+     */
+    public function getLayoutMode(): string
+    {
+        $mode = trim((string) $this->getValue('layout_mode'));
+
+        return in_array($mode, ['classic', 'compact', 'focus'], true) ? $mode : 'classic';
+    }
+
     public function getArticleSortField(): string
     {
         $field = trim((string) $this->getValue('article_sort_field'));

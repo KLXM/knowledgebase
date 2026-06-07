@@ -35,6 +35,7 @@ final class FrontendRenderer
         $tocParam = 'kb_' . $knowledgebaseId . '_toc';
         $tagParam = 'kb_' . $knowledgebaseId . '_tag';
         $tagFilterEnabled = $knowledgebase->isTagFilterEnabled();
+        $layoutMode = $knowledgebase->getLayoutMode();
 
         $requestedSlug = trim((string) \rex_request($articleParam, 'string', $startSlug));
         $searchQuery = trim((string) \rex_request($searchParam, 'string', ''));
@@ -132,6 +133,7 @@ final class FrontendRenderer
             $tagFilterEnabled,
             $availableTags,
             $selectedTag,
+            $layoutMode,
             max(0, $stickyHeaderOffset),
             max(0, $stickyNavOffset),
         );
@@ -145,13 +147,17 @@ final class FrontendRenderer
      * @param list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string}> $searchResults
     * @param list<rex_yform_manager_dataset> $filteredArticles
      */
-    private static function renderInner(string $instanceId, \rex_data_knowledgebase $knowledgebase, array $articles, ?\rex_data_knowledgebase_article $currentArticle, string $articleParam, string $searchParam, string $glossaryParam, string $tocParam, string $tagParam, string $searchQuery, array $searchResults, array $filteredArticles, bool $glossaryRequested, bool $tocRequested, bool $showTagPage, bool $tagFilterEnabled, array $availableTags, string $selectedTag, int $stickyHeaderOffset, int $stickyNavOffset): string
+    private static function renderInner(string $instanceId, \rex_data_knowledgebase $knowledgebase, array $articles, ?\rex_data_knowledgebase_article $currentArticle, string $articleParam, string $searchParam, string $glossaryParam, string $tocParam, string $tagParam, string $searchQuery, array $searchResults, array $filteredArticles, bool $glossaryRequested, bool $tocRequested, bool $showTagPage, bool $tagFilterEnabled, array $availableTags, string $selectedTag, string $layoutMode, int $stickyHeaderOffset, int $stickyNavOffset): string
     {
         $basePath = self::getCurrentPath();
         $stickyOffsetTotal = $stickyHeaderOffset + $stickyNavOffset;
         $glossaryEnabled = $knowledgebase->isGlossaryEnabled();
         $showGlossaryPage = $glossaryEnabled && $glossaryRequested && $searchQuery === '';
         $showTocPage = $tocRequested && !$showGlossaryPage && $searchQuery === '';
+        $selectedTagLabel = $selectedTag;
+        if ($selectedTag !== '' && isset($availableTags[$selectedTag]['label'])) {
+            $selectedTagLabel = (string) $availableTags[$selectedTag]['label'];
+        }
         $nav = self::renderNavigation($articles, $currentArticle, $articleParam, $glossaryParam, $tocParam, $tagParam, $glossaryEnabled, $showGlossaryPage, $showTocPage, $tagFilterEnabled, $availableTags, $selectedTag);
         $main = '' !== $searchQuery
             ? self::renderSearchResults($searchResults, $articleParam, $searchQuery)
@@ -160,7 +166,7 @@ final class FrontendRenderer
                 : ($showTocPage
                     ? self::renderTocPage($knowledgebase, $articles, $currentArticle, $articleParam, $tocParam)
                     : ($showTagPage
-                        ? self::renderTagResults($filteredArticles, $articleParam, $tagParam, $selectedTag)
+                        ? self::renderTagResults($filteredArticles, $articleParam, $tagParam, $selectedTag, $selectedTagLabel)
                         : self::renderArticle($knowledgebase, $currentArticle))));
         $jsonLd = self::renderJsonLd($knowledgebase, $currentArticle, $searchQuery, $showGlossaryPage, $showTocPage);
 
@@ -184,8 +190,10 @@ final class FrontendRenderer
 
         $offcanvasId = $instanceId . '-nav';
 
+        $layoutClass = ' kb-app--layout-' . rex_escape($layoutMode);
+
         return $jsonLd
-            . '<section id="' . rex_escape($instanceId) . '" class="kb-app uk-card uk-card-default" data-kb-base-path="' . rex_escape($basePath) . '" data-kb-id="' . $knowledgebase->getId() . '" data-kb-article-param="' . rex_escape($articleParam) . '" data-kb-search-param="' . rex_escape($searchParam) . '" data-kb-tag-param="' . rex_escape($tagFilterEnabled ? $tagParam : '') . '" data-kb-tag-selected="' . rex_escape($selectedTag) . '" data-kb-api="' . rex_escape(self::buildUrl(['rex-api-call' => 'knowledgebase_search'])) . '" data-kb-sticky-header-offset="' . $stickyHeaderOffset . '" data-kb-sticky-nav-offset="' . $stickyNavOffset . '" data-kb-sticky-offset="' . $stickyOffsetTotal . '" data-kb-sticky-media="960" data-kb-suggest-unavailable="' . rex_escape($suggestUnavailable) . '" data-kb-suggest-empty="' . rex_escape($suggestEmpty) . '">'
+            . '<section id="' . rex_escape($instanceId) . '" class="kb-app uk-card uk-card-default' . $layoutClass . '" data-kb-base-path="' . rex_escape($basePath) . '" data-kb-id="' . $knowledgebase->getId() . '" data-kb-article-param="' . rex_escape($articleParam) . '" data-kb-search-param="' . rex_escape($searchParam) . '" data-kb-tag-param="' . rex_escape($tagFilterEnabled ? $tagParam : '') . '" data-kb-tag-selected="' . rex_escape($selectedTag) . '" data-kb-api="' . rex_escape(self::buildUrl(['rex-api-call' => 'knowledgebase_search'])) . '" data-kb-sticky-header-offset="' . $stickyHeaderOffset . '" data-kb-sticky-nav-offset="' . $stickyNavOffset . '" data-kb-sticky-offset="' . $stickyOffsetTotal . '" data-kb-sticky-media="960" data-kb-suggest-unavailable="' . rex_escape($suggestUnavailable) . '" data-kb-suggest-empty="' . rex_escape($suggestEmpty) . '">'
             . '<div class="kb-app__hero uk-section uk-section-xsmall uk-section-muted">'
             . '<div class="kb-app__hero-inner uk-grid-small" uk-grid>'
             . '<div>'
@@ -427,12 +435,17 @@ final class FrontendRenderer
             foreach ($availableTags as $tagValue => $tagData) {
                 $tagLabel = (string) ($tagData['label'] ?? '');
                 $tagColor = (string) ($tagData['color'] ?? '');
+                $tagCount = (int) ($tagData['count'] ?? 0);
                 $tagParams = [$tagParam => $tagValue];
 
                 $items .= '<li class="kb-app__nav-chapter-item" data-kb-nav-chapter>';
                 $items .= '<a class="kb-app__nav-link kb-app__nav-link--chapter' . ($selectedTag === $tagValue ? ' is-current' : '') . '" data-kb-nav-chapter-link href="' . rex_escape(self::buildUrl($tagParams)) . '">';
                 $items .= self::renderTagDot($tagColor);
-                $items .= '<span>' . rex_escape($tagLabel) . '</span>';
+                $items .= '<span>' . rex_escape($tagLabel);
+                if ($tagCount > 0) {
+                    $items .= ' <small class="kb-app__tag-count">(' . $tagCount . ')</small>';
+                }
+                $items .= '</span>';
                 $items .= '</a>';
                 $items .= '</li>';
             }
@@ -683,10 +696,10 @@ final class FrontendRenderer
     /**
      * @param list<rex_yform_manager_dataset> $articles
      */
-    private static function renderTagResults(array $articles, string $articleParam, string $tagParam, string $selectedTag): string
+    private static function renderTagResults(array $articles, string $articleParam, string $tagParam, string $selectedTag, string $selectedTagLabel): string
     {
         $heading = '<div class="kb-app__article-meta">' . rex_escape(FrontendI18n::msg('knowledgebase_nav_tags', 'Tags')) . '</div>'
-            . '<h3 class="kb-app__article-title">' . rex_escape($selectedTag) . '</h3>';
+            . '<h3 class="kb-app__article-title">' . rex_escape($selectedTagLabel) . '</h3>';
 
         if (count($articles) === 0) {
             return '<section class="kb-app__search-page">' . $heading . '<div class="uk-alert-warning" uk-alert>' . rex_escape('Keine Beiträge mit diesem Tag gefunden.') . '</div></section>';
@@ -900,7 +913,7 @@ final class FrontendRenderer
 
     /**
      * @param list<rex_yform_manager_dataset> $articles
-     * @return array<string, array{label:string,color:string}>
+    * @return array<string, array{label:string,color:string,count:int}>
      */
     private static function extractAvailableTags(array $articles): array
     {
@@ -916,12 +929,19 @@ final class FrontendRenderer
                 $label = trim((string) ($tagEntry['label'] ?? ''));
                 $color = trim((string) ($tagEntry['color'] ?? ''));
                 if ($normalized === '' || $label === '' || isset($tags[$normalized])) {
+                    if ($normalized !== '' && $label !== '' && isset($tags[$normalized])) {
+                        $tags[$normalized]['count']++;
+                        if ($tags[$normalized]['color'] === '' && $color !== '') {
+                            $tags[$normalized]['color'] = $color;
+                        }
+                    }
                     continue;
                 }
 
                 $tags[$normalized] = [
                     'label' => $label,
                     'color' => $color,
+                    'count' => 1,
                 ];
             }
         }

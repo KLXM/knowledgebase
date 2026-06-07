@@ -87,6 +87,21 @@
           "list_hidden": 0,
           "table_name": "rex_knowledgebase"
         },
+        {
+          "type_id": "value",
+          "type_name": "choice",
+          "name": "layout_mode",
+          "label": "Layout-Modus",
+          "db_type": "varchar(16)",
+          "default": "classic",
+          "choices": "classic=Klassisch (Sidebar),compact=Kompakt (kleiner Header),focus=Fokus (ohne Sidebar)",
+          "expanded": "0",
+          "multiple": "0",
+          "not_required": "1",
+          "search": 0,
+          "list_hidden": 0,
+          "table_name": "rex_knowledgebase"
+        },
       {
         "type_id": "value",
         "type_name": "choice",
