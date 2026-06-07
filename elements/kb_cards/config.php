@@ -30,7 +30,7 @@ foreach (($baseConfig['fields'] ?? []) as $fieldKey => $definition) {
     }
 }
 
-$baseConfig['label'] = 'KB Cards';
+$baseConfig['label'] = 'KB Pagebuilder Karten-Grid';
 $baseConfig['description'] = 'Karten-Grid mit flexiblen Layouts und Media-Optionen';
 $baseConfig['category'] = 'Knowledgebase';
 $baseConfig['icon'] = 'fa fa-th-large';
