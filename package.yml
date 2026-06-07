@@ -9,6 +9,7 @@ requires:
     yform: ^5.0
     packages:
         fields: '>=1.4.0'
+        tinymce: '*'
         yform_content_builder: '*'
 
 page:
