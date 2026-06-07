@@ -5,6 +5,51 @@ declare(strict_types=1);
 use FriendsOfREDAXO\Knowledgebase\KnowledgebaseUrl;
 use FriendsOfREDAXO\Knowledgebase\UrlProfileManager;
 
+/**
+ * @return array{complete: bool, segments: array<string, bool>}
+ */
+function knowledgebaseGetSectionRouteStatus(int $knowledgebaseId): array
+{
+    $segments = [
+        'glossar' => false,
+        'inhaltsverzeichnis' => false,
+        'suche' => false,
+    ];
+
+    $namespace = KnowledgebaseUrl::buildNamespace($knowledgebaseId);
+    $profileRows = rex_sql::factory()->getArray(
+        'SELECT id FROM ' . rex::getTable('url_generator_profile') . ' WHERE namespace = :ns LIMIT 1',
+        ['ns' => $namespace],
+    );
+
+    if (!isset($profileRows[0]['id'])) {
+        return ['complete' => false, 'segments' => $segments];
+    }
+
+    $profileId = (int) $profileRows[0]['id'];
+    if ($profileId <= 0) {
+        return ['complete' => false, 'segments' => $segments];
+    }
+
+    $rows = rex_sql::factory()->getArray(
+        'SELECT url FROM ' . rex::getTable('url_generator_url') . ' WHERE profile_id = :pid AND is_user_path = 1',
+        ['pid' => $profileId],
+    );
+
+    foreach ($rows as $row) {
+        $path = (string) parse_url((string) ($row['url'] ?? ''), PHP_URL_PATH);
+        $segment = trim((string) basename(rtrim($path, '/')));
+        if (isset($segments[$segment])) {
+            $segments[$segment] = true;
+        }
+    }
+
+    return [
+        'complete' => $segments['glossar'] && $segments['inhaltsverzeichnis'] && $segments['suche'],
+        'segments' => $segments,
+    ];
+}
+
 // URL-Addon muss verfügbar sein
 if (!rex_addon::get('url')->isAvailable()) {
     echo rex_view::warning('Das URL-Addon ist nicht installiert oder aktiviert. Diese Seite ist nur nutzbar, wenn das URL-Addon aktiv ist.');
@@ -101,6 +146,7 @@ if ([] === $moduleArticles) {
     $content .= '<th>REDAXO-Artikel (Modul-Seite)</th>';
     $content .= '<th>Sprache</th>';
     $content .= '<th>URL-Profil aktiv</th>';
+    $content .= '<th>Sonderrouten</th>';
     $content .= '<th>Aktuelle URL</th>';
     $content .= '</tr></thead>';
     $content .= '<tbody>';
@@ -110,6 +156,7 @@ if ([] === $moduleArticles) {
         $kbTitle = (string) $kb['title'];
         $existingMapping = $mappingsByKbId[$kbId] ?? null;
         $hasProfile = KnowledgebaseUrl::hasProfile($kbId);
+        $sectionRouteStatus = $hasProfile ? knowledgebaseGetSectionRouteStatus($kbId) : ['complete' => false, 'segments' => ['glossar' => false, 'inhaltsverzeichnis' => false, 'suche' => false]];
 
         // Artikel-Select-Optionen
         $articleOptions = '<option value="0">— bitte wählen —</option>';
@@ -142,6 +189,28 @@ if ([] === $moduleArticles) {
         $content .= $hasProfile
             ? '<span class="label label-success">Aktiv</span>'
             : '<span class="label label-default">Kein Profil</span>';
+        $content .= '</td>';
+        $content .= '<td>';
+        if (!$hasProfile) {
+            $content .= '<span class="label label-default">Kein Profil</span>';
+        } elseif ($sectionRouteStatus['complete']) {
+            $content .= '<span class="label label-success">OK</span> ';
+            $content .= '<small>Glossar, Inhaltsverzeichnis, Suche</small>';
+        } else {
+            $missing = [];
+            if (!$sectionRouteStatus['segments']['glossar']) {
+                $missing[] = 'Glossar';
+            }
+            if (!$sectionRouteStatus['segments']['inhaltsverzeichnis']) {
+                $missing[] = 'Inhaltsverzeichnis';
+            }
+            if (!$sectionRouteStatus['segments']['suche']) {
+                $missing[] = 'Suche';
+            }
+
+            $content .= '<span class="label label-warning">Fehlt</span> ';
+            $content .= '<small>' . rex_escape(implode(', ', $missing)) . '</small>';
+        }
         $content .= '</td>';
         $content .= '<td><code>' . rex_escape($previewUrl) . '</code></td>';
         $content .= '</tr>';

@@ -20,6 +20,8 @@ final class FrontendRenderer
 
     public static function render(int $knowledgebaseId, string $startSlug = '', int $stickyHeaderOffset = 0, int $stickyNavOffset = 0): string
     {
+        UrlProfileManager::ensureSectionRoutes($knowledgebaseId);
+
         $knowledgebase = \rex_data_knowledgebase::findOnlineById($knowledgebaseId);
         if (!$knowledgebase instanceof \rex_data_knowledgebase) {
             return '<div class="uk-alert-danger" uk-alert>' . rex_escape(FrontendI18n::msg('knowledgebase_frontend_missing_base', 'Die Wissensbasis ist nicht verfuegbar.')) . '</div>';
@@ -418,7 +420,7 @@ final class FrontendRenderer
         }
 
         $intro = trim((string) $article->getValue('intro'));
-        $introHtml = '' !== $intro ? '<p class="kb-app__intro">' . rex_escape($intro) . '</p>' : '';
+        $introHtml = '' !== $intro ? '<div class="kb-app__intro">' . $intro . '</div>' : '';
         $breadcrumbs = self::renderBreadcrumbs($knowledgebase, $article);
         $articleBody = GlossaryService::enhanceArticleHtml($knowledgebase, $article->renderContent());
 

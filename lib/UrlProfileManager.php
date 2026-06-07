@@ -17,6 +17,11 @@ use rex_sql_exception;
 final class UrlProfileManager
 {
     /**
+     * @var array<int, bool>
+     */
+    private static array $ensuredSectionRoutes = [];
+
+    /**
      * Erstellt oder aktualisiert ein URL-Profil für eine Wissensbasis.
      *
      * @param int $knowledgebaseId  ID der Wissensbasis
@@ -271,6 +276,47 @@ final class UrlProfileManager
             && class_exists(\Url\Profile::class);
     }
 
+    public static function ensureSectionRoutes(int $knowledgebaseId): void
+    {
+        if ($knowledgebaseId <= 0 || !self::isAvailable()) {
+            return;
+        }
+
+        if (isset(self::$ensuredSectionRoutes[$knowledgebaseId])) {
+            return;
+        }
+
+        self::$ensuredSectionRoutes[$knowledgebaseId] = true;
+
+        $namespace = KnowledgebaseUrl::buildNamespace($knowledgebaseId);
+
+        try {
+            $profileRow = rex_sql::factory()->getArray(
+                'SELECT id FROM ' . rex::getTable('url_generator_profile') . ' WHERE namespace = :ns LIMIT 1',
+                ['ns' => $namespace],
+            );
+            if (!isset($profileRow[0]['id'])) {
+                return;
+            }
+
+            $profileId = (int) $profileRow[0]['id'];
+            if ($profileId <= 0 || self::hasAllSectionRoutes($profileId)) {
+                return;
+            }
+
+            self::resetUrlProfileCache();
+            $profile = \Url\Profile::get($profileId);
+            if (!$profile instanceof \Url\Profile) {
+                return;
+            }
+
+            self::appendSectionRoutes($profile, $namespace);
+            self::resetUrlProfileCache();
+        } catch (\Throwable $e) {
+            // Selbstheilung darf den Frontend-Request nicht abbrechen.
+        }
+    }
+
     private static function rebuildUrls(string $namespace): void
     {
         if (!self::isAvailable()) {
@@ -402,6 +448,32 @@ final class UrlProfileManager
             $insert->addGlobalCreateFields();
             $insert->insert();
         }
+    }
+
+    private static function hasAllSectionRoutes(int $profileId): bool
+    {
+        $rows = rex_sql::factory()->getArray(
+            'SELECT url FROM ' . rex::getTable('url_generator_url')
+            . ' WHERE profile_id = :pid AND is_user_path = 1',
+            ['pid' => $profileId],
+        );
+
+        if ([] === $rows) {
+            return false;
+        }
+
+        $foundSegments = [];
+        foreach ($rows as $row) {
+            $path = (string) parse_url((string) ($row['url'] ?? ''), PHP_URL_PATH);
+            $segment = trim((string) basename(rtrim($path, '/')));
+            if ($segment !== '') {
+                $foundSegments[$segment] = true;
+            }
+        }
+
+        return isset($foundSegments['glossar'])
+            && isset($foundSegments['inhaltsverzeichnis'])
+            && isset($foundSegments['suche']);
     }
 
     private static function extractKnowledgebaseIdFromNamespace(string $namespace): int

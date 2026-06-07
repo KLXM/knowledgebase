@@ -104,6 +104,15 @@ if (rex::isBackend() && null !== rex::getUser() && rex_be_controller::getCurrent
 
 // URL-Addon-Integration: URL-Rebuild bei Artikel-Änderungen und OUTPUT_FILTER für Link-Rewriting
 if (rex_addon::get('url')->isAvailable() && class_exists(\Url\Profile::class)) {
+    rex_extension::register('URL_TABLE_UPDATED', static function (): void {
+        foreach (\FriendsOfREDAXO\Knowledgebase\UrlProfileManager::getMappings() as $mapping) {
+            $kbId = (int) ($mapping['kb_id'] ?? 0);
+            if ($kbId > 0) {
+                \FriendsOfREDAXO\Knowledgebase\UrlProfileManager::ensureSectionRoutes($kbId);
+            }
+        }
+    });
+
     // URLs neu aufbauen wenn ein Knowledgebase-Artikel gespeichert wird
     rex_extension::register('YFORM_DATA_ADDED', static function (rex_extension_point $ep): void {
         $table = $ep->getParam('table');
