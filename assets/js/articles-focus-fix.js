@@ -3,7 +3,7 @@
 
     function isKnowledgebaseArticleAddPage() {
         var params = new URLSearchParams(window.location.search);
-        return params.get('page') === 'knowledgebase/articles' && params.get('func') === 'add';
+        return params.get('page') === 'knowledgebase/articles' && (params.get('func') === 'add' || params.get('func') === 'edit');
     }
 
     if (!isKnowledgebaseArticleAddPage()) {
