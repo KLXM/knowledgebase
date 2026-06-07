@@ -41,6 +41,10 @@ page:
             title: 'Einstellungen'
             subPath: pages/settings.php
             perm: admin
+        url_profiles:
+            title: 'URL-Profile & Sitemap'
+            subPath: pages/url_profiles.php
+            perm: admin
         frontend_texts:
             title: 'Frontend-Texte'
             subPath: pages/frontend_texts.php

@@ -101,3 +101,92 @@ if (rex::isBackend() && null !== rex::getUser() && rex_be_controller::getCurrent
     $addon = rex_addon::get('knowledgebase');
     rex_view::addJsFile(rex_url::addonAssets('knowledgebase', 'js/articles-focus-fix.js') . '?v=' . rawurlencode((string) $addon->getVersion()));
 }
+
+// URL-Addon-Integration: URL-Rebuild bei Artikel-Änderungen und OUTPUT_FILTER für Link-Rewriting
+if (rex_addon::get('url')->isAvailable() && class_exists(\Url\Profile::class)) {
+    // URLs neu aufbauen wenn ein Knowledgebase-Artikel gespeichert wird
+    rex_extension::register('YFORM_DATA_ADDED', static function (rex_extension_point $ep): void {
+        $table = $ep->getParam('table');
+        if (!$table instanceof rex_yform_manager_table) {
+            return;
+        }
+        if ($table->getTableName() !== rex::getTable('knowledgebase_article')) {
+            return;
+        }
+        $dataset = $ep->getSubject();
+        if (!$dataset instanceof rex_yform_manager_dataset) {
+            return;
+        }
+        $kbId = (int) $dataset->getValue('knowledgebase_id');
+        if ($kbId > 0 && \FriendsOfREDAXO\Knowledgebase\KnowledgebaseUrl::hasProfile($kbId)) {
+            $namespace = \FriendsOfREDAXO\Knowledgebase\KnowledgebaseUrl::buildNamespace($kbId);
+            foreach (\Url\Profile::getAll() as $profile) {
+                if ($profile->getNamespace() === $namespace) {
+                    $profile->buildUrlsByDatasetId((int) $dataset->getId());
+                    break;
+                }
+            }
+        }
+    });
+
+    rex_extension::register('YFORM_DATA_UPDATED', static function (rex_extension_point $ep): void {
+        $table = $ep->getParam('table');
+        if (!$table instanceof rex_yform_manager_table) {
+            return;
+        }
+        if ($table->getTableName() !== rex::getTable('knowledgebase_article')) {
+            return;
+        }
+        $dataset = $ep->getSubject();
+        if (!$dataset instanceof rex_yform_manager_dataset) {
+            return;
+        }
+        $kbId = (int) $dataset->getValue('knowledgebase_id');
+        if ($kbId > 0 && \FriendsOfREDAXO\Knowledgebase\KnowledgebaseUrl::hasProfile($kbId)) {
+            $namespace = \FriendsOfREDAXO\Knowledgebase\KnowledgebaseUrl::buildNamespace($kbId);
+            foreach (\Url\Profile::getAll() as $profile) {
+                if ($profile->getNamespace() === $namespace) {
+                    $profile->deleteUrlsByDatasetId((int) $dataset->getId());
+                    $profile->buildUrlsByDatasetId((int) $dataset->getId());
+                    break;
+                }
+            }
+        }
+    });
+
+    // OUTPUT_FILTER: Interne Fallback-URLs (?kb_X_article=slug) durch saubere URLs ersetzen
+    if (rex::isFrontend()) {
+        rex_extension::register('OUTPUT_FILTER', static function (rex_extension_point $ep): void {
+            $subject = $ep->getSubject();
+            if (!is_string($subject)) {
+                return;
+            }
+
+            // Pattern: ?kb_{id}_article={slug} oder &kb_{id}_article={slug}
+            $subject = preg_replace_callback(
+                '/(["\'])([^"\']*)\?kb_(\d+)_article=([^&"\'#]+)([^"\']*)\1/',
+                static function (array $m): string {
+                    $quote = $m[1];
+                    $prefix = $m[2];
+                    $kbId = (int) $m[3];
+                    $slug = rawurldecode($m[4]);
+                    $suffix = $m[5];
+
+                    if (!\FriendsOfREDAXO\Knowledgebase\KnowledgebaseUrl::hasProfile($kbId)) {
+                        return $m[0];
+                    }
+
+                    $cleanUrl = \FriendsOfREDAXO\Knowledgebase\KnowledgebaseUrl::getArticleUrl($kbId, $slug);
+                    if ('' === $cleanUrl) {
+                        return $m[0];
+                    }
+
+                    return $quote . $prefix . $cleanUrl . $suffix . $quote;
+                },
+                $subject,
+            );
+
+            $ep->setSubject($subject ?? $ep->getSubject());
+        });
+    }
+}

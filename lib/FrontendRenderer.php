@@ -37,6 +37,27 @@ final class FrontendRenderer
         $glossaryRequested = (int) \rex_request($glossaryParam, 'int', 0) === 1;
         $tocRequested = (int) \rex_request($tocParam, 'int', 0) === 1;
 
+        // Clean-Path-Routing via URL-Addon (z. B. /glossar/, /inhaltsverzeichnis/, /suche/)
+        if (KnowledgebaseUrl::hasProfile($knowledgebaseId)) {
+            $routeState = KnowledgebaseUrl::resolveCurrentRequest($knowledgebaseId);
+            if ($routeState['slug'] !== '') {
+                $requestedSlug = $routeState['slug'];
+            }
+            if ($routeState['search_query'] !== '') {
+                $searchQuery = $routeState['search_query'];
+            }
+            if ($routeState['glossary']) {
+                $glossaryRequested = true;
+                $tocRequested = false;
+                $searchQuery = '';
+            }
+            if ($routeState['toc']) {
+                $tocRequested = true;
+                $glossaryRequested = false;
+                $searchQuery = '';
+            }
+        }
+
         $articles = $knowledgebase->getOnlineArticles()->toArray();
 
         $currentArticle = null;
@@ -97,6 +118,13 @@ final class FrontendRenderer
         $title = rex_escape((string) $knowledgebase->getValue('title'));
         $description = trim((string) $knowledgebase->getValue('description'));
         $descriptionHtml = '' !== $description ? '<p class="kb-app__description">' . rex_escape($description) . '</p>' : '';
+        $usesCleanProfile = KnowledgebaseUrl::hasProfile($knowledgebase->getId());
+        $searchFormAction = $usesCleanProfile ? KnowledgebaseUrl::getSearchBaseUrl($knowledgebase->getId()) : $basePath;
+        $searchFieldName = $usesCleanProfile ? 'q' : $searchParam;
+        $searchStateInputs = $usesCleanProfile
+            ? ''
+            : '<input type="hidden" name="' . rex_escape($glossaryParam) . '" value="0">'
+                . '<input type="hidden" name="' . rex_escape($tocParam) . '" value="0">';
 
         $offcanvasId = $instanceId . '-nav';
 
@@ -109,13 +137,12 @@ final class FrontendRenderer
             . $descriptionHtml
             . '</div>'
             . '<div class="kb-app__search-panel">'
-            . '<form class="kb-app__search-form" method="get" action="' . rex_escape($basePath) . '">'
-            . '<input type="hidden" name="' . rex_escape($glossaryParam) . '" value="0">'
-            . '<input type="hidden" name="' . rex_escape($tocParam) . '" value="0">'
+            . '<form class="kb-app__search-form" method="get" action="' . rex_escape($searchFormAction) . '">'
+            . $searchStateInputs
             . '<label class="kb-app__search-label" for="' . rex_escape($instanceId . '-search') . '">' . rex_escape(FrontendI18n::msg('knowledgebase_search_label', 'Suche')) . '</label>'
             . '<div class="kb-app__search-control">'
             . '<span uk-icon="search"></span>'
-            . '<input id="' . rex_escape($instanceId . '-search') . '" class="kb-app__search-input" type="search" name="' . rex_escape($searchParam) . '" value="' . rex_escape($searchQuery) . '" placeholder="' . rex_escape($knowledgebase->getPlaceholder()) . '" autocomplete="off">'
+            . '<input id="' . rex_escape($instanceId . '-search') . '" class="kb-app__search-input" type="search" name="' . rex_escape($searchFieldName) . '" value="' . rex_escape($searchQuery) . '" placeholder="' . rex_escape($knowledgebase->getPlaceholder()) . '" autocomplete="off">'
             . '<button class="kb-app__mobile-nav-trigger" type="button" uk-toggle="target: #' . rex_escape($offcanvasId) . '" aria-label="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_toggle', 'Kapitel')) . '"><span uk-icon="list"></span><span class="kb-app__mobile-nav-trigger-label">' . rex_escape(FrontendI18n::msg('knowledgebase_nav_toggle', 'Kapitel')) . '</span></button>'
             . '<button class="uk-button uk-button-primary uk-button-small" type="submit">' . rex_escape(FrontendI18n::msg('knowledgebase_search_submit', 'Volltextsuche')) . '</button>'
             . '</div>'
@@ -548,6 +575,43 @@ final class FrontendRenderer
      */
     public static function buildUrl(array $params): string
     {
+        $kbId = 0;
+        foreach (array_keys($params) as $key) {
+            if (preg_match('/^kb_(\d+)_(article|q|glossary|toc)$/', (string) $key, $m) === 1) {
+                $kbId = (int) $m[1];
+                break;
+            }
+        }
+
+        if ($kbId > 0 && KnowledgebaseUrl::hasProfile($kbId)) {
+            $articleKey = 'kb_' . $kbId . '_article';
+            $searchKey = 'kb_' . $kbId . '_q';
+            $glossaryKey = 'kb_' . $kbId . '_glossary';
+            $tocKey = 'kb_' . $kbId . '_toc';
+
+            $searchValue = $params[$searchKey] ?? null;
+            if (is_scalar($searchValue) && '' !== trim((string) $searchValue)) {
+                return KnowledgebaseUrl::getSearchUrl($kbId, (string) $searchValue);
+            }
+
+            $glossaryValue = $params[$glossaryKey] ?? null;
+            if ((is_scalar($glossaryValue) && (int) $glossaryValue === 1) || $glossaryValue === true) {
+                return KnowledgebaseUrl::getGlossaryUrl($kbId);
+            }
+
+            $tocValue = $params[$tocKey] ?? null;
+            if ((is_scalar($tocValue) && (int) $tocValue === 1) || $tocValue === true) {
+                return KnowledgebaseUrl::getTocUrl($kbId);
+            }
+
+            $articleValue = $params[$articleKey] ?? null;
+            if (is_scalar($articleValue) && '' !== (string) $articleValue) {
+                return KnowledgebaseUrl::getArticleUrl($kbId, (string) $articleValue);
+            }
+
+            return KnowledgebaseUrl::getBaseUrl($kbId);
+        }
+
         $query = http_build_query(array_filter($params, static fn (mixed $value): bool => is_scalar($value) && '' !== (string) $value));
 
         return self::getCurrentPath() . ('' !== $query ? '?' . $query : '');

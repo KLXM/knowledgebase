@@ -18,6 +18,32 @@
         return href;
     }
 
+    /**
+     * Löst die URL über den API-Endpoint auf (URL-Addon-Profil bevorzugt).
+     * Fällt zurück auf den internen Fallback-Link wenn kein Profil aktiv ist.
+     */
+    function resolveHref(knowledgebaseId, slug, anchor) {
+        var params = 'rex-api-call=knowledgebase_url'
+            + '&kb_id=' + encodeURIComponent(String(knowledgebaseId))
+            + '&slug=' + encodeURIComponent(String(slug));
+        if (String(anchor || '').trim() !== '') {
+            params += '&anchor=' + encodeURIComponent(String(anchor).trim());
+        }
+
+        return fetch('./index.php?' + params, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        }).then(function (response) {
+            return response.ok ? response.json() : null;
+        }).then(function (data) {
+            if (data && data.url && String(data.url).trim() !== '') {
+                return String(data.url);
+            }
+            return buildHref(knowledgebaseId, slug, anchor);
+        }).catch(function () {
+            return buildHref(knowledgebaseId, slug, anchor);
+        });
+    }
+
     function insertLink(editor, href, label) {
         if (editor.selection.isCollapsed()) {
             editor.insertContent('<a href="' + escHtml(href) + '">' + escHtml(label) + '</a>');
@@ -74,10 +100,11 @@
                                     type: 'menuitem',
                                     text: 'Artikel verlinken',
                                     onAction: function () {
-                                        var href = buildHref(kb.id, article.slug, '');
                                         var selectedText = editor.selection.getContent({ format: 'text' });
                                         var linkText = String(selectedText || '').trim() !== '' ? selectedText : articleTitle;
-                                        insertLink(editor, href, linkText);
+                                        resolveHref(kb.id, article.slug, '').then(function (href) {
+                                            insertLink(editor, href, linkText);
+                                        });
                                     }
                                 });
 
@@ -92,10 +119,12 @@
                                                     type: 'menuitem',
                                                     text: anchorTitle,
                                                     onAction: function () {
-                                                        var href = buildHref(kb.id, article.slug, anchor.anchor || '');
+                                                        var anchorVal = anchor.anchor || '';
                                                         var selectedText = editor.selection.getContent({ format: 'text' });
                                                         var linkText = String(selectedText || '').trim() !== '' ? selectedText : anchorTitle;
-                                                        insertLink(editor, href, linkText);
+                                                        resolveHref(kb.id, article.slug, anchorVal).then(function (href) {
+                                                            insertLink(editor, href, linkText);
+                                                        });
                                                     }
                                                 };
                                             });
