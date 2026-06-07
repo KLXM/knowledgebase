@@ -116,6 +116,7 @@ final class FrontendRenderer
                 : ($showTocPage
                     ? self::renderTocPage($knowledgebase, $articles, $currentArticle, $articleParam, $tocParam)
                     : self::renderArticle($knowledgebase, $currentArticle)));
+        $jsonLd = self::renderJsonLd($knowledgebase, $currentArticle, $searchQuery, $showGlossaryPage, $showTocPage);
 
         $title = rex_escape((string) $knowledgebase->getValue('title'));
         $description = trim((string) $knowledgebase->getValue('description'));
@@ -134,7 +135,8 @@ final class FrontendRenderer
 
         $offcanvasId = $instanceId . '-nav';
 
-        return '<section id="' . rex_escape($instanceId) . '" class="kb-app uk-card uk-card-default" data-kb-base-path="' . rex_escape($basePath) . '" data-kb-id="' . $knowledgebase->getId() . '" data-kb-article-param="' . rex_escape($articleParam) . '" data-kb-search-param="' . rex_escape($searchParam) . '" data-kb-api="' . rex_escape(self::buildUrl(['rex-api-call' => 'knowledgebase_search'])) . '" data-kb-sticky-header-offset="' . $stickyHeaderOffset . '" data-kb-sticky-nav-offset="' . $stickyNavOffset . '" data-kb-sticky-offset="' . $stickyOffsetTotal . '" data-kb-sticky-media="960" data-kb-suggest-unavailable="' . rex_escape($suggestUnavailable) . '" data-kb-suggest-empty="' . rex_escape($suggestEmpty) . '">'
+        return $jsonLd
+            . '<section id="' . rex_escape($instanceId) . '" class="kb-app uk-card uk-card-default" data-kb-base-path="' . rex_escape($basePath) . '" data-kb-id="' . $knowledgebase->getId() . '" data-kb-article-param="' . rex_escape($articleParam) . '" data-kb-search-param="' . rex_escape($searchParam) . '" data-kb-api="' . rex_escape(self::buildUrl(['rex-api-call' => 'knowledgebase_search'])) . '" data-kb-sticky-header-offset="' . $stickyHeaderOffset . '" data-kb-sticky-nav-offset="' . $stickyNavOffset . '" data-kb-sticky-offset="' . $stickyOffsetTotal . '" data-kb-sticky-media="960" data-kb-suggest-unavailable="' . rex_escape($suggestUnavailable) . '" data-kb-suggest-empty="' . rex_escape($suggestEmpty) . '">'
             . '<div class="kb-app__hero uk-section uk-section-xsmall uk-section-muted">'
             . '<div class="kb-app__hero-inner uk-grid-small" uk-grid>'
             . '<div>'
@@ -168,6 +170,115 @@ final class FrontendRenderer
             . '<div class="kb-app__content">' . $main . '</div>'
             . '</div>'
             . '</section>';
+    }
+
+    private static function renderJsonLd(\rex_data_knowledgebase $knowledgebase, ?\rex_data_knowledgebase_article $currentArticle, string $searchQuery, bool $showGlossaryPage, bool $showTocPage): string
+    {
+        $baseUrl = self::toAbsoluteUrl(KnowledgebaseUrl::getBaseUrl($knowledgebase->getId()));
+        $currentUrl = self::toAbsoluteUrl(self::getCurrentPath());
+        $kbName = trim((string) $knowledgebase->getValue('title'));
+        if ($kbName === '') {
+            $kbName = 'Knowledge Base';
+        }
+
+        $graph = [
+            [
+                '@type' => 'DefinedTermSet',
+                '@id' => $baseUrl . '#knowledgebase',
+                'name' => $kbName,
+                'url' => $baseUrl,
+            ],
+            [
+                '@type' => 'WebPage',
+                '@id' => $currentUrl . '#webpage',
+                'url' => $currentUrl,
+                'name' => $kbName,
+                'isPartOf' => ['@id' => $baseUrl . '#knowledgebase'],
+            ],
+        ];
+
+        if ($showGlossaryPage) {
+            $graph[] = [
+                '@type' => 'CollectionPage',
+                '@id' => $currentUrl . '#collection',
+                'name' => FrontendI18n::msg('knowledgebase_glossary_title', 'Glossar'),
+                'url' => $currentUrl,
+                'isPartOf' => ['@id' => $baseUrl . '#knowledgebase'],
+            ];
+        } elseif ($showTocPage) {
+            $graph[] = [
+                '@type' => 'CollectionPage',
+                '@id' => $currentUrl . '#collection',
+                'name' => FrontendI18n::msg('knowledgebase_nav_all_levels', 'Inhaltsverzeichnis (alle Ebenen)'),
+                'url' => $currentUrl,
+                'isPartOf' => ['@id' => $baseUrl . '#knowledgebase'],
+            ];
+        } elseif ($searchQuery !== '') {
+            $graph[] = [
+                '@type' => 'SearchResultsPage',
+                '@id' => $currentUrl . '#search',
+                'name' => FrontendI18n::msg('knowledgebase_search_results', 'Suchergebnisse'),
+                'url' => $currentUrl,
+                'isPartOf' => ['@id' => $baseUrl . '#knowledgebase'],
+                'query' => $searchQuery,
+            ];
+        } elseif ($currentArticle instanceof \rex_data_knowledgebase_article) {
+            $articleTitle = trim((string) $currentArticle->getValue('title'));
+            $articleIntro = trim(strip_tags((string) $currentArticle->getValue('intro')));
+            $articleSlug = (string) $currentArticle->getValue('slug');
+            $articleUrl = self::toAbsoluteUrl(KnowledgebaseUrl::getArticleUrl($knowledgebase->getId(), $articleSlug));
+
+            $graph[] = [
+                '@type' => 'Article',
+                '@id' => $articleUrl . '#article',
+                'headline' => $articleTitle,
+                'url' => $articleUrl,
+                'description' => $articleIntro,
+                'isPartOf' => ['@id' => $baseUrl . '#knowledgebase'],
+            ];
+        }
+
+        $payload = [
+            '@context' => 'https://schema.org',
+            '@graph' => $graph,
+        ];
+
+        $json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if (!is_string($json) || $json === '') {
+            return '';
+        }
+
+        return '<script type="application/ld+json">' . $json . '</script>';
+    }
+
+    private static function toAbsoluteUrl(string $url): string
+    {
+        $trimmed = trim($url);
+        if ($trimmed === '') {
+            $trimmed = '/';
+        }
+
+        if (preg_match('#^https?://#i', $trimmed) === 1) {
+            return $trimmed;
+        }
+
+        $scheme = strtolower(rex_server('REQUEST_SCHEME', 'string', 'https'));
+        if ($scheme !== 'http' && $scheme !== 'https') {
+            $scheme = 'https';
+        }
+
+        if (str_starts_with($trimmed, '//')) {
+            return $scheme . ':' . $trimmed;
+        }
+
+        $host = trim(rex_server('HTTP_HOST', 'string', ''));
+        if ($host === '') {
+            return $trimmed;
+        }
+
+        $path = str_starts_with($trimmed, '/') ? $trimmed : '/' . $trimmed;
+
+        return $scheme . '://' . $host . $path;
     }
 
     /**
