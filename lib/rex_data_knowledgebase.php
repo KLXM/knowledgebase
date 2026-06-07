@@ -9,6 +9,11 @@ class rex_data_knowledgebase extends rex_yform_manager_dataset
 {
     protected static string $table = 'rex_knowledgebase';
 
+    /**
+     * @var array<string, array<string, bool>>
+     */
+    private static array $columnCache = [];
+
     public static function findOnlineById(int $id): ?self
     {
         $dataset = self::get($id);
@@ -34,7 +39,7 @@ class rex_data_knowledgebase extends rex_yform_manager_dataset
 
     public function isTagFilterEnabled(): bool
     {
-        $value = $this->getValue('tag_filter_enabled');
+        $value = $this->getOptionalValue('tag_filter_enabled');
 
         // Abwaertskompatibel: Wenn das Feld noch nicht im Schema vorhanden ist, bleibt der Filter aktiv.
         if ($value === null || $value === '') {
@@ -44,19 +49,83 @@ class rex_data_knowledgebase extends rex_yform_manager_dataset
         return (int) $value === 1;
     }
 
+    public function isTagMultiSelectEnabled(): bool
+    {
+        $value = $this->getOptionalValue('tag_filter_multi_enabled');
+
+        if ($value === null || $value === '') {
+            return false;
+        }
+
+        return (int) $value === 1;
+    }
+
+    public function isRecentlyViewedEnabled(): bool
+    {
+        $value = $this->getOptionalValue('recently_viewed_enabled');
+
+        if ($value === null || $value === '') {
+            return true;
+        }
+
+        return (int) $value === 1;
+    }
+
+    public function getRecentlyViewedLimit(): int
+    {
+        $value = (int) $this->getOptionalValue('recently_viewed_limit');
+        if ($value < 1) {
+            return 4;
+        }
+
+        return min(5, $value);
+    }
+
+    public function isRelatedArticlesEnabled(): bool
+    {
+        $value = $this->getOptionalValue('related_articles_enabled');
+
+        if ($value === null || $value === '') {
+            return true;
+        }
+
+        return (int) $value === 1;
+    }
+
+    public function isSearchHistoryEnabled(): bool
+    {
+        $value = $this->getOptionalValue('search_history_enabled');
+
+        if ($value === null || $value === '') {
+            return true;
+        }
+
+        return (int) $value === 1;
+    }
+
+    public function getRelatedArticlesLimit(): int
+    {
+        $value = (int) $this->getOptionalValue('related_articles_limit');
+        if ($value < 1) {
+            return 3;
+        }
+
+        return min(5, $value);
+    }
+
     /**
      * @return 'classic'|'compact'|'focus'
      */
     public function getLayoutMode(): string
     {
-        $mode = trim((string) $this->getValue('layout_mode'));
+        $mode = trim((string) $this->getOptionalValue('layout_mode'));
 
         return in_array($mode, ['classic', 'compact', 'focus'], true) ? $mode : 'classic';
     }
 
     public function getArticleSortField(): string
     {
-        $field = trim((string) $this->getValue('article_sort_field'));
+        $field = trim((string) $this->getOptionalValue('article_sort_field'));
         $allowedFields = ['priority', 'title', 'updatedate'];
 
         return in_array($field, $allowedFields, true) ? $field : 'priority';
@@ -67,7 +136,7 @@ class rex_data_knowledgebase extends rex_yform_manager_dataset
      */
     public function getArticleSortOrder(): string
     {
-        $order = strtoupper(trim((string) $this->getValue('article_sort_order')));
+        $order = strtoupper(trim((string) $this->getOptionalValue('article_sort_order')));
 
         return in_array($order, ['ASC', 'DESC'], true) ? $order : 'ASC';
     }
@@ -110,5 +179,32 @@ class rex_data_knowledgebase extends rex_yform_manager_dataset
         $articles = $this->getOnlineArticles();
 
         return $articles->first();
+    }
+
+    private function getOptionalValue(string $field): mixed
+    {
+        if (!$this->hasColumn($field)) {
+            return null;
+        }
+
+        return $this->getValue($field);
+    }
+
+    private function hasColumn(string $field): bool
+    {
+        $table = rex::getTable('knowledgebase');
+        if (!isset(self::$columnCache[$table])) {
+            $columns = [];
+            foreach (rex_sql::showColumns($table) as $column) {
+                $name = (string) ($column['name'] ?? '');
+                if ($name !== '') {
+                    $columns[$name] = true;
+                }
+            }
+
+            self::$columnCache[$table] = $columns;
+        }
+
+        return isset(self::$columnCache[$table][$field]);
     }
 }

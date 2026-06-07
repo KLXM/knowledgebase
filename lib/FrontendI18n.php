@@ -37,6 +37,13 @@ final class FrontendI18n
         'knowledgebase_search_results',
         'knowledgebase_search_empty',
         'knowledgebase_toc_empty',
+        'knowledgebase_history_label',
+        'knowledgebase_history_heading',
+        'knowledgebase_history_empty',
+        'knowledgebase_recent_heading',
+        'knowledgebase_recent_empty',
+        'knowledgebase_related_heading',
+        'knowledgebase_related_empty',
     ];
 
     /**
@@ -68,6 +75,13 @@ final class FrontendI18n
             'knowledgebase_search_results' => 'Suchergebnisse',
             'knowledgebase_search_empty' => 'Keine Treffer gefunden.',
             'knowledgebase_toc_empty' => 'Für diesen Beitrag sind noch keine Kapitelmarken vorhanden.',
+            'knowledgebase_history_label' => 'Zuletzt gelesen',
+            'knowledgebase_history_heading' => 'Zuletzt gelesen',
+            'knowledgebase_history_empty' => 'Noch keine gelesenen Beiträge vorhanden.',
+            'knowledgebase_recent_heading' => 'Zuletzt angesehen',
+            'knowledgebase_recent_empty' => 'Noch keine zuletzt angesehenen Beiträge vorhanden.',
+            'knowledgebase_related_heading' => 'Ähnliche Artikel',
+            'knowledgebase_related_empty' => 'Keine passenden Beiträge gefunden.',
         ],
         'en' => [
             'knowledgebase_eyebrow' => 'Knowledge Base',
@@ -94,6 +108,13 @@ final class FrontendI18n
             'knowledgebase_search_results' => 'Search results',
             'knowledgebase_search_empty' => 'No results found.',
             'knowledgebase_toc_empty' => 'No chapter markers available for this article yet.',
+            'knowledgebase_history_label' => 'Recently read',
+            'knowledgebase_history_heading' => 'Recently read',
+            'knowledgebase_history_empty' => 'No read articles yet.',
+            'knowledgebase_recent_heading' => 'Recently viewed',
+            'knowledgebase_recent_empty' => 'No recently viewed articles yet.',
+            'knowledgebase_related_heading' => 'Similar articles',
+            'knowledgebase_related_empty' => 'No related articles found.',
         ],
     ];
 

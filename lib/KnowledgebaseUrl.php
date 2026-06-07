@@ -109,33 +109,44 @@ final class KnowledgebaseUrl
         return self::buildProfileSectionUrl($knowledgebaseId, self::SEARCH_SEGMENT);
     }
 
-    public static function getTagsUrl(int $knowledgebaseId, string $tag = ''): string
+    public static function getTagsUrl(int $knowledgebaseId, string $tag = '', string $tags = ''): string
     {
         $normalizedTag = trim($tag);
+        $normalizedTags = trim($tags);
 
         if (!self::urlAddonAvailable() || !self::hasProfile($knowledgebaseId)) {
             $base = self::buildFallbackUrl($knowledgebaseId, '');
-            if ($normalizedTag === '') {
+            if ($normalizedTag === '' && $normalizedTags === '') {
                 return $base;
             }
 
             $separator = str_contains($base, '?') ? '&' : '?';
 
-            return $base . $separator . http_build_query([
-                'kb_' . $knowledgebaseId . '_tag' => $normalizedTag,
-            ]);
+            $params = [];
+            if ($normalizedTag !== '') {
+                $params['kb_' . $knowledgebaseId . '_tag'] = $normalizedTag;
+            }
+            if ($normalizedTags !== '') {
+                $params['kb_' . $knowledgebaseId . '_tags'] = $normalizedTags;
+            }
+
+            return $base . $separator . http_build_query($params);
         }
 
         $base = self::buildProfileSectionUrl($knowledgebaseId, self::TAGS_SEGMENT);
-        if ($normalizedTag === '') {
+        if ($normalizedTag === '' && $normalizedTags === '') {
             return $base;
+        }
+
+        if ($normalizedTags !== '') {
+            return $base . '?tags=' . rawurlencode($normalizedTags);
         }
 
         return $base . '?tag=' . rawurlencode($normalizedTag);
     }
 
     /**
-     * @return array{slug:string,search_query:string,glossary:bool,toc:bool,tag:string}
+     * @return array{slug:string,search_query:string,glossary:bool,toc:bool,tag:string,tags:string,tags_mode:bool}
      */
     public static function resolveCurrentRequest(int $knowledgebaseId): array
     {
@@ -145,6 +156,8 @@ final class KnowledgebaseUrl
             'glossary' => false,
             'toc' => false,
             'tag' => '',
+            'tags' => '',
+            'tags_mode' => false,
         ];
 
         if (!self::urlAddonAvailable()) {
@@ -181,7 +194,9 @@ final class KnowledgebaseUrl
 
         $tagsPath = self::normalizePath((string) parse_url(self::buildProfileSectionUrl($knowledgebaseId, self::TAGS_SEGMENT), PHP_URL_PATH));
         if ($requestPath === $tagsPath) {
+            $state['tags_mode'] = true;
             $state['tag'] = \rex_data_knowledgebase_article::normalizeTag((string) rex_request('tag', 'string', ''));
+            $state['tags'] = trim((string) rex_request('tags', 'string', ''));
             return $state;
         }
 
