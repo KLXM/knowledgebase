@@ -7,7 +7,7 @@ use KLXM\YFormContentBuilder\Helper;
 $_ci = Helper::elementTranslator('kb_chapter_nav');
 
 return [
-    'label' => $_ci('label', 'KB Kapitelanker'),
+    'label' => $_ci('label', 'KB Kapitel / Überschrift'),
     'icon' => 'fa fa-bookmark',
     'description' => $_ci('description', 'Definiert eine Kapitel-Überschrift inkl. Anker für TOC und Navigation.'),
     'category' => 'Knowledgebase',
