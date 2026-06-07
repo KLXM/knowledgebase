@@ -10,19 +10,10 @@
         return;
     }
 
-    // Titel-Input direkt nach dem Laden fokussieren – unabhängig vom TinyMCE-Kampf
-    function focusTitleDirectly() {
-        var target = getTargetInput();
-        if (target) {
-            target.setAttribute('autofocus', 'autofocus');
-            target.focus({ preventScroll: true });
-            window.scrollTo(0, 0);
-        }
-    }
-
     var stopEnforcement = false;
+    var focusHandled = false;
     var startedAt = Date.now();
-    var maxRuntimeMs = 2800;
+    var maxRuntimeMs = 1600;
 
     function getTargetInput() {
         return document.querySelector('input[id^="yform-data_edit-rex_knowledgebase_article-field-"][type="text"]:not([disabled])');
@@ -55,28 +46,12 @@
 
             try {
                 target.focus({ preventScroll: true });
+                focusHandled = true;
             } catch (error) {
-                target.focus();
+                // Browser ohne preventScroll-Unterstuetzung ignorieren wir hier,
+                // damit kein erzwungenes Scroll-Springen entsteht.
             }
-            window.scrollTo(0, 0);
         }
-    }
-
-    function startEnforcementLoop() {
-        var attempts = 0;
-        var maxAttempts = 16;
-
-        function tick() {
-            if (!shouldEnforce() || attempts >= maxAttempts) {
-                return;
-            }
-
-            attempts += 1;
-            enforceInitialFocus();
-            window.setTimeout(tick, 140);
-        }
-
-        tick();
     }
 
     document.addEventListener('mousedown', function () {
@@ -88,7 +63,7 @@
     }, true);
 
     document.addEventListener('focusin', function (event) {
-        if (!shouldEnforce()) {
+        if (!shouldEnforce() || focusHandled) {
             return;
         }
 
@@ -98,7 +73,9 @@
     }, true);
 
     window.addEventListener('load', function () {
-        focusTitleDirectly();
-        window.setTimeout(startEnforcementLoop, 120);
+        var target = getTargetInput();
+        if (target) {
+            target.setAttribute('autofocus', 'autofocus');
+        }
     });
 })();
