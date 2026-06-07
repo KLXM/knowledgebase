@@ -32,6 +32,18 @@ class rex_data_knowledgebase extends rex_yform_manager_dataset
         return (int) $this->getValue('glossary_enabled') === 1;
     }
 
+    public function isTagFilterEnabled(): bool
+    {
+        $value = $this->getValue('tag_filter_enabled');
+
+        // Abwaertskompatibel: Wenn das Feld noch nicht im Schema vorhanden ist, bleibt der Filter aktiv.
+        if ($value === null || $value === '') {
+            return true;
+        }
+
+        return (int) $value === 1;
+    }
+
     public function getArticleSortField(): string
     {
         $field = trim((string) $this->getValue('article_sort_field'));

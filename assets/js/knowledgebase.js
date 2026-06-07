@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var apiUrl = app.getAttribute('data-kb-api') || '';
         var knowledgebaseId = app.getAttribute('data-kb-id') || '';
         var articleParam = app.getAttribute('data-kb-article-param') || '';
+        var tagParam = app.getAttribute('data-kb-tag-param') || '';
+        var selectedTag = app.getAttribute('data-kb-tag-selected') || '';
         var basePath = app.getAttribute('data-kb-base-path') || window.location.pathname;
         var suggestUnavailableText = app.getAttribute('data-kb-suggest-unavailable') || 'Autosuggest momentan nicht verfügbar.';
         var suggestEmptyText = app.getAttribute('data-kb-suggest-empty') || 'Keine Vorschläge gefunden.';
@@ -57,6 +59,10 @@ document.addEventListener('DOMContentLoaded', function () {
             resultsBox.innerHTML = results.map(function (item) {
                 var title = item.nav_title && item.nav_title.trim() !== '' ? item.nav_title : item.title;
                 var url = basePath + '?' + encodeURIComponent(articleParam) + '=' + encodeURIComponent(item.slug);
+
+                if (tagParam && selectedTag) {
+                    url += '&' + encodeURIComponent(tagParam) + '=' + encodeURIComponent(selectedTag);
+                }
 
                 return '<a class="kb-app__search-hit" href="' + url + '">'
                     + '<strong>' + escapeHtml(title) + '</strong>'

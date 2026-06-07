@@ -65,17 +65,28 @@
         "list_hidden": 1,
         "table_name": "rex_knowledgebase"
       },
-      {
-        "type_id": "value",
-        "type_name": "checkbox",
-        "name": "glossary_enabled",
-        "label": "Glossar aktivieren",
-        "db_type": "tinyint(1)",
-        "default": "0",
-        "search": 1,
-        "list_hidden": 0,
-        "table_name": "rex_knowledgebase"
-      },
+        {
+          "type_id": "value",
+          "type_name": "checkbox",
+          "name": "glossary_enabled",
+          "label": "Glossar aktivieren",
+          "db_type": "tinyint(1)",
+          "default": "0",
+          "search": 1,
+          "list_hidden": 0,
+          "table_name": "rex_knowledgebase"
+        },
+        {
+          "type_id": "value",
+          "type_name": "checkbox",
+          "name": "tag_filter_enabled",
+          "label": "Tag-Filter anzeigen",
+          "db_type": "tinyint(1)",
+          "default": "1",
+          "search": 1,
+          "list_hidden": 0,
+          "table_name": "rex_knowledgebase"
+        },
       {
         "type_id": "value",
         "type_name": "choice",
@@ -263,6 +274,20 @@
         "not_required": "1",
         "notice": "Optional: Zahl 1-99 oder UIKit3-Iconname (z.B. file-text, bookmark, info, question, tag, star).",
         "search": 0,
+        "list_hidden": 0,
+        "table_name": "rex_knowledgebase_article"
+      },
+      {
+        "type_id": "value",
+        "type_name": "fields_tagging",
+        "name": "tags",
+        "label": "Tags",
+        "db_type": "text",
+        "not_required": "1",
+          "source_table": "rex_knowledgebase_article",
+          "source_field": "tags",
+        "max_tags": "20",
+        "search": 1,
         "list_hidden": 0,
         "table_name": "rex_knowledgebase_article"
       },

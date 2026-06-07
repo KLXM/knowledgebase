@@ -39,6 +39,7 @@ final class SearchIndexer
             implode(' ', array_filter([
                 (string) $article->getValue('title'),
                 (string) $article->getValue('nav_title'),
+                implode(' ', $article->getTags()),
                 (string) $article->getValue('intro'),
                 SearchTextExtractor::extractFromContentBuilder((string) $article->getValue('content')),
             ], static fn (string $value): bool => '' !== trim($value))),

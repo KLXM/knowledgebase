@@ -19,6 +19,20 @@ if (is_string($tablesetContent) && '' !== $tablesetContent) {
     rex_yform_manager_table_api::importTablesets($tablesetContent);
 }
 
+// Sicherstellen, dass das Tagging-Feld eine Quelle für Vorschläge hat.
+rex_sql::factory()->setQuery(
+    'UPDATE ' . rex::getTable('yform_field') . '
+    SET source_table = :source_table, source_field = :source_field
+    WHERE table_name = :table_name AND name = :field_name AND type_name = :type_name',
+    [
+        'source_table' => rex::getTable('knowledgebase_article'),
+        'source_field' => 'tags',
+        'table_name' => rex::getTable('knowledgebase_article'),
+        'field_name' => 'tags',
+        'type_name' => 'fields_tagging',
+    ],
+);
+
 rex_sql_table::get(rex::getTable('knowledgebase'))
     ->ensureIndex(new rex_sql_index('knowledgebase_slug', ['slug'], rex_sql_index::UNIQUE))
     ->ensureIndex(new rex_sql_index('knowledgebase_status', ['status']))

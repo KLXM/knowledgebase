@@ -19,6 +19,7 @@ final class KnowledgebaseUrl
     private const GLOSSARY_SEGMENT = 'glossar';
     private const TOC_SEGMENT = 'inhaltsverzeichnis';
     private const SEARCH_SEGMENT = 'suche';
+    private const TAGS_SEGMENT = 'tags';
 
     /**
      * Gibt die URL für einen Artikel zurück.
@@ -108,8 +109,33 @@ final class KnowledgebaseUrl
         return self::buildProfileSectionUrl($knowledgebaseId, self::SEARCH_SEGMENT);
     }
 
+    public static function getTagsUrl(int $knowledgebaseId, string $tag = ''): string
+    {
+        $normalizedTag = trim($tag);
+
+        if (!self::urlAddonAvailable() || !self::hasProfile($knowledgebaseId)) {
+            $base = self::buildFallbackUrl($knowledgebaseId, '');
+            if ($normalizedTag === '') {
+                return $base;
+            }
+
+            $separator = str_contains($base, '?') ? '&' : '?';
+
+            return $base . $separator . http_build_query([
+                'kb_' . $knowledgebaseId . '_tag' => $normalizedTag,
+            ]);
+        }
+
+        $base = self::buildProfileSectionUrl($knowledgebaseId, self::TAGS_SEGMENT);
+        if ($normalizedTag === '') {
+            return $base;
+        }
+
+        return $base . '?tag=' . rawurlencode($normalizedTag);
+    }
+
     /**
-     * @return array{slug:string,search_query:string,glossary:bool,toc:bool}
+     * @return array{slug:string,search_query:string,glossary:bool,toc:bool,tag:string}
      */
     public static function resolveCurrentRequest(int $knowledgebaseId): array
     {
@@ -118,6 +144,7 @@ final class KnowledgebaseUrl
             'search_query' => '',
             'glossary' => false,
             'toc' => false,
+            'tag' => '',
         ];
 
         if (!self::urlAddonAvailable()) {
@@ -149,6 +176,12 @@ final class KnowledgebaseUrl
         $searchPath = self::normalizePath((string) parse_url(self::buildProfileSectionUrl($knowledgebaseId, self::SEARCH_SEGMENT), PHP_URL_PATH));
         if ($requestPath === $searchPath) {
             $state['search_query'] = trim((string) rex_request('q', 'string', ''));
+            return $state;
+        }
+
+        $tagsPath = self::normalizePath((string) parse_url(self::buildProfileSectionUrl($knowledgebaseId, self::TAGS_SEGMENT), PHP_URL_PATH));
+        if ($requestPath === $tagsPath) {
+            $state['tag'] = \rex_data_knowledgebase_article::normalizeTag((string) rex_request('tag', 'string', ''));
             return $state;
         }
 

@@ -412,6 +412,7 @@ final class UrlProfileManager
             ['segment' => 'glossar', 'sitemap' => 1],
             ['segment' => 'inhaltsverzeichnis', 'sitemap' => 1],
             ['segment' => 'suche', 'sitemap' => 0],
+            ['segment' => 'tags', 'sitemap' => 1],
         ];
 
         // Alte Zusatzrouten dieses Profils bereinigen und dann neu aufbauen.
@@ -473,7 +474,8 @@ final class UrlProfileManager
 
         return isset($foundSegments['glossar'])
             && isset($foundSegments['inhaltsverzeichnis'])
-            && isset($foundSegments['suche']);
+            && isset($foundSegments['suche'])
+            && isset($foundSegments['tags']);
     }
 
     private static function extractKnowledgebaseIdFromNamespace(string $namespace): int

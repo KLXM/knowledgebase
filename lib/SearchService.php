@@ -93,14 +93,13 @@ final class SearchService
             $title = trim((string) $row->getValue('title'));
             $navTitle = trim((string) $row->getValue('nav_title'));
             $intro = trim((string) $row->getValue('intro'));
-            $searchText = trim((string) $row->getValue('search_text'));
             $content = trim((string) $row->getValue('content'));
 
-            $excerptSource = '' !== $searchText
-                ? $searchText
-                : ('' !== $intro
-                    ? $intro
-                    : ('' !== $content ? $content : $title));
+            // Treffer duerfen weiterhin ueber search_text (inkl. Tags) gefunden werden,
+            // aber im Excerpt sollen keine Tag-Rohdaten erscheinen.
+            $excerptSource = '' !== $intro
+                ? $intro
+                : ('' !== $content ? $content : $title);
 
             $results[] = [
                 'id' => (int) $row->getValue('id'),
@@ -117,7 +116,8 @@ final class SearchService
 
     private static function buildExcerpt(string $text, string $query): string
     {
-        $normalized = SearchTextExtractor::normalize($text);
+        $cleanedText = self::sanitizeExcerptSource($text);
+        $normalized = SearchTextExtractor::normalize($cleanedText);
         if ('' === $normalized) {
             return '';
         }
@@ -137,6 +137,22 @@ final class SearchService
         }
 
         return $excerpt;
+    }
+
+    private static function sanitizeExcerptSource(string $text): string
+    {
+        $sanitized = $text;
+
+        // fields_tagging JSON-Objekte in lesbare Tag-Namen umwandeln.
+        $sanitized = preg_replace('/\{\s*"text"\s*:\s*"([^"]+)"\s*,\s*"color"\s*:\s*"#?[0-9a-fA-F]{3,6}"\s*\}/u', ' $1 ', $sanitized);
+        $sanitized = preg_replace('/\{\s*"text"\s*:\s*"([^"]+)"\s*"color"\s*:\s*"#?[0-9a-fA-F]{3,6}"\s*\}/u', ' $1 ', $sanitized);
+
+        // Restliche JSON-Syntaxzeichen entfernen, falls noch Fragmente enthalten sind.
+        $sanitized = preg_replace('/"color"\s*:\s*"#?[0-9a-fA-F]{3,6}"/u', ' ', $sanitized);
+        $sanitized = preg_replace('/"text"\s*:\s*"/u', '', $sanitized);
+        $sanitized = str_replace(['[', ']', '{', '}', '"'], ' ', is_string($sanitized) ? $sanitized : $text);
+
+        return is_string($sanitized) ? $sanitized : $text;
     }
 
     private static function toBooleanModeQuery(string $query): string
