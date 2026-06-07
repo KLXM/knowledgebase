@@ -274,7 +274,7 @@
         "label": "Aktualisiert am",
         "db_type": "datetime",
         "not_required": "1",
-        "only_empty": "2",
+        "only_empty": "0",
         "list_hidden": 1,
         "search": 0,
         "table_name": "rex_knowledgebase"
@@ -573,7 +573,7 @@
         "label": "Aktualisiert am",
         "db_type": "datetime",
         "not_required": "1",
-        "only_empty": "2",
+        "only_empty": "0",
         "list_hidden": 1,
         "search": 0,
         "table_name": "rex_knowledgebase_article"
@@ -721,7 +721,7 @@
         "label": "Aktualisiert am",
         "db_type": "datetime",
         "not_required": "1",
-        "only_empty": "2",
+        "only_empty": "0",
         "list_hidden": 1,
         "search": 0,
         "table_name": "rex_knowledgebase_glossary"
@@ -883,7 +883,7 @@
         "label": "Aktualisiert am",
         "db_type": "datetime",
         "not_required": "1",
-        "only_empty": "2",
+        "only_empty": "0",
         "list_hidden": 1,
         "search": 0,
         "table_name": "rex_knowledgebase_interactive_image"
