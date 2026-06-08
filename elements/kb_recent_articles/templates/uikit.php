@@ -42,10 +42,20 @@ if (is_array($context)) {
     $articleParam = (string) ($context['article_param'] ?? '');
 
     if ($knowledgebaseId > 0) {
-        $articles = \rex_data_knowledgebase_article::query()
+        $query = \rex_data_knowledgebase_article::query()
             ->where('knowledgebase_id', $knowledgebaseId)
-            ->where('online', 1)
-            ->orderBy($sortField, $sortOrder)
+            ->where('online', 1);
+
+        if ($sortField === 'updatedate') {
+            // Fallback sorting: if updatedate is empty, createdate decides the order.
+            $query
+                ->orderBy('updatedate', $sortOrder)
+                ->orderBy('createdate', $sortOrder);
+        } else {
+            $query->orderBy($sortField, $sortOrder);
+        }
+
+        $articles = $query
             ->orderBy('priority', 'ASC')
             ->orderBy('title', 'ASC')
             ->limit($limit)
@@ -60,12 +70,34 @@ $formatDate = static function (string $rawDate): string {
         return '';
     }
 
+    if (str_starts_with($rawDate, '0000-00-00')) {
+        return '';
+    }
+
     $timestamp = strtotime($rawDate);
     if ($timestamp === false) {
         return '';
     }
 
+    $year = (int) date('Y', $timestamp);
+    if ($year <= 1) {
+        return '';
+    }
+
     return date('d.m.Y', $timestamp);
+};
+
+$resolveArticleDate = static function (\rex_data_knowledgebase_article $article, string $sortField, callable $formatDate): string {
+    if ($sortField === 'createdate') {
+        return $formatDate((string) $article->getValue('createdate'));
+    }
+
+    $updated = $formatDate((string) $article->getValue('updatedate'));
+    if ($updated !== '') {
+        return $updated;
+    }
+
+    return $formatDate((string) $article->getValue('createdate'));
 };
 
 $wrapper = new rex_fragment();
@@ -108,8 +140,7 @@ $wrapperClose->setVar('section_bg_image', $sectionBgImage, false);
 
                 $url = FrontendRenderer::buildUrl([$articleParam => $slug]);
                 $title = $article->getNavLabel();
-                $dateField = $sortField === 'createdate' ? 'createdate' : 'updatedate';
-                $dateText = $formatDate((string) $article->getValue($dateField));
+                $dateText = $resolveArticleDate($article, $sortField, $formatDate);
                 ?>
                 <li>
                     <a class="uk-link-reset" href="<?= rex_escape($url) ?>">
