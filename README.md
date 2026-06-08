@@ -128,17 +128,18 @@ Interaktive Bilder werden als eigene Datensätze gepflegt und anschließend in A
 
 Die Suche arbeitet zweistufig:
 
-1. Fulltext-Suche auf search_text (MATCH AGAINST)
-2. Fallback mit LIKE auf title, nav_title, intro und search_text
+1. Gewichtete Fulltext-Suche auf title, nav_title, intro und search_text (MATCH AGAINST)
+2. Fallback mit LIKE auf title, nav_title, intro, search_text und content
 
 ### Aufbau von search_text
 
 search_text wird beim Speichern oder Aktualisieren eines Artikels automatisch erzeugt aus:
 
-- title
-- nav_title
-- intro
-- extrahierten Textinhalten aus dem Content Builder
+1. title
+2. nav_title
+3. intro
+4. extrahierten Textinhalten aus dem Content Builder
+5. Tags
 
 Damit werden auch textuelle Inhalte aus Content-Builder-Feldern berücksichtigt.
 

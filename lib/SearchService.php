@@ -44,17 +44,25 @@ final class SearchService
             return [];
         }
 
+        $likeTerm = '%' . $query . '%';
+
         $sql = rex_sql::factory();
         $sql->setQuery(
-            'SELECT id, title, nav_title, slug, intro, search_text, content '
+            'SELECT id, title, nav_title, slug, intro, search_text, content, '
+            . 'MATCH(title, nav_title, intro, search_text) AGAINST (:term IN BOOLEAN MODE) AS relevance, '
+            . '(CASE WHEN title LIKE :like_term THEN 40 ELSE 0 END '
+            . ' + CASE WHEN nav_title LIKE :like_term THEN 30 ELSE 0 END '
+            . ' + CASE WHEN intro LIKE :like_term THEN 20 ELSE 0 END '
+            . ' + CASE WHEN search_text LIKE :like_term THEN 10 ELSE 0 END) AS boost '
             . 'FROM ' . rex::getTable('knowledgebase_article') . ' '
             . 'WHERE knowledgebase_id = :knowledgebase_id AND online = 1 '
-            . 'AND MATCH(search_text) AGAINST (:term IN BOOLEAN MODE) '
-            . 'ORDER BY MATCH(search_text) AGAINST (:term IN BOOLEAN MODE) DESC, priority ASC, title ASC '
+            . 'AND MATCH(title, nav_title, intro, search_text) AGAINST (:term IN BOOLEAN MODE) '
+            . 'ORDER BY relevance DESC, boost DESC, priority ASC, title ASC '
             . 'LIMIT ' . $limit,
             [
                 'knowledgebase_id' => $knowledgebaseId,
                 'term' => $booleanQuery,
+                'like_term' => $likeTerm,
             ],
         );
 
@@ -66,17 +74,24 @@ final class SearchService
      */
     private static function searchLike(int $knowledgebaseId, string $query, int $limit): array
     {
+        $likeTerm = '%' . $query . '%';
         $sql = rex_sql::factory();
         $sql->setQuery(
-            'SELECT id, title, nav_title, slug, intro, search_text, content '
+            'SELECT id, title, nav_title, slug, intro, search_text, content, '
+            . '(CASE WHEN title LIKE :like_term THEN 40 ELSE 0 END '
+            . ' + CASE WHEN nav_title LIKE :like_term THEN 30 ELSE 0 END '
+            . ' + CASE WHEN intro LIKE :like_term THEN 20 ELSE 0 END '
+            . ' + CASE WHEN search_text LIKE :like_term THEN 10 ELSE 0 END '
+            . ' + CASE WHEN content LIKE :like_term THEN 5 ELSE 0 END) AS boost '
             . 'FROM ' . rex::getTable('knowledgebase_article') . ' '
             . 'WHERE knowledgebase_id = :knowledgebase_id AND online = 1 '
             . 'AND (title LIKE :term OR nav_title LIKE :term OR intro LIKE :term OR search_text LIKE :term OR content LIKE :term) '
-            . 'ORDER BY priority ASC, title ASC '
+            . 'ORDER BY boost DESC, priority ASC, title ASC '
             . 'LIMIT ' . $limit,
             [
                 'knowledgebase_id' => $knowledgebaseId,
-                'term' => '%' . $query . '%',
+                'term' => $likeTerm,
+                'like_term' => $likeTerm,
             ],
         );
 

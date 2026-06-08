@@ -27,6 +27,7 @@ rex_sql_table::get(rex::getTable('knowledgebase'))
     ->ensure();
 
 rex_sql_table::get(rex::getTable('knowledgebase_article'))
+    ->ensureIndex(new rex_sql_index('knowledgebase_article_fulltext', ['title', 'nav_title', 'intro', 'search_text'], rex_sql_index::FULLTEXT))
     ->ensureIndex(new rex_sql_index('knowledgebase_article_base_online', ['knowledgebase_id', 'online']))
     ->ensureIndex(new rex_sql_index('knowledgebase_article_base_priority', ['knowledgebase_id', 'priority']))
     ->ensureIndex(new rex_sql_index('knowledgebase_article_base_slug', ['knowledgebase_id', 'slug'], rex_sql_index::UNIQUE))
