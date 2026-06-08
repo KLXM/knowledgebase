@@ -197,6 +197,8 @@ final class SearchService
             return false;
         }
 
-        return $timestamp >= strtotime('-30 days');
+        $recentDays = AddonSettings::getSearchRecentDays();
+
+        return $timestamp >= strtotime('-' . $recentDays . ' days');
     }
 }

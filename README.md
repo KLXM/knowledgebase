@@ -131,6 +131,8 @@ Die Suche arbeitet zweistufig:
 1. Gewichtete Fulltext-Suche auf title, nav_title, intro und search_text (MATCH AGAINST)
 2. Fallback mit LIKE auf title, nav_title, intro, search_text und content
 
+Treffer können optional mit dem Hinweis „Kürzlich aktualisiert“ markiert werden. Der Zeitraum ist in den AddOn-Einstellungen konfigurierbar (Standard: 14 Tage).
+
 ### Aufbau von search_text
 
 search_text wird beim Speichern oder Aktualisieren eines Artikels automatisch erzeugt aus:
