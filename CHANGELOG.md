@@ -9,3 +9,4 @@
 
 ### Verbessert
 - **Sortierung im Element**: Bei Sortierfeld `updatedate` wird `createdate` als Fallback-Sortierung genutzt.
+- **Volltextsuche optional erweitert**: Neue Einstellung für mehrere Fundstellen-Kontexte pro Treffer statt nur eines einzelnen Teasers.
