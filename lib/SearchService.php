@@ -140,6 +140,13 @@ final class SearchService
             return '';
         }
 
+        if (AddonSettings::isSearchMultiContextExcerptsEnabled()) {
+            $multiContextExcerpt = self::buildMultiContextExcerpt($normalized, $query);
+            if ('' !== $multiContextExcerpt) {
+                return $multiContextExcerpt;
+            }
+        }
+
         $position = mb_stripos($normalized, $query);
         if ($position === false) {
             return mb_substr($normalized, 0, 180) . (mb_strlen($normalized) > 180 ? ' …' : '');
@@ -155,6 +162,68 @@ final class SearchService
         }
 
         return $excerpt;
+    }
+
+    private static function buildMultiContextExcerpt(string $normalizedText, string $query): string
+    {
+        $parts = preg_split('/[^\p{L}\p{N}]+/u', mb_strtolower($query));
+        if (!is_array($parts)) {
+            return '';
+        }
+
+        $terms = array_values(array_unique(array_filter(
+            array_map('trim', $parts),
+            static fn (string $term): bool => $term !== '' && mb_strlen($term) >= 2,
+        )));
+
+        if ($terms === []) {
+            $fallback = trim($query);
+            if ($fallback !== '') {
+                $terms = [$fallback];
+            }
+        }
+
+        if ($terms === []) {
+            return '';
+        }
+
+        $contexts = [];
+        $seen = [];
+
+        foreach ($terms as $term) {
+            $position = mb_stripos($normalizedText, $term);
+            if ($position === false) {
+                continue;
+            }
+
+            $start = max(0, (int) $position - 45);
+            $snippet = mb_substr($normalizedText, $start, 140);
+
+            if ($start > 0) {
+                $snippet = '… ' . $snippet;
+            }
+            if ($start + 140 < mb_strlen($normalizedText)) {
+                $snippet .= ' …';
+            }
+
+            $key = mb_strtolower($snippet);
+            if (isset($seen[$key])) {
+                continue;
+            }
+
+            $seen[$key] = true;
+            $contexts[] = $snippet;
+
+            if (count($contexts) >= 3) {
+                break;
+            }
+        }
+
+        if ($contexts === []) {
+            return '';
+        }
+
+        return implode(' | ', $contexts);
     }
 
     private static function sanitizeExcerptSource(string $text): string

@@ -13,10 +13,12 @@ if ('save' === rex_request('func', 'string') && $csrfToken->isValid()) {
     $menuTitle = trim(rex_request('menu_title', 'string', ''));
     $elementMode = rex_request('element_mode', 'string', 'merge');
     $searchRecentDays = rex_request('search_recent_days', 'int', 14);
+    $searchMultiContextExcerpts = rex_request('search_multi_context_excerpts', 'int', 0) === 1;
 
     AddonSettings::setMenuTitle($menuTitle);
     AddonSettings::setElementMode($elementMode);
     AddonSettings::setSearchRecentDays($searchRecentDays);
+    AddonSettings::setSearchMultiContextExcerpts($searchMultiContextExcerpts);
 
     echo rex_view::success('Einstellungen wurden gespeichert.');
 } elseif ('save' === rex_request('func', 'string')) {
@@ -26,6 +28,7 @@ if ('save' === rex_request('func', 'string') && $csrfToken->isValid()) {
 $currentMenuTitle = (string) rex_addon::get('knowledgebase')->getConfig('menu_title', '');
 $currentElementMode = AddonSettings::getElementMode();
 $currentSearchRecentDays = AddonSettings::getSearchRecentDays();
+$currentSearchMultiContextExcerpts = AddonSettings::isSearchMultiContextExcerptsEnabled();
 
 $content = '';
 $content .= '<form action="' . rex_url::currentBackendPage() . '" method="post">';
@@ -58,6 +61,10 @@ $content .= '<div class="form-group">';
 $content .= '<label class="control-label" for="kb-search-recent-days">Badge: Kürzlich aktualisiert (Tage)</label>';
 $content .= '<input class="form-control" type="number" min="1" max="365" step="1" id="kb-search-recent-days" name="search_recent_days" value="' . $currentSearchRecentDays . '">';
 $content .= '<p class="help-block">Artikel innerhalb dieses Zeitraums erhalten in den Suchtreffern das Badge "Kürzlich aktualisiert". Standard: 14 Tage.</p>';
+$content .= '</div>';
+$content .= '<div class="checkbox">';
+$content .= '<label><input type="checkbox" name="search_multi_context_excerpts" value="1"' . ($currentSearchMultiContextExcerpts ? ' checked' : '') . '> Volltextsuche: mehrere Fundstellen-Kontexte anzeigen</label>';
+$content .= '<p class="help-block">Optional. Zeigt pro Treffer mehrere kurze Fundstellen-Ausschnitte statt nur eines einzelnen Teasers.</p>';
 $content .= '</div>';
 $content .= '</fieldset>';
 
