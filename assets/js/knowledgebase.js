@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var basePath = app.getAttribute('data-kb-base-path') || window.location.pathname;
         var suggestUnavailableText = app.getAttribute('data-kb-suggest-unavailable') || 'Autosuggest momentan nicht verfügbar.';
         var suggestEmptyText = app.getAttribute('data-kb-suggest-empty') || 'Keine Vorschläge gefunden.';
+        var recentLabel = app.getAttribute('data-kb-search-recent-label') || 'Kürzlich aktualisiert';
         var searchHistoryEnabled = app.getAttribute('data-kb-search-history-enabled') !== '0';
         var searchHistoryHeading = 'Letzte Suchanfragen';
         var searchHistoryKey = 'kb_search_history_' + knowledgebaseId;
@@ -151,6 +152,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 return '<a class="kb-app__search-hit" href="' + url + '">'
                     + '<strong>' + escapeHtml(title) + '</strong>'
+                    + (item.is_recent ? '<span class="kb-app__search-hit-badge">' + escapeHtml(recentLabel) + '</span>' : '')
                     + '<span>' + escapeHtml(item.excerpt || '') + '</span>'
                     + '</a>';
             }).join('');

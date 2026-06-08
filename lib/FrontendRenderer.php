@@ -241,6 +241,7 @@ final class FrontendRenderer
         $glossaryBadgeLabel = FrontendI18n::msg('knowledgebase_nav_glossary_badge', 'A-Z');
         $suggestUnavailable = FrontendI18n::msg('knowledgebase_suggest_unavailable', 'Autosuggest momentan nicht verfuegbar.');
         $suggestEmpty = FrontendI18n::msg('knowledgebase_suggest_empty', 'Keine Vorschlaege gefunden.');
+        $recentLabel = FrontendI18n::msg('knowledgebase_search_recently_updated', 'Kürzlich aktualisiert');
         $historyLabel = FrontendI18n::msg('knowledgebase_history_label', 'Lesehistorie');
         $historyHeading = FrontendI18n::msg('knowledgebase_history_heading', 'Zuletzt gelesen');
         $historyEmpty = FrontendI18n::msg('knowledgebase_history_empty', 'Noch keine gelesenen Beitraege vorhanden.');
@@ -262,7 +263,7 @@ final class FrontendRenderer
         $layoutClass = ' kb-app--layout-' . rex_escape($layoutMode);
 
         return $jsonLd
-            . '<section id="' . rex_escape($instanceId) . '" class="kb-app uk-card uk-card-default' . $layoutClass . '" data-kb-base-path="' . rex_escape($basePath) . '" data-kb-id="' . $knowledgebase->getId() . '" data-kb-article-param="' . rex_escape($articleParam) . '" data-kb-search-param="' . rex_escape($searchParam) . '" data-kb-tag-param="' . rex_escape($tagFilterEnabled ? $tagParam : '') . '" data-kb-tags-param="' . rex_escape($tagFilterEnabled ? $tagsParam : '') . '" data-kb-tag-selected="' . rex_escape($selectedTag) . '" data-kb-tags-selected="' . rex_escape(self::serializeTagList($selectedTags)) . '" data-kb-api="' . rex_escape(self::buildUrl(['rex-api-call' => 'knowledgebase_search'])) . '" data-kb-sticky-header-offset="' . $stickyHeaderOffset . '" data-kb-sticky-nav-offset="' . $stickyNavOffset . '" data-kb-sticky-offset="' . $stickyOffsetTotal . '" data-kb-sticky-media="960" data-kb-suggest-unavailable="' . rex_escape($suggestUnavailable) . '" data-kb-suggest-empty="' . rex_escape($suggestEmpty) . '" data-kb-search-history-enabled="' . ($searchHistoryEnabled ? '1' : '0') . '" data-kb-recent-enabled="' . ($recentEnabled ? '1' : '0') . '" data-kb-recent-limit="' . max(1, $recentLimit) . '" data-kb-related-enabled="' . ($relatedEnabled ? '1' : '0') . '" data-kb-related-limit="' . max(1, $relatedLimit) . '" data-kb-current-article="' . rex_escape($currentArticleSlug) . '" data-kb-articles="' . rex_escape($articleIndexJson) . '" data-kb-history-label="' . rex_escape($historyLabel) . '" data-kb-history-heading="' . rex_escape($historyHeading) . '" data-kb-history-empty="' . rex_escape($historyEmpty) . '" data-kb-related-empty="' . rex_escape($relatedEmpty) . '" data-kb-related-heading="' . rex_escape($relatedHeading) . '">'
+            . '<section id="' . rex_escape($instanceId) . '" class="kb-app uk-card uk-card-default' . $layoutClass . '" data-kb-base-path="' . rex_escape($basePath) . '" data-kb-id="' . $knowledgebase->getId() . '" data-kb-article-param="' . rex_escape($articleParam) . '" data-kb-search-param="' . rex_escape($searchParam) . '" data-kb-tag-param="' . rex_escape($tagFilterEnabled ? $tagParam : '') . '" data-kb-tags-param="' . rex_escape($tagFilterEnabled ? $tagsParam : '') . '" data-kb-tag-selected="' . rex_escape($selectedTag) . '" data-kb-tags-selected="' . rex_escape(self::serializeTagList($selectedTags)) . '" data-kb-api="' . rex_escape(self::buildUrl(['rex-api-call' => 'knowledgebase_search'])) . '" data-kb-sticky-header-offset="' . $stickyHeaderOffset . '" data-kb-sticky-nav-offset="' . $stickyNavOffset . '" data-kb-sticky-offset="' . $stickyOffsetTotal . '" data-kb-sticky-media="960" data-kb-suggest-unavailable="' . rex_escape($suggestUnavailable) . '" data-kb-suggest-empty="' . rex_escape($suggestEmpty) . '" data-kb-search-recent-label="' . rex_escape($recentLabel) . '" data-kb-search-history-enabled="' . ($searchHistoryEnabled ? '1' : '0') . '" data-kb-recent-enabled="' . ($recentEnabled ? '1' : '0') . '" data-kb-recent-limit="' . max(1, $recentLimit) . '" data-kb-related-enabled="' . ($relatedEnabled ? '1' : '0') . '" data-kb-related-limit="' . max(1, $relatedLimit) . '" data-kb-current-article="' . rex_escape($currentArticleSlug) . '" data-kb-articles="' . rex_escape($articleIndexJson) . '" data-kb-history-label="' . rex_escape($historyLabel) . '" data-kb-history-heading="' . rex_escape($historyHeading) . '" data-kb-history-empty="' . rex_escape($historyEmpty) . '" data-kb-related-empty="' . rex_escape($relatedEmpty) . '" data-kb-related-heading="' . rex_escape($relatedHeading) . '">'
             . '<div class="kb-app__hero uk-section uk-section-xsmall uk-section-muted">'
             . '<div class="kb-app__hero-inner uk-grid-small" uk-grid>'
             . '<div class="kb-app__hero-brand">'
@@ -906,12 +907,13 @@ final class FrontendRenderer
     }
 
     /**
-     * @param list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string}> $results
+     * @param list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string,is_recent:bool}> $results
      */
     private static function renderSearchResults(array $results, string $articleParam, string $searchQuery): string
     {
         $heading = '<div class="kb-app__article-meta">' . rex_escape(FrontendI18n::msg('knowledgebase_search_results', 'Suchergebnisse')) . '</div>'
             . '<h3 class="kb-app__article-title">' . rex_escape($searchQuery) . '</h3>';
+        $recentLabel = FrontendI18n::msg('knowledgebase_search_recently_updated', 'Kürzlich aktualisiert');
 
         if (count($results) === 0) {
             return '<section class="kb-app__search-page">' . $heading . '<div class="uk-alert-warning" uk-alert>' . rex_escape(FrontendI18n::msg('knowledgebase_search_empty', 'Keine Treffer gefunden.')) . '</div></section>';
@@ -923,6 +925,9 @@ final class FrontendRenderer
             $items .= '<li class="kb-app__search-item">';
             $items .= '<a class="kb-app__search-item-link" href="' . rex_escape(self::buildUrl([$articleParam => $result['slug']])) . '">';
             $items .= '<strong>' . rex_escape($title) . '</strong>';
+            if (!empty($result['is_recent'])) {
+                $items .= '<span class="kb-app__search-hit-badge">' . rex_escape($recentLabel) . '</span>';
+            }
             $items .= '<span>' . rex_escape($result['excerpt']) . '</span>';
             $items .= '</a>';
             $items .= '</li>';

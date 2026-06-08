@@ -342,6 +342,20 @@
     color: var(--kb-accent);
 }
 
+.kb-app__search-hit-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 0.18rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(15, 91, 87, 0.12);
+    color: var(--kb-accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
 .kb-app__search-hit span {
     color: var(--kb-muted);
     font-size: 0.92rem;

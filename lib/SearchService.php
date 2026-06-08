@@ -11,7 +11,7 @@ use Throwable;
 final class SearchService
 {
     /**
-     * @return list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string}>
+    * @return list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string,is_recent:bool}>
      */
     public static function search(int $knowledgebaseId, string $query, int $limit = 8): array
     {
@@ -35,7 +35,7 @@ final class SearchService
     }
 
     /**
-     * @return list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string}>
+        * @return list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string,is_recent:bool}>
      */
     private static function searchFulltext(int $knowledgebaseId, string $query, int $limit): array
     {
@@ -48,7 +48,7 @@ final class SearchService
 
         $sql = rex_sql::factory();
         $sql->setQuery(
-            'SELECT id, title, nav_title, slug, intro, search_text, content, '
+            'SELECT id, title, nav_title, slug, intro, createdate, updatedate, search_text, content, '
             . 'MATCH(title, nav_title, intro, search_text) AGAINST (:term IN BOOLEAN MODE) AS relevance, '
             . '(CASE WHEN title LIKE :like_term THEN 40 ELSE 0 END '
             . ' + CASE WHEN nav_title LIKE :like_term THEN 30 ELSE 0 END '
@@ -70,14 +70,14 @@ final class SearchService
     }
 
     /**
-     * @return list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string}>
+        * @return list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string,is_recent:bool}>
      */
     private static function searchLike(int $knowledgebaseId, string $query, int $limit): array
     {
         $likeTerm = '%' . $query . '%';
         $sql = rex_sql::factory();
         $sql->setQuery(
-            'SELECT id, title, nav_title, slug, intro, search_text, content, '
+            'SELECT id, title, nav_title, slug, intro, createdate, updatedate, search_text, content, '
             . '(CASE WHEN title LIKE :like_term THEN 40 ELSE 0 END '
             . ' + CASE WHEN nav_title LIKE :like_term THEN 30 ELSE 0 END '
             . ' + CASE WHEN intro LIKE :like_term THEN 20 ELSE 0 END '
@@ -99,7 +99,7 @@ final class SearchService
     }
 
     /**
-     * @return list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string}>
+        * @return list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string,is_recent:bool}>
      */
     private static function hydrateResults(rex_sql $sql, string $query): array
     {
@@ -109,6 +109,8 @@ final class SearchService
             $navTitle = trim((string) $row->getValue('nav_title'));
             $intro = trim((string) $row->getValue('intro'));
             $content = trim((string) $row->getValue('content'));
+            $createdAt = trim((string) $row->getValue('createdate'));
+            $updatedAt = trim((string) $row->getValue('updatedate'));
 
             // Treffer duerfen weiterhin ueber search_text (inkl. Tags) gefunden werden,
             // aber im Excerpt sollen keine Tag-Rohdaten erscheinen.
@@ -123,6 +125,7 @@ final class SearchService
                 'slug' => (string) $row->getValue('slug'),
                 'intro' => $intro,
                 'excerpt' => self::buildExcerpt($excerptSource, $query),
+                'is_recent' => self::isRecentlyUpdated($createdAt, $updatedAt),
             ];
         }
 
@@ -180,5 +183,20 @@ final class SearchService
         }
 
         return implode(' ', array_map(static fn (string $token): string => '+' . $token . '*', $tokens));
+    }
+
+    private static function isRecentlyUpdated(string $createdAt, string $updatedAt): bool
+    {
+        $reference = '' !== $updatedAt ? $updatedAt : $createdAt;
+        if ('' === $reference) {
+            return false;
+        }
+
+        $timestamp = strtotime($reference);
+        if (false === $timestamp) {
+            return false;
+        }
+
+        return $timestamp >= strtotime('-30 days');
     }
 }
