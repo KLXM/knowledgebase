@@ -951,10 +951,11 @@ function initResponsiveSidebarState(app) {
 
 function initStickyNavigation(app) {
     var navShell = app.querySelector('.kb-app__sidebar .kb-app__nav-shell');
+    var sidebar = app.querySelector('.kb-app__sidebar');
     var content = app.querySelector('.kb-app__content');
     var layout = app.querySelector('.kb-app__layout');
 
-    if (!navShell || !content || !layout) {
+    if (!navShell || !sidebar || !content || !layout) {
         return;
     }
 
@@ -986,34 +987,42 @@ function initStickyNavigation(app) {
             stickyMedia = 960;
         }
 
-        var endSelector = '#' + app.id + ' .kb-app__content';
-
         var destroySticky = function () {
             if (stickyInstance && typeof stickyInstance.$destroy === 'function') {
                 stickyInstance.$destroy(true);
             }
 
             stickyInstance = null;
+            sidebar.style.alignSelf = '';
             navShell.style.maxHeight = '';
             navShell.style.overflowY = '';
         };
 
         var applyStickyState = function () {
             var isDesktop = window.innerWidth >= stickyMedia;
-            var availableHeight = window.innerHeight - stickyOffset;
+            var availableHeight = window.innerHeight - stickyOffset - 12;
             var navHeight = navShell.offsetHeight;
             var contentHeight = content.offsetHeight;
-            var canStick = isDesktop && availableHeight > 0 && navHeight <= availableHeight && navHeight < contentHeight;
+            var canStick = isDesktop && availableHeight > 160 && contentHeight > 0;
 
             if (!canStick) {
                 destroySticky();
                 return;
             }
 
+            sidebar.style.alignSelf = 'start';
+
+            if (navHeight > availableHeight) {
+                navShell.style.maxHeight = availableHeight + 'px';
+                navShell.style.overflowY = 'auto';
+            } else {
+                navShell.style.maxHeight = '';
+                navShell.style.overflowY = '';
+            }
+
             if (!stickyInstance) {
                 stickyInstance = window.UIkit.sticky(navShell, {
                     offset: stickyOffset,
-                    end: endSelector,
                     media: stickyMedia,
                 });
             }

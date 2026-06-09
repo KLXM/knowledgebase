@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 $title = trim((string) ($elementData['title'] ?? ''));
 $text = trim((string) ($elementData['text'] ?? ''));
-$badge = trim((string) ($elementData['badge'] ?? ''));
 $anchorInput = trim((string) ($elementData['anchor_id'] ?? ''));
 
 if ('' === $title) {
@@ -22,10 +21,6 @@ if ('' === $anchor) {
 ?>
 <section id="<?= rex_escape($anchor) ?>" class="panel panel-default kb-chapter-nav kb-chapter-nav--bootstrap">
     <div class="panel-body">
-        <?php if ('' !== $badge): ?>
-            <div class="text-muted small" style="margin-bottom:6px;"><?= rex_escape($badge) ?></div>
-        <?php endif; ?>
-
         <h4 style="margin-top:0;"><?= rex_escape($title) ?></h4>
 
         <?php if ('' !== $text): ?>

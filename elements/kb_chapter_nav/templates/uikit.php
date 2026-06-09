@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 $title = trim((string) ($elementData['title'] ?? ''));
 $text = trim((string) ($elementData['text'] ?? ''));
-$badge = trim((string) ($elementData['badge'] ?? ''));
 $anchorInput = trim((string) ($elementData['anchor_id'] ?? ''));
 $headingLevel = strtolower(trim((string) ($elementData['heading_level'] ?? 'h2')));
 
@@ -26,10 +25,6 @@ if ('' === $anchor) {
 }
 ?>
 <section id="<?= rex_escape($anchor) ?>" class="kb-chapter-nav uk-section uk-section-xsmall uk-padding-remove-top uk-padding-remove-horizontal">
-    <?php if ('' !== $badge): ?>
-        <div class="uk-text-meta uk-margin-small-bottom"><?= rex_escape($badge) ?></div>
-    <?php endif; ?>
-
         <<?= $headingLevel ?> class="uk-heading-bullet uk-margin-small-bottom"><?= rex_escape($title) ?></<?= $headingLevel ?>>
 
     <?php if ('' !== $text): ?>

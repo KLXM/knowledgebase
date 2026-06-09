@@ -102,6 +102,21 @@ if (rex::isBackend() && null !== rex::getUser() && rex_be_controller::getCurrent
     rex_view::addJsFile(rex_url::addonAssets('knowledgebase', 'js/articles-focus-fix.js') . '?v=' . rawurlencode((string) $addon->getVersion()));
 }
 
+if (rex_addon::exists('klxmchat') && rex_addon::get('klxmchat')->isAvailable()) {
+    rex_extension::register('KLXMCHAT_CONTENT_PROVIDERS', static function (rex_extension_point $ep): array {
+        $providers = $ep->getSubject();
+        if (!is_array($providers)) {
+            $providers = [];
+        }
+
+        if (class_exists(\FriendsOfRedaxo\KlxmChat\ContentProvider\ContentProviderInterface::class)) {
+            $providers['knowledgebase'] = new \FriendsOfREDAXO\Knowledgebase\ContentProvider\KnowledgebaseContentProvider();
+        }
+
+        return $providers;
+    });
+}
+
 // URL-Addon-Integration: URL-Rebuild bei Artikel-Änderungen und OUTPUT_FILTER für Link-Rewriting
 if (rex_addon::get('url')->isAvailable() && class_exists(\Url\Profile::class)) {
     rex_extension::register('URL_TABLE_UPDATED', static function (): void {
