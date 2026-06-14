@@ -100,11 +100,35 @@ final class GlossaryService
             $result .= $dom->saveHTML($childNode);
         }
 
+        // Defensive fallback: malformed fragment HTML can cause DOMDocument
+        // to drop trailing nodes while re-serializing. In that case, keep the
+        // original builder output so later slices are not lost.
+        if (self::isLikelyTruncatedResult($html, $result)) {
+            $result = $html;
+        }
+
         if (count($usedTerms) > 0) {
             $result .= self::renderModals($usedTerms, $knowledgebase->getId());
         }
 
         return $result;
+    }
+
+    private static function isLikelyTruncatedResult(string $originalHtml, string $processedHtml): bool
+    {
+        $originalLen = strlen(trim($originalHtml));
+        if ($originalLen === 0) {
+            return false;
+        }
+
+        $processedLen = strlen(trim($processedHtml));
+        if ($processedLen === 0) {
+            return true;
+        }
+
+        // Glossary replacement normally keeps or increases length.
+        // A strong shrink is a robust indicator of parser truncation.
+        return $processedLen < (int) floor($originalLen * 0.7);
     }
 
     /**
