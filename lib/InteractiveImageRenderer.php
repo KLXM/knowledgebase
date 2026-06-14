@@ -25,7 +25,7 @@ class InteractiveImageRenderer
         }
 
         if (!in_array($type, ['marker_map', 'markerbild'], true)) {
-            return '';
+            $type = 'marker_map';
         }
 
         return self::renderMarkerMap($dataset);
