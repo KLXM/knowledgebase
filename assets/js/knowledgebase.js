@@ -378,7 +378,39 @@ document.addEventListener('DOMContentLoaded', function () {
         initArticleRecommendations(app);
         initScrollToTopButton(app);
     });
+
+    initInteractiveImageMenuFallback();
 });
+
+function initInteractiveImageMenuFallback() {
+    document.addEventListener('click', function (event) {
+        var toggle = event.target.closest('[data-kb-marker-menu-toggle]');
+        if (!toggle) {
+            return;
+        }
+
+        var selector = toggle.getAttribute('data-kb-marker-menu-toggle') || '';
+        if (selector === '') {
+            return;
+        }
+
+        var root = toggle.closest('.kb-marker-map') || document;
+        var menu = root.querySelector(selector);
+        if (!menu) {
+            return;
+        }
+
+        // If UIkit handles uk-toggle we avoid double toggling.
+        if (typeof window.UIkit !== 'undefined') {
+            return;
+        }
+
+        event.preventDefault();
+        var nextCollapsed = !menu.classList.contains('is-collapsed');
+        menu.classList.toggle('is-collapsed', nextCollapsed);
+        toggle.setAttribute('aria-expanded', nextCollapsed ? 'false' : 'true');
+    });
+}
 
 function initScrollToTopButton(app) {
     var article = app.querySelector('.kb-app__article');

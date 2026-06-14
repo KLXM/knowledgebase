@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace FriendsOfREDAXO\Knowledgebase;
 
+use rex_addon;
 use rex_escape;
+use rex_path;
 use rex_url;
 
 class InteractiveImageRenderer
 {
+    private static bool $assetsRendered = false;
+
     public static function renderById(int $id): string
     {
         $dataset = \rex_yform_manager_dataset::query(\rex::getTable('knowledgebase_interactive_image'))
@@ -28,7 +32,7 @@ class InteractiveImageRenderer
             $type = 'marker_map';
         }
 
-        return self::renderMarkerMap($dataset);
+        return self::renderAssets() . self::renderMarkerMap($dataset);
     }
 
     private static function renderMarkerMap(\rex_yform_manager_dataset $dataset): string
@@ -77,6 +81,7 @@ class InteractiveImageRenderer
             $html .= '<button type="button" class="kb-marker-map__menu-toggle"';
             $html .= ' aria-controls="' . rex_escape($menuId) . '"';
             $html .= ' aria-expanded="false"';
+            $html .= ' data-kb-marker-menu-toggle="#' . rex_escape($menuId) . '"';
             $html .= ' uk-toggle="target: #' . rex_escape($menuId) . '; cls: is-collapsed"';
             $html .= '>' . rex_escape($toggleLabelOpen) . '</button>';
 
@@ -116,6 +121,31 @@ class InteractiveImageRenderer
         $html .= '</div>';
 
         return $html;
+    }
+
+    private static function renderAssets(): string
+    {
+        if (self::$assetsRendered) {
+            return '';
+        }
+
+        self::$assetsRendered = true;
+        $cssVersion = self::getAssetVersion('css/knowledgebase.css');
+        $jsVersion = self::getAssetVersion('js/knowledgebase.js');
+
+        return '<link rel="stylesheet" href="' . rex_escape(rex_url::addonAssets('knowledgebase', 'css/knowledgebase.css?v=' . $cssVersion)) . '">'
+            . '<script src="' . rex_escape(rex_url::addonAssets('knowledgebase', 'js/knowledgebase.js?v=' . $jsVersion)) . '" defer></script>';
+    }
+
+    private static function getAssetVersion(string $relativePath): string
+    {
+        $path = rex_path::addonAssets('knowledgebase', $relativePath);
+        $mtime = @filemtime($path);
+        if (is_int($mtime)) {
+            return (string) $mtime;
+        }
+
+        return (string) rex_addon::get('knowledgebase')->getVersion();
     }
 
     /**

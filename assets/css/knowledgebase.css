@@ -1392,7 +1392,7 @@
     background: #324050;
     color: #ffffff;
     padding: 0;
-    opacity: 0;
+    opacity: 1;
     transition: opacity 0.18s ease;
 }
 
@@ -1435,32 +1435,32 @@
 }
 
 .kb-marker-map__menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    border: 1px solid #c7d8ea;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #2c435b;
+    font-weight: 600;
+    padding: 0.45rem 0.7rem;
+    cursor: pointer;
+}
+
+.kb-marker-map__menu-toggle:hover,
+.kb-marker-map__menu-toggle:focus {
+    background: #f0f7ff;
+    border-color: #8bb7df;
+}
+
+.kb-marker-map__menu.is-collapsed {
     display: none;
 }
 
 @media (min-width: 960px) {
     .kb-marker-map__menu-toggle {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: fit-content;
-        border: 1px solid #c7d8ea;
-        border-radius: 8px;
-        background: #ffffff;
-        color: #2c435b;
-        font-weight: 600;
-        padding: 0.45rem 0.7rem;
-        cursor: pointer;
-    }
-
-    .kb-marker-map__menu-toggle:hover,
-    .kb-marker-map__menu-toggle:focus {
-        background: #f0f7ff;
-        border-color: #8bb7df;
-    }
-
-    .kb-marker-map__menu.is-collapsed {
-        display: none;
+        margin-top: 0.15rem;
     }
 }
 
