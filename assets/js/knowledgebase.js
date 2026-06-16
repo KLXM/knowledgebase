@@ -1017,7 +1017,7 @@ function initStickyNavigation(app) {
         var availableHeight = window.innerHeight - stickyOffset - 12;
         var navHeight = navShell.offsetHeight;
         var contentHeight = content.offsetHeight;
-        var canStick = isDesktop && availableHeight > 160 && contentHeight > 0 && navHeight <= availableHeight;
+        var canStick = isDesktop && availableHeight > 160 && contentHeight > 0;
 
         if (!canStick) {
             clearStickyState();
@@ -1027,8 +1027,14 @@ function initStickyNavigation(app) {
         sidebar.classList.add('kb-app__sidebar--sticky');
         sidebar.style.top = stickyOffset + 'px';
         sidebar.style.maxHeight = availableHeight + 'px';
-        navShell.style.maxHeight = availableHeight + 'px';
-        navShell.style.overflowY = 'auto';
+
+        if (navHeight > availableHeight) {
+            navShell.style.maxHeight = availableHeight + 'px';
+            navShell.style.overflowY = 'auto';
+        } else {
+            navShell.style.maxHeight = '';
+            navShell.style.overflowY = '';
+        }
     };
 
     var resizeTimer = null;
