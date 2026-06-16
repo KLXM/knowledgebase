@@ -691,29 +691,32 @@ final class FrontendRenderer
             $chapters = self::extractArticleChapters($article, false);
             $hasAnyChapter = true;
             $articleUrl = self::buildUrl([$articleParam => (string) $article->getValue('slug'), $tocParam => null]);
+            $groupItems = '';
 
-            $groupItems = '<li class="kb-app__toc-item">';
-            $groupItems .= '<a class="kb-app__nav-link kb-app__nav-link--chapter" href="' . rex_escape($articleUrl) . '">';
-            $groupItems .= self::renderNavBadge((string) $article->getValue('nav_badge'), 'file-text');
-            $groupItems .= '<span>' . rex_escape($article->getNavLabel()) . '</span>';
-            $groupItems .= '</a>';
-            $groupItems .= '</li>';
-
-            foreach ($chapters as $chapter) {
-                $indentClass = '';
-                if ($chapter['level'] === 'h3') {
-                    $indentClass = ' uk-margin-left';
-                } elseif ($chapter['level'] === 'h4') {
-                    $indentClass = ' uk-margin-large-left';
-                }
-
-                $href = $articleUrl . '#' . rawurlencode($chapter['anchor']);
-                $groupItems .= '<li class="kb-app__toc-item' . $indentClass . '">';
-                $groupItems .= '<a class="kb-app__nav-link kb-app__nav-link--chapter" href="' . rex_escape($href) . '">';
-                $groupItems .= self::renderNavBadge($chapter['badge']);
-                $groupItems .= '<span>' . rex_escape($chapter['title']) . '</span>';
+            if (count($chapters) === 0) {
+                $groupItems .= '<li class="kb-app__toc-item">';
+                $groupItems .= '<a class="kb-app__nav-link kb-app__nav-link--chapter" href="' . rex_escape($articleUrl) . '">';
+                $groupItems .= self::renderNavBadge((string) $article->getValue('nav_badge'), 'file-text');
+                $groupItems .= '<span>' . rex_escape($article->getNavLabel()) . '</span>';
                 $groupItems .= '</a>';
                 $groupItems .= '</li>';
+            } else {
+                foreach ($chapters as $chapter) {
+                    $indentClass = '';
+                    if ($chapter['level'] === 'h3') {
+                        $indentClass = ' uk-margin-left';
+                    } elseif ($chapter['level'] === 'h4') {
+                        $indentClass = ' uk-margin-large-left';
+                    }
+
+                    $href = $articleUrl . '#' . rawurlencode($chapter['anchor']);
+                    $groupItems .= '<li class="kb-app__toc-item' . $indentClass . '">';
+                    $groupItems .= '<a class="kb-app__nav-link kb-app__nav-link--chapter" href="' . rex_escape($href) . '">';
+                    $groupItems .= self::renderNavBadge($chapter['badge']);
+                    $groupItems .= '<span>' . rex_escape($chapter['title']) . '</span>';
+                    $groupItems .= '</a>';
+                    $groupItems .= '</li>';
+                }
             }
 
             $groupsHtml .= '<section class="kb-app__toc-group">';
