@@ -303,7 +303,7 @@ final class FrontendRenderer
             . '</div>'
             . '</div>'
             . '</div>'
-            . '<div id="' . rex_escape($offcanvasId) . '" uk-offcanvas="mode: slide; overlay: true">'
+            . '<div id="' . rex_escape($offcanvasId) . '" class="kb-app__offcanvas-panel" uk-offcanvas="mode: slide; overlay: true">'
             . '<div class="uk-offcanvas-bar kb-app__offcanvas">'
             . '<button class="uk-offcanvas-close" type="button" uk-close></button>'
             . $nav

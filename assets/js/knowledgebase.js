@@ -982,76 +982,19 @@ function initResponsiveSidebarState(app) {
 }
 
 function initStickyNavigation(app) {
-    var navShell = app.querySelector('.kb-app__sidebar .kb-app__nav-shell');
-    var sidebar = app.querySelector('.kb-app__sidebar');
-    var content = app.querySelector('.kb-app__content');
-    var layout = app.querySelector('.kb-app__layout');
-
-    if (!navShell || !sidebar || !content || !layout) {
-        return;
-    }
-
     var stickyOffset = parseInt(app.getAttribute('data-kb-sticky-offset') || '0', 10);
-    var stickyMedia = parseInt(app.getAttribute('data-kb-sticky-media') || '960', 10);
 
     if (isNaN(stickyOffset) || stickyOffset < 0) {
         stickyOffset = 0;
     }
 
-    if (isNaN(stickyMedia) || stickyMedia < 1) {
-        stickyMedia = 960;
-    }
-
-    app.style.setProperty('--kb-sidebar-sticky-top', stickyOffset + 'px');
-
-    var clearStickyState = function () {
-        sidebar.classList.remove('kb-app__sidebar--sticky');
-        sidebar.style.top = '';
-        sidebar.style.maxHeight = '';
-        navShell.style.maxHeight = '';
-        navShell.style.overflowY = '';
+    var applyStickyOffset = function () {
+        app.style.setProperty('--kb-sidebar-sticky-top', stickyOffset + 'px');
     };
 
-    var applyStickyState = function () {
-        var isDesktop = window.innerWidth >= stickyMedia;
-        var availableHeight = window.innerHeight - stickyOffset - 12;
-        var navHeight = navShell.offsetHeight;
-        var contentHeight = content.offsetHeight;
-        var canStick = isDesktop && availableHeight > 160 && contentHeight > 0;
-
-        if (!canStick) {
-            clearStickyState();
-            return;
-        }
-
-        sidebar.classList.add('kb-app__sidebar--sticky');
-        sidebar.style.top = stickyOffset + 'px';
-        sidebar.style.maxHeight = availableHeight + 'px';
-
-        if (navHeight > availableHeight) {
-            navShell.style.maxHeight = availableHeight + 'px';
-            navShell.style.overflowY = 'auto';
-        } else {
-            navShell.style.maxHeight = '';
-            navShell.style.overflowY = '';
-        }
-    };
-
-    var resizeTimer = null;
-    var onResize = function () {
-        if (resizeTimer) {
-            window.clearTimeout(resizeTimer);
-        }
-
-        resizeTimer = window.setTimeout(function () {
-            applyStickyState();
-        }, 120);
-    };
-
-    applyStickyState();
-    window.addEventListener('resize', onResize);
-    window.addEventListener('orientationchange', onResize);
-    window.addEventListener('load', applyStickyState, { once: true });
+    applyStickyOffset();
+    window.addEventListener('resize', applyStickyOffset, { passive: true });
+    window.addEventListener('orientationchange', applyStickyOffset, { passive: true });
 }
 
 function escapeHtml(value) {
