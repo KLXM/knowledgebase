@@ -998,19 +998,75 @@ function initResponsiveSidebarState(app) {
 }
 
 function initStickyNavigation(app) {
+    var navShell = app.querySelector('.kb-app__sidebar .kb-app__nav-shell');
     var stickyOffset = parseInt(app.getAttribute('data-kb-sticky-offset') || '0', 10);
+    var stickyMedia = parseInt(app.getAttribute('data-kb-sticky-media') || '960', 10);
+
+    if (!navShell) {
+        return;
+    }
 
     if (isNaN(stickyOffset) || stickyOffset < 0) {
         stickyOffset = 0;
     }
 
+    if (isNaN(stickyMedia) || stickyMedia < 1) {
+        stickyMedia = 960;
+    }
+
+    var stickyInstance = null;
+
     var applyStickyOffset = function () {
         app.style.setProperty('--kb-sidebar-sticky-top', stickyOffset + 'px');
+    };
+
+    var initUIKitSticky = function () {
+        if (typeof window.UIkit === 'undefined' || typeof window.UIkit.sticky !== 'function') {
+            return false;
+        }
+
+        if (stickyInstance && typeof stickyInstance.$destroy === 'function') {
+            stickyInstance.$destroy(true);
+        }
+
+        stickyInstance = window.UIkit.sticky(navShell, {
+            start: 0,
+            offset: stickyOffset,
+            offsetEnd: stickyOffset,
+            media: stickyMedia,
+            end: true,
+            overflowFlip: false,
+            targetOffset: stickyOffset + 8,
+        });
+
+        if (typeof window.UIkit.update === 'function') {
+            window.UIkit.update(navShell);
+        }
+
+        return true;
     };
 
     applyStickyOffset();
     window.addEventListener('resize', applyStickyOffset, { passive: true });
     window.addEventListener('orientationchange', applyStickyOffset, { passive: true });
+
+    if (initUIKitSticky()) {
+        return;
+    }
+
+    var retryCount = 0;
+    var retryTimer = window.setInterval(function () {
+        retryCount += 1;
+        if (initUIKitSticky() || retryCount >= 40) {
+            window.clearInterval(retryTimer);
+        }
+    }, 100);
+
+    window.addEventListener('load', function () {
+        if (initUIKitSticky()) {
+            window.clearInterval(retryTimer);
+        }
+    }, { once: true });
 }
 
 function escapeHtml(value) {
