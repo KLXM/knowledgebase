@@ -998,11 +998,11 @@ function initResponsiveSidebarState(app) {
 }
 
 function initStickyNavigation(app) {
-    var navShell = app.querySelector('.kb-app__sidebar .kb-app__nav-shell');
+    var sidebar = app.querySelector('.kb-app__sidebar');
     var stickyOffset = parseInt(app.getAttribute('data-kb-sticky-offset') || '0', 10);
     var stickyMedia = parseInt(app.getAttribute('data-kb-sticky-media') || '960', 10);
 
-    if (!navShell) {
+    if (!sidebar) {
         return;
     }
 
@@ -1029,7 +1029,7 @@ function initStickyNavigation(app) {
             stickyInstance.$destroy(true);
         }
 
-        stickyInstance = window.UIkit.sticky(navShell, {
+        stickyInstance = window.UIkit.sticky(sidebar, {
             start: 0,
             offset: stickyOffset,
             offsetEnd: stickyOffset,
@@ -1040,7 +1040,7 @@ function initStickyNavigation(app) {
         });
 
         if (typeof window.UIkit.update === 'function') {
-            window.UIkit.update(navShell);
+            window.UIkit.update(sidebar);
         }
 
         return true;
