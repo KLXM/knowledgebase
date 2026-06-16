@@ -200,6 +200,12 @@ final class KnowledgebaseUrl
             return $state;
         }
 
+        $requestedSlug = trim((string) rex_request('kb_' . $knowledgebaseId . '_article', 'string', ''));
+        if ($requestedSlug !== '') {
+            $state['slug'] = $requestedSlug;
+            return $state;
+        }
+
         $sql = rex_sql::factory();
         $rows = $sql->getArray(
             'SELECT u.url, a.slug
@@ -302,33 +308,23 @@ final class KnowledgebaseUrl
      */
     private static function getProfileIdForKb(int $knowledgebaseId): int
     {
-        $namespace = self::buildNamespace($knowledgebaseId);
-        $sql = rex_sql::factory();
-        $rows = $sql->getArray(
-            'SELECT id FROM ' . rex::getTable('url_generator_profile')
-            . ' WHERE namespace = :ns LIMIT 1',
-            ['ns' => $namespace],
-        );
+        $profile = self::getProfileRowForKb($knowledgebaseId);
+        if ($profile === null) {
+            return 0;
+        }
 
-        return isset($rows[0]['id']) ? (int) $rows[0]['id'] : 0;
+        return (int) ($profile['id'] ?? 0);
     }
 
     private static function getProfileBasePath(int $knowledgebaseId): string
     {
-        $namespace = self::buildNamespace($knowledgebaseId);
-        $sql = rex_sql::factory();
-        $rows = $sql->getArray(
-            'SELECT article_id, clang_id FROM ' . rex::getTable('url_generator_profile')
-            . ' WHERE namespace = :ns LIMIT 1',
-            ['ns' => $namespace],
-        );
-
-        if (!isset($rows[0])) {
+        $profile = self::getProfileRowForKb($knowledgebaseId);
+        if ($profile === null) {
             return '/';
         }
 
-        $articleId = (int) ($rows[0]['article_id'] ?? 0);
-        $clangId = (int) ($rows[0]['clang_id'] ?? 1);
+        $articleId = (int) ($profile['article_id'] ?? 0);
+        $clangId = (int) ($profile['clang_id'] ?? 1);
         if ($articleId <= 0) {
             return '/';
         }
@@ -339,6 +335,58 @@ final class KnowledgebaseUrl
         }
 
         return self::normalizePath((string) parse_url($article->getUrl(), PHP_URL_PATH));
+    }
+
+    /**
+     * @return array{id:int,article_id:int,clang_id:int,namespace:string,table_name:string,table_parameters:string}|null
+     */
+    private static function getProfileRowForKb(int $knowledgebaseId): ?array
+    {
+        $namespace = self::buildNamespace($knowledgebaseId);
+        $sql = rex_sql::factory();
+        $rows = $sql->getArray(
+            'SELECT id, article_id, clang_id, namespace, table_name, table_parameters FROM ' . rex::getTable('url_generator_profile')
+            . ' WHERE namespace = :ns OR table_name = :table_name ORDER BY CASE WHEN namespace = :ns THEN 0 ELSE 1 END, id ASC',
+            [
+                'ns' => $namespace,
+                'table_name' => rex::getTable('knowledgebase_article'),
+            ],
+        );
+
+        foreach ($rows as $row) {
+            if ((string) ($row['namespace'] ?? '') === $namespace) {
+                return [
+                    'id' => (int) ($row['id'] ?? 0),
+                    'article_id' => (int) ($row['article_id'] ?? 0),
+                    'clang_id' => (int) ($row['clang_id'] ?? 1),
+                    'namespace' => (string) ($row['namespace'] ?? ''),
+                    'table_name' => (string) ($row['table_name'] ?? ''),
+                    'table_parameters' => (string) ($row['table_parameters'] ?? ''),
+                ];
+            }
+
+            if ((string) ($row['table_name'] ?? '') !== rex::getTable('knowledgebase_article')) {
+                continue;
+            }
+
+            $tableParameters = json_decode((string) ($row['table_parameters'] ?? ''), true);
+            if (!is_array($tableParameters)) {
+                continue;
+            }
+
+            if ((string) ($tableParameters['restriction_1_value'] ?? '') === (string) $knowledgebaseId) {
+                return [
+                    'id' => (int) ($row['id'] ?? 0),
+                    'article_id' => (int) ($row['article_id'] ?? 0),
+                    'clang_id' => (int) ($row['clang_id'] ?? 1),
+                    'namespace' => (string) ($row['namespace'] ?? ''),
+                    'table_name' => (string) ($row['table_name'] ?? ''),
+                    'table_parameters' => (string) ($row['table_parameters'] ?? ''),
+                ];
+            }
+        }
+
+        return null;
     }
 
     private static function buildProfileSectionUrl(int $knowledgebaseId, string $segment): string
