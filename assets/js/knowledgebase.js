@@ -991,116 +991,61 @@ function initStickyNavigation(app) {
         return;
     }
 
-    var stickyInitialized = false;
+    var stickyOffset = parseInt(app.getAttribute('data-kb-sticky-offset') || '0', 10);
+    var stickyMedia = parseInt(app.getAttribute('data-kb-sticky-media') || '960', 10);
 
-    var tryInitSticky = function () {
-        if (stickyInitialized) {
-            return;
-        }
-
-        if (typeof window.UIkit === 'undefined' || typeof window.UIkit.sticky !== 'function') {
-            return;
-        }
-
-        stickyInitialized = true;
-        initWithUIKit();
-    };
-
-    var initWithUIKit = function () {
-        var stickyOffset = parseInt(app.getAttribute('data-kb-sticky-offset') || '0', 10);
-        var stickyMedia = parseInt(app.getAttribute('data-kb-sticky-media') || '960', 10);
-        var stickyInstance = null;
-
-        if (isNaN(stickyOffset) || stickyOffset < 0) {
-            stickyOffset = 0;
-        }
-
-        if (isNaN(stickyMedia) || stickyMedia < 1) {
-            stickyMedia = 960;
-        }
-
-        var destroySticky = function () {
-            if (stickyInstance && typeof stickyInstance.$destroy === 'function') {
-                stickyInstance.$destroy(true);
-            }
-
-            stickyInstance = null;
-            sidebar.style.alignSelf = '';
-            navShell.style.maxHeight = '';
-            navShell.style.overflowY = '';
-        };
-
-        var applyStickyState = function () {
-            var isDesktop = window.innerWidth >= stickyMedia;
-            var availableHeight = window.innerHeight - stickyOffset - 12;
-            var navHeight = navShell.offsetHeight;
-            var contentHeight = content.offsetHeight;
-            var canStick = isDesktop && availableHeight > 160 && contentHeight > 0;
-
-            if (!canStick) {
-                destroySticky();
-                return;
-            }
-
-            sidebar.style.alignSelf = 'start';
-
-            if (navHeight > availableHeight) {
-                navShell.style.maxHeight = availableHeight + 'px';
-                navShell.style.overflowY = 'auto';
-            } else {
-                navShell.style.maxHeight = '';
-                navShell.style.overflowY = '';
-            }
-
-            if (!stickyInstance) {
-                stickyInstance = window.UIkit.sticky(navShell, {
-                    offset: stickyOffset,
-                    media: stickyMedia,
-                });
-            }
-
-            if (typeof window.UIkit.update === 'function') {
-                window.UIkit.update(navShell);
-            }
-        };
-
-        var resizeTimer = null;
-        var onResize = function () {
-            if (resizeTimer) {
-                window.clearTimeout(resizeTimer);
-            }
-
-            resizeTimer = window.setTimeout(function () {
-                applyStickyState();
-            }, 120);
-        };
-
-        applyStickyState();
-        window.addEventListener('resize', onResize);
-    };
-
-    tryInitSticky();
-
-    if (stickyInitialized) {
-        return;
+    if (isNaN(stickyOffset) || stickyOffset < 0) {
+        stickyOffset = 0;
     }
 
-    var retryCount = 0;
-    var retryTimer = window.setInterval(function () {
-        retryCount += 1;
-        tryInitSticky();
+    if (isNaN(stickyMedia) || stickyMedia < 1) {
+        stickyMedia = 960;
+    }
 
-        if (stickyInitialized || retryCount >= 40) {
-            window.clearInterval(retryTimer);
-        }
-    }, 100);
+    app.style.setProperty('--kb-sidebar-sticky-top', stickyOffset + 'px');
 
-    window.addEventListener('load', function () {
-        tryInitSticky();
-        if (stickyInitialized) {
-            window.clearInterval(retryTimer);
+    var clearStickyState = function () {
+        sidebar.classList.remove('kb-app__sidebar--sticky');
+        sidebar.style.top = '';
+        sidebar.style.maxHeight = '';
+        navShell.style.maxHeight = '';
+        navShell.style.overflowY = '';
+    };
+
+    var applyStickyState = function () {
+        var isDesktop = window.innerWidth >= stickyMedia;
+        var availableHeight = window.innerHeight - stickyOffset - 12;
+        var navHeight = navShell.offsetHeight;
+        var contentHeight = content.offsetHeight;
+        var canStick = isDesktop && availableHeight > 160 && contentHeight > 0 && navHeight <= availableHeight;
+
+        if (!canStick) {
+            clearStickyState();
+            return;
         }
-    }, { once: true });
+
+        sidebar.classList.add('kb-app__sidebar--sticky');
+        sidebar.style.top = stickyOffset + 'px';
+        sidebar.style.maxHeight = availableHeight + 'px';
+        navShell.style.maxHeight = availableHeight + 'px';
+        navShell.style.overflowY = 'auto';
+    };
+
+    var resizeTimer = null;
+    var onResize = function () {
+        if (resizeTimer) {
+            window.clearTimeout(resizeTimer);
+        }
+
+        resizeTimer = window.setTimeout(function () {
+            applyStickyState();
+        }, 120);
+    };
+
+    applyStickyState();
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    window.addEventListener('load', applyStickyState, { once: true });
 }
 
 function escapeHtml(value) {

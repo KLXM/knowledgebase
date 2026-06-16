@@ -408,8 +408,20 @@
     background: #fff;
 }
 
+.kb-app__sidebar--sticky {
+    position: sticky;
+    top: calc(var(--kb-sidebar-sticky-top, 0px) + 12px);
+    align-self: start;
+}
+
 .kb-app__nav-shell {
     position: relative;
+}
+
+.kb-app__sidebar--sticky .kb-app__nav-shell {
+    max-height: calc(100vh - var(--kb-sidebar-sticky-top, 0px) - 24px);
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .kb-app__nav-title {

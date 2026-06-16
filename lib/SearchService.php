@@ -11,7 +11,7 @@ use Throwable;
 final class SearchService
 {
     /**
-    * @return list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string,is_recent:bool}>
+    * @return list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string,is_recent:bool,anchor:string}>
      */
     public static function search(int $knowledgebaseId, string $query, int $limit = 8): array
     {
@@ -35,7 +35,7 @@ final class SearchService
     }
 
     /**
-        * @return list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string,is_recent:bool}>
+        * @return list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string,is_recent:bool,anchor:string}>
      */
     private static function searchFulltext(int $knowledgebaseId, string $query, int $limit): array
     {
@@ -70,7 +70,7 @@ final class SearchService
     }
 
     /**
-        * @return list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string,is_recent:bool}>
+        * @return list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string,is_recent:bool,anchor:string}>
      */
     private static function searchLike(int $knowledgebaseId, string $query, int $limit): array
     {
@@ -99,7 +99,7 @@ final class SearchService
     }
 
     /**
-        * @return list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string,is_recent:bool}>
+        * @return list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string,is_recent:bool,anchor:string}>
      */
     private static function hydrateResults(rex_sql $sql, string $query): array
     {
@@ -126,10 +126,105 @@ final class SearchService
                 'intro' => $intro,
                 'excerpt' => self::buildExcerpt($excerptSource, $query),
                 'is_recent' => self::isRecentlyUpdated($createdAt, $updatedAt),
+                'anchor' => self::findBestChapterAnchor($content, $query),
             ];
         }
 
         return $results;
+    }
+
+    private static function findBestChapterAnchor(string $content, string $query): string
+    {
+        $chapters = self::extractChapters($content);
+        if ($chapters === []) {
+            return '';
+        }
+
+        $normalizedQuery = trim(mb_strtolower(SearchTextExtractor::normalize($query)));
+        if ($normalizedQuery === '') {
+            return '';
+        }
+
+        $terms = array_values(array_filter(
+            preg_split('/[^\p{L}\p{N}]+/u', $normalizedQuery) ?: [],
+            static fn (string $term): bool => $term !== '' && mb_strlen($term) >= 2,
+        ));
+
+        foreach ($chapters as $chapter) {
+            $haystack = mb_strtolower(SearchTextExtractor::normalize($chapter['title'] . ' ' . $chapter['anchor']));
+            if ($haystack === '') {
+                continue;
+            }
+
+            foreach ($terms as $term) {
+                if (mb_stripos($haystack, $term) !== false) {
+                    return $chapter['anchor'];
+                }
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * @return list<array{title:string,anchor:string}>
+     */
+    private static function extractChapters(string $content): array
+    {
+        $content = trim($content);
+        if ($content === '') {
+            return [];
+        }
+
+        $decoded = json_decode($content, true);
+        if (!is_array($decoded)) {
+            return [];
+        }
+
+        $chapters = [];
+        foreach ($decoded as $slice) {
+            if (!is_array($slice)) {
+                continue;
+            }
+
+            if (trim((string) ($slice['type'] ?? '')) !== 'kb_chapter_nav') {
+                continue;
+            }
+
+            $data = $slice['data'] ?? null;
+            if (!is_array($data)) {
+                continue;
+            }
+
+            $title = trim((string) ($data['title'] ?? ''));
+            if ($title === '') {
+                continue;
+            }
+
+            $anchorInput = trim((string) ($data['anchor_id'] ?? ''));
+            $anchor = self::sanitizeAnchor($anchorInput !== '' ? $anchorInput : $title);
+            if ($anchor === '') {
+                continue;
+            }
+
+            $chapters[] = [
+                'title' => $title,
+                'anchor' => $anchor,
+            ];
+        }
+
+        return $chapters;
+    }
+
+    private static function sanitizeAnchor(string $value): string
+    {
+        $normalized = strtolower(trim($value));
+        $normalized = preg_replace('/[^a-z0-9\-_]+/u', '-', $normalized);
+        if (!is_string($normalized)) {
+            return '';
+        }
+
+        return trim($normalized, '-');
     }
 
     private static function buildExcerpt(string $text, string $query): string

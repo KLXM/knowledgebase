@@ -907,7 +907,7 @@ final class FrontendRenderer
     }
 
     /**
-     * @param list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string,is_recent:bool}> $results
+    * @param list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string,is_recent:bool,anchor:string}> $results
      */
     private static function renderSearchResults(array $results, string $articleParam, string $searchQuery): string
     {
@@ -922,8 +922,14 @@ final class FrontendRenderer
         $items = '';
         foreach ($results as $result) {
             $title = '' !== trim($result['nav_title']) ? $result['nav_title'] : $result['title'];
+            $url = self::buildUrl([$articleParam => $result['slug']]);
+            $anchor = trim((string) ($result['anchor'] ?? ''));
+            if ($anchor !== '') {
+                $url .= '#' . rawurlencode($anchor);
+            }
+
             $items .= '<li class="kb-app__search-item">';
-            $items .= '<a class="kb-app__search-item-link" href="' . rex_escape(self::buildUrl([$articleParam => $result['slug']])) . '">';
+            $items .= '<a class="kb-app__search-item-link" href="' . rex_escape($url) . '">';
             $items .= '<strong>' . rex_escape($title) . '</strong>';
             if (!empty($result['is_recent'])) {
                 $items .= '<span class="kb-app__search-hit-badge">' . rex_escape($recentLabel) . '</span>';
