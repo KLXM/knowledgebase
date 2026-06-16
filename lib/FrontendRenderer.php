@@ -689,13 +689,15 @@ final class FrontendRenderer
             }
 
             $chapters = self::extractArticleChapters($article, false);
-            if (count($chapters) === 0) {
-                continue;
-            }
-
             $hasAnyChapter = true;
             $articleUrl = self::buildUrl([$articleParam => (string) $article->getValue('slug'), $tocParam => null]);
-            $groupItems = '';
+
+            $groupItems = '<li class="kb-app__toc-item">';
+            $groupItems .= '<a class="kb-app__nav-link kb-app__nav-link--chapter" href="' . rex_escape($articleUrl) . '">';
+            $groupItems .= self::renderNavBadge((string) $article->getValue('nav_badge'), 'file-text');
+            $groupItems .= '<span>' . rex_escape($article->getNavLabel()) . '</span>';
+            $groupItems .= '</a>';
+            $groupItems .= '</li>';
 
             foreach ($chapters as $chapter) {
                 $indentClass = '';
