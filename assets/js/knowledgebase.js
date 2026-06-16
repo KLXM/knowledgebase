@@ -794,6 +794,26 @@ function initAnchorNavigation(app) {
         return document.getElementById(anchorId);
     };
 
+    var scrollToAnchor = function (anchorId, behavior) {
+        var target = getAnchorElement(anchorId);
+        if (!target) {
+            return false;
+        }
+
+        var targetTop = target.getBoundingClientRect().top + window.scrollY - stickyOffset - 8;
+        window.scrollTo({
+            top: Math.max(0, targetTop),
+            behavior: behavior,
+        });
+
+        if (!target.hasAttribute('tabindex')) {
+            target.setAttribute('tabindex', '-1');
+        }
+        target.focus({ preventScroll: true });
+
+        return true;
+    };
+
     var markActiveAnchor = function (activeAnchorId) {
         chapterLinks.forEach(function (link) {
             if (!isSamePageAnchorLink(link)) {
@@ -860,23 +880,11 @@ function initAnchorNavigation(app) {
         }
 
         var anchorId = getAnchorId(link);
-        var target = getAnchorElement(anchorId);
-        if (!target) {
+        if (!scrollToAnchor(anchorId, reduceMotion ? 'auto' : 'smooth')) {
             return;
         }
 
         event.preventDefault();
-
-        var targetTop = target.getBoundingClientRect().top + window.scrollY - stickyOffset - 8;
-        window.scrollTo({
-            top: Math.max(0, targetTop),
-            behavior: reduceMotion ? 'auto' : 'smooth'
-        });
-
-        if (!target.hasAttribute('tabindex')) {
-            target.setAttribute('tabindex', '-1');
-        }
-        target.focus({ preventScroll: true });
 
         history.replaceState(null, '', '#' + encodeURIComponent(anchorId));
         markActiveAnchor(anchorId);
@@ -899,6 +907,14 @@ function initAnchorNavigation(app) {
     window.addEventListener('resize', onScroll);
     window.addEventListener('hashchange', onScroll);
     updateActiveFromScroll();
+
+    var initialHash = decodeURIComponent(window.location.hash.replace(/^#/, ''));
+    if (initialHash !== '') {
+        window.requestAnimationFrame(function () {
+            scrollToAnchor(initialHash, 'auto');
+            markActiveAnchor(initialHash);
+        });
+    }
 }
 
 function initResponsiveSidebarState(app) {

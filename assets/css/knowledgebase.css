@@ -416,9 +416,11 @@
     .kb-app__nav-shell {
         position: sticky;
         top: calc(var(--kb-sidebar-sticky-top, 0px) + 12px);
-        max-height: calc(100vh - var(--kb-sidebar-sticky-top, 0px) - 24px);
+        max-height: calc(100dvh - var(--kb-sidebar-sticky-top, 0px) - 24px);
         overflow-y: auto;
         overflow-x: hidden;
+        overscroll-behavior: contain;
+        scrollbar-gutter: stable;
     }
 }
 
