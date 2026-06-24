@@ -56,7 +56,7 @@ return [
             'type' => 'select',
             'label' => $_ci('field_badge_icon', 'Icon waehlen'),
             'col' => 6,
-            'choices' => [
+            'options' => [
                 '' => $_ci('field_badge_icon_none', 'Bitte waehlen'),
                 'bookmark' => 'bookmark',
                 'book' => 'book',
