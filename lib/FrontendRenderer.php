@@ -1115,6 +1115,19 @@ final class FrontendRenderer
         $textBadge = trim((string) ($data['badge_text'] ?? ''));
         $iconBadge = trim((string) ($data['badge_icon'] ?? ''));
 
+        if ($iconBadge === '__text__') {
+            $value = $textBadge !== '' ? $textBadge : $legacyBadge;
+            return ['mode' => 'text', 'badge' => $value];
+        }
+
+        if ($iconBadge !== '') {
+            return ['mode' => 'icon', 'badge' => $iconBadge];
+        }
+
+        if ($textBadge !== '') {
+            return ['mode' => 'text', 'badge' => $textBadge];
+        }
+
         if ($mode === 'none') {
             return ['mode' => 'none', 'badge' => ''];
         }
