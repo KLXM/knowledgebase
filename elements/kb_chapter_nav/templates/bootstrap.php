@@ -10,10 +10,7 @@ if ('' === $title) {
     return;
 }
 
-$anchorBase = '' !== $anchorInput ? $anchorInput : $title;
-$anchor = strtolower(trim($anchorBase));
-$anchor = preg_replace('/[^a-z0-9\-_]+/u', '-', $anchor);
-$anchor = is_string($anchor) ? trim($anchor, '-') : '';
+$anchor = \FriendsOfREDAXO\Knowledgebase\FrontendRenderer::resolveChapterRenderAnchor($anchorInput, $title);
 
 if ('' === $anchor) {
     return;

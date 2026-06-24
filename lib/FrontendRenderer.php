@@ -21,6 +21,41 @@ final class FrontendRenderer
 {
     private static bool $assetsRendered = false;
     private static int $instanceCounter = 0;
+    /**
+     * @var array<string, int>
+     */
+    private static array $chapterRenderRegistry = [];
+    private static bool $chapterRenderSessionActive = false;
+
+    public static function beginChapterRenderSession(): void
+    {
+        self::$chapterRenderRegistry = [];
+        self::$chapterRenderSessionActive = true;
+    }
+
+    public static function endChapterRenderSession(): void
+    {
+        self::$chapterRenderRegistry = [];
+        self::$chapterRenderSessionActive = false;
+    }
+
+    public static function resolveChapterRenderAnchor(string $primaryValue, string $fallbackValue = ''): string
+    {
+        $base = self::sanitizeAnchor($primaryValue);
+        if ($base === '' && $fallbackValue !== '') {
+            $base = self::sanitizeAnchor($fallbackValue);
+        }
+
+        if ($base === '') {
+            return '';
+        }
+
+        if (!self::$chapterRenderSessionActive) {
+            return $base;
+        }
+
+        return self::uniqueAnchorFromRegistry($base, self::$chapterRenderRegistry);
+    }
 
     public static function render(int $knowledgebaseId, string $startSlug = '', int $stickyHeaderOffset = 0, int $stickyNavOffset = 0): string
     {
@@ -770,7 +805,12 @@ final class FrontendRenderer
         $introHtml = '' !== $intro ? '<div class="kb-app__intro">' . $intro . '</div>' : '';
         $breadcrumbs = self::renderBreadcrumbs($knowledgebase, $article);
         $editButton = self::renderBackendEditButton($article);
-        $articleBody = GlossaryService::enhanceArticleHtml($knowledgebase, $article->renderContent());
+        self::beginChapterRenderSession();
+        try {
+            $articleBody = GlossaryService::enhanceArticleHtml($knowledgebase, $article->renderContent());
+        } finally {
+            self::endChapterRenderSession();
+        }
         $recommendationBlocks = '';
 
         if ($relatedEnabled) {
@@ -1008,6 +1048,7 @@ final class FrontendRenderer
         }
 
         $chapters = [];
+        $anchorRegistry = [];
         foreach ($decoded as $slice) {
             if (!is_array($slice)) {
                 continue;
@@ -1039,7 +1080,8 @@ final class FrontendRenderer
 
             $badge = trim((string) ($data['badge'] ?? ''));
             $anchorBase = trim((string) ($data['anchor_id'] ?? ''));
-            $anchor = self::sanitizeAnchor($anchorBase !== '' ? $anchorBase : $title);
+            $anchor = self::resolveChapterRenderAnchor($anchorBase, $title);
+            $anchor = self::uniqueAnchorFromRegistry($anchor, $anchorRegistry);
             if ($anchor === '') {
                 continue;
             }
@@ -1064,6 +1106,26 @@ final class FrontendRenderer
         }
 
         return trim($normalized, '-');
+    }
+
+    /**
+     * @param array<string, int> $registry
+     */
+    private static function uniqueAnchorFromRegistry(string $baseAnchor, array &$registry): string
+    {
+        $base = self::sanitizeAnchor($baseAnchor);
+        if ($base === '') {
+            return '';
+        }
+
+        $count = (int) ($registry[$base] ?? 0) + 1;
+        $registry[$base] = $count;
+
+        if ($count === 1) {
+            return $base;
+        }
+
+        return $base . '-' . $count;
     }
 
     private static function renderNavBadge(string $badge, ?string $defaultIcon = null): string
