@@ -71,7 +71,7 @@ if ($selectedKnowledgebaseId <= 0) {
     return;
 }
 
-echo '<style>#yform-data_edit-rex_knowledgebase_article-knowledgebase_id{display:none;}</style>';
+echo '<style>#yform-data_edit-rex_knowledgebase_article-knowledgebase_id,#yform-data_edit-rex_knowledgebase_article-search_text{display:none;}</style>';
 
 /** @phpstan-ignore-next-line */
 $_REQUEST['table_name'] = rex_request('table_name', 'string', $tableName);

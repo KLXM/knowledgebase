@@ -50,6 +50,11 @@ page:
             title: 'Frontend-Texte'
             subPath: pages/frontend_texts.php
             perm: knowledgebase[frontend_texts]
+        redakteurs_guide:
+            title: 'Redakteurs-Guide'
+            subPath: docs/REDAKTEURE.md
+            itemClass: 'pull-right'
+            perm: knowledgebase[overview]
 
 autoload:
     classes:
