@@ -5,7 +5,15 @@ kb_chapter_nav_field_title = Titel
 kb_chapter_nav_field_heading_level = Ebene
 kb_chapter_nav_field_heading_level_notice = Nur H2 wird in der Navigation gelistet. H3/H4 bleiben im Inhalt.
 kb_chapter_nav_field_text = Kurzbeschreibung
-kb_chapter_nav_field_badge = Badge / Kapitelnummer
-kb_chapter_nav_field_badge_notice = Optional: Zahl 1-99 oder UIKit3-Iconname (z.B. file-text, bookmark, info, question, tag, star).
+kb_chapter_nav_field_badge_mode = Badge-Typ
+kb_chapter_nav_field_badge_mode_auto = Automatisch (bestehender Wert)
+kb_chapter_nav_field_badge_mode_none = Kein Icon / kein Badge
+kb_chapter_nav_field_badge_mode_text = Freier Text / Kapitelnummer
+kb_chapter_nav_field_badge_mode_icon = UIKit3 Icon
+kb_chapter_nav_field_badge_mode_notice = Waehle, ob ein Icon oder freier Text neben dem Kapitel angezeigt werden soll.
+kb_chapter_nav_field_badge_icon = Icon waehlen
+kb_chapter_nav_field_badge_icon_none = Bitte waehlen
+kb_chapter_nav_field_badge_text = Freitext / Kapitelnummer
+kb_chapter_nav_field_badge_text_notice = Beispiele: 1, 2.1, A, Intro
 kb_chapter_nav_field_anchor_id = Anchor-ID (optional)
 kb_chapter_nav_field_anchor_notice = Leer lassen = wird automatisch aus dem Titel erzeugt.

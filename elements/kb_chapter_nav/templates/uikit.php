@@ -24,7 +24,9 @@ if ('' === $anchor) {
 <section id="<?= rex_escape($anchor) ?>" class="kb-chapter-nav uk-section uk-section-xsmall uk-padding-remove-top uk-padding-remove-horizontal">
         <<?= $headingLevel ?> class="uk-heading-bullet uk-margin-small-bottom"><?= rex_escape($title) ?></<?= $headingLevel ?>>
 
-    <?php if ('' !== $text): ?>
-        <p class="uk-text-muted uk-margin-bottom"><?= nl2br(rex_escape($text)) ?></p>
-    <?php endif; ?>
+    <?php
+    if ('' !== $text) {
+        echo '<p class="uk-text-muted uk-margin-bottom">' . nl2br(rex_escape($text)) . '</p>';
+    }
+    ?>
 </section>

@@ -20,8 +20,10 @@ if ('' === $anchor) {
     <div class="panel-body">
         <h4 style="margin-top:0;"><?= rex_escape($title) ?></h4>
 
-        <?php if ('' !== $text): ?>
-            <p class="text-muted" style="margin-bottom:12px;"><?= nl2br(rex_escape($text)) ?></p>
-        <?php endif; ?>
+        <?php
+        if ('' !== $text) {
+            echo '<p class="text-muted" style="margin-bottom:12px;">' . nl2br(rex_escape($text)) . '</p>';
+        }
+        ?>
     </div>
 </section>
