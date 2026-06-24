@@ -1,0 +1,25 @@
+/* Knowledgebase backend: Kapitelmarken im Content-Builder schneller erkennbar */
+#rex-page-knowledgebase-articles {
+  --kb-chapter-toolbar-bg: rgba(240, 173, 78, 0.92);
+  --kb-chapter-label-bg: rgba(59, 42, 10, 0.25);
+}
+
+body.rex-theme-dark #rex-page-knowledgebase-articles {
+  --kb-chapter-toolbar-bg: rgba(240, 173, 78, 0.9);
+  --kb-chapter-label-bg: rgba(42, 30, 9, 0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+  body.rex-has-theme:not(.rex-theme-light) #rex-page-knowledgebase-articles {
+    --kb-chapter-toolbar-bg: rgba(240, 173, 78, 0.9);
+    --kb-chapter-label-bg: rgba(42, 30, 9, 0.35);
+  }
+}
+
+#rex-page-knowledgebase-articles .content-builder-slice[data-slice-type="kb_chapter_nav"] > .slice-toolbar {
+  background: var(--kb-chapter-toolbar-bg);
+}
+
+#rex-page-knowledgebase-articles .content-builder-slice[data-slice-type="kb_chapter_nav"] > .slice-toolbar .slice-label {
+  background: var(--kb-chapter-label-bg);
+}

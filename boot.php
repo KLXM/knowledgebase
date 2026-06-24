@@ -99,6 +99,7 @@ if (rex::isBackend() && null !== rex::getUser() && rex_addon::get('tinymce')->is
 
 if (rex::isBackend() && null !== rex::getUser() && rex_be_controller::getCurrentPage() === 'knowledgebase/articles') {
     $addon = rex_addon::get('knowledgebase');
+    rex_view::addCssFile(rex_url::addonAssets('knowledgebase', 'css/articles-chapter-toolbar.css') . '?v=' . rawurlencode((string) $addon->getVersion()));
     rex_view::addJsFile(rex_url::addonAssets('knowledgebase', 'js/articles-focus-fix.js') . '?v=' . rawurlencode((string) $addon->getVersion()));
 }
 
