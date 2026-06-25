@@ -23,16 +23,16 @@ Ein REDAXO-Add-on zur Verwaltung und Ausgabe strukturierter Wissensinhalte mit A
 - PHP >= 8.2
 - yform >= 5.0
 - fields >= 1.4.0
-- yform_content_builder
+- builder
 
 Hinweis zu Abhängigkeiten:
 
-Für den vollen Funktionsumfang werden Add-ons benötigt, die je nach Projektkontext nicht immer öffentlich verfügbar sind. Das betrifft insbesondere yform_content_builder in einer kompatiblen Projektversion.
+Für den vollen Funktionsumfang werden Add-ons benötigt, die je nach Projektkontext nicht immer öffentlich verfügbar sind. Das betrifft insbesondere builder in einer kompatiblen Projektversion.
 
 ## Installation
 
 1. Add-on nach redaxo/src/addons/knowledgebase kopieren.
-2. Abhängigkeiten installieren und aktivieren (yform, yform_content_builder).
+2. Abhängigkeiten installieren und aktivieren (yform, builder).
 3. Add-on im REDAXO-Backend installieren.
 4. Update-Skripte ausführen, damit Tabellen, Indizes und Suchdaten konsistent sind.
 

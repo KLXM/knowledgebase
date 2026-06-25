@@ -58,17 +58,27 @@ if (rex_addon::get('yform')->isAvailable()) {
     });
 }
 
-if (rex_addon::get('yform_content_builder')->isAvailable()) {
-    rex_extension::register(
-        'YFORM_CONTENT_BUILDER_ELEMENT_MODE',
+if ((rex_addon::exists('builder') && rex_addon::get('builder')->isAvailable()) || rex_addon::get('builder')->isAvailable()) {
+    $registerForNames = static function (string $legacyName, callable $callable): void {
+        $names = [$legacyName];
+        if (str_starts_with($legacyName, 'BUILDER_')) {
+            $names[] = 'BUILDER_' . substr($legacyName, strlen('BUILDER_'));
+        }
+
+        foreach (array_values(array_unique($names)) as $name) {
+            rex_extension::register($name, $callable, rex_extension::EARLY);
+        }
+    };
+
+    $registerForNames(
+        'BUILDER_ELEMENT_MODE',
         static function (): string {
             return AddonSettings::getElementMode();
         },
-        rex_extension::EARLY,
     );
 
-    rex_extension::register(
-        'YFORM_CONTENT_BUILDER_ELEMENT_PATHS',
+    $registerForNames(
+        'BUILDER_ELEMENT_PATHS',
         static function (rex_extension_point $ep): array {
             $paths = $ep->getSubject();
             if (!is_array($paths)) {
@@ -79,7 +89,6 @@ if (rex_addon::get('yform_content_builder')->isAvailable()) {
 
             return $paths;
         },
-        rex_extension::EARLY,
     );
 
     if (rex::isBackend()) {

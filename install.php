@@ -8,7 +8,7 @@ if (!rex_addon::get('yform')->isAvailable()) {
     throw new rex_functional_exception('YForm muss installiert und aktiviert sein.');
 }
 
-if (!rex_addon::get('yform_content_builder')->isAvailable()) {
+if (!rex_addon::get('builder')->isAvailable()) {
     throw new rex_functional_exception('YForm Content Builder muss installiert und aktiviert sein.');
 }
 

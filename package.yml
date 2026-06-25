@@ -10,7 +10,7 @@ requires:
     packages:
         fields: '>=1.4.0'
         tinymce: '*'
-        yform_content_builder: '*'
+        builder: '*'
 
 page:
     title: 'Knowledge Base'

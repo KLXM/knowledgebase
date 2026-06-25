@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use KLXM\YFormContentBuilder\Helper;
+use FriendsOfREDAXO\Builder\Helper;
 
 /**
  * @method int getId()
@@ -49,7 +49,7 @@ class rex_data_knowledgebase_article extends rex_yform_manager_dataset
             return '';
         }
 
-        if (!rex_addon::get('yform_content_builder')->isAvailable()) {
+        if (!rex_addon::get('builder')->isAvailable()) {
             return nl2br(rex_escape($content));
         }
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use KLXM\YFormContentBuilder\Helper;
+use FriendsOfREDAXO\Builder\Helper;
 
 $_ci = Helper::elementTranslator('kb_chapter_nav');
 
