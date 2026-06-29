@@ -72,6 +72,33 @@
         }
     }, true);
 
+    document.addEventListener('submit', function (event) {
+        if (!(event.target instanceof HTMLFormElement)) {
+            return;
+        }
+
+        if (!event.target.closest('form')) {
+            return;
+        }
+
+        if (typeof window.tinymce === 'undefined' || !Array.isArray(window.tinymce.editors)) {
+            return;
+        }
+
+        window.tinymce.triggerSave();
+
+        window.tinymce.editors.forEach(function (editor) {
+            if (!editor || typeof editor.getElement !== 'function' || typeof editor.setDirty !== 'function') {
+                return;
+            }
+
+            var element = editor.getElement();
+            if (element && event.target.contains(element)) {
+                editor.setDirty(false);
+            }
+        });
+    }, true);
+
     window.addEventListener('load', function () {
         var target = getTargetInput();
         if (target) {
