@@ -1,5 +1,7 @@
 <?php
 
+use FriendsOfREDAXO\Knowledgebase\KnowledgebaseUrl;
+
 $tableName = rex::getTable('knowledgebase_article');
 $currentPage = rex_be_controller::getCurrentPage();
 $sessionKey = 'knowledgebase_articles_selected_kb';
@@ -45,6 +47,35 @@ if ($selectedKnowledgebaseId > 0 && !array_key_exists($selectedKnowledgebaseId, 
 if ($selectedKnowledgebaseId > 0) {
     rex_set_session($sessionKey, $selectedKnowledgebaseId);
 }
+
+/**
+ * Baut eine Frontend-URL-Vorlage für die aktuell gewählte Wissensbasis.
+ */
+function knowledgebaseGetArticleUrlTemplate(int $knowledgebaseId): string
+{
+    if ($knowledgebaseId <= 0 || !KnowledgebaseUrl::hasProfile($knowledgebaseId)) {
+        return '';
+    }
+
+    $baseUrl = trim(KnowledgebaseUrl::getBaseUrl($knowledgebaseId));
+    if ('' === $baseUrl) {
+        return '';
+    }
+
+    $path = trim((string) parse_url($baseUrl, PHP_URL_PATH));
+    if ('' === $path) {
+        return '';
+    }
+
+    $parentPath = dirname(rtrim($path, '/'));
+    if ('.' === $parentPath || '' === $parentPath) {
+        $parentPath = '/';
+    }
+
+    return rtrim($parentPath, '/') . '/___slug___/';
+}
+
+$articleUrlTemplate = knowledgebaseGetArticleUrlTemplate($selectedKnowledgebaseId);
 
 $content = '<form method="get" action="' . rex_url::currentBackendPage() . '" class="form-inline" style="margin-bottom: 15px;">';
 $content .= '<input type="hidden" name="page" value="' . rex_escape($currentPage) . '">';
@@ -142,6 +173,34 @@ rex_extension::register(
         }
 
         return $query->where('knowledgebase_id', $selectedKnowledgebaseId);
+    },
+    rex_extension::EARLY,
+);
+
+rex_extension::register(
+    'YFORM_DATA_LIST_ACTION_BUTTONS',
+    static function (rex_extension_point $ep) use ($articleUrlTemplate): array {
+        $table = $ep->getParam('table');
+        if (!$table instanceof rex_yform_manager_table || $table->getTableName() !== rex::getTable('knowledgebase_article')) {
+            return is_array($ep->getSubject()) ? $ep->getSubject() : [];
+        }
+
+        if ('' === $articleUrlTemplate) {
+            return is_array($ep->getSubject()) ? $ep->getSubject() : [];
+        }
+
+        $actionButtons = is_array($ep->getSubject()) ? $ep->getSubject() : [];
+        $actionButtons['frontend'] = [
+            'params' => [],
+            'content' => '<i class="rex-icon fa-external-link"></i> Frontend öffnen',
+            'url' => $articleUrlTemplate,
+            'attributes' => [
+                'target' => '_blank',
+                'rel' => 'noopener noreferrer',
+            ],
+        ];
+
+        return $actionButtons;
     },
     rex_extension::EARLY,
 );
