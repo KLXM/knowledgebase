@@ -364,7 +364,7 @@
         "db_type": "varchar(191)",
         "not_required": "1",
         "search": 1,
-        "list_hidden": 0,
+        "list_hidden": 1,
         "table_name": "rex_knowledgebase_article"
       },
       {
@@ -404,7 +404,7 @@
         "visibility": "visible",
         "db_type": "varchar(191)",
         "search": 1,
-        "list_hidden": 0,
+        "list_hidden": 1,
         "table_name": "rex_knowledgebase_article"
       },
       {
