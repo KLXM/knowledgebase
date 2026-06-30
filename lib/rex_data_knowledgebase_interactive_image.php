@@ -39,7 +39,7 @@ class rex_data_knowledgebase_interactive_image extends rex_yform_manager_dataset
     }
 
     /**
-     * @return list<array{title:string,content:string,x:float,y:float}>
+    * @return list<array{title:string,content:string,button_label:string,button_knowledgebase_id:int,button_article_slug:string,x:float,y:float}>
      */
     public function getMarkers(): array
     {
@@ -66,7 +66,10 @@ class rex_data_knowledgebase_interactive_image extends rex_yform_manager_dataset
 
             $markers[] = [
                 'title' => $title,
-                'content' => (string) ($item['content'] ?? ''),
+                'content' => \rex_string::sanitizeHtml((string) ($item['content'] ?? '')),
+                'button_label' => trim((string) ($item['buttonLabel'] ?? $item['button_label'] ?? '')),
+                'button_knowledgebase_id' => (int) ($item['buttonKnowledgebaseId'] ?? $item['button_knowledgebase_id'] ?? 0),
+                'button_article_slug' => trim((string) ($item['buttonArticleSlug'] ?? $item['button_article_slug'] ?? '')),
                 'x' => max(0.0, min(100.0, (float) ($item['x'] ?? 50))),
                 'y' => max(0.0, min(100.0, (float) ($item['y'] ?? 50))),
             ];

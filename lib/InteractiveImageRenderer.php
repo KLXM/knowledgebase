@@ -112,7 +112,8 @@ class InteractiveImageRenderer
                 $html .= '<div class="uk-modal-dialog uk-modal-body">';
                 $html .= '<button class="uk-modal-close-default" type="button" uk-close></button>';
                 $html .= '<h3 class="uk-modal-title">' . rex_escape($marker['title']) . '</h3>';
-                $html .= '<div class="kb-marker-map__modal-content">' . $marker['content'] . '</div>';
+                $html .= '<div class="kb-marker-map__modal-content">' . \rex_string::sanitizeHtml($marker['content']) . '</div>';
+                $html .= self::renderMarkerButton($marker);
                 $html .= '</div>';
                 $html .= '</div>';
             }
@@ -121,6 +122,27 @@ class InteractiveImageRenderer
         $html .= '</div>';
 
         return $html;
+    }
+
+    /**
+     * @param array{title:string,content:string,button_label:string,button_knowledgebase_id:int,button_article_slug:string,x:float,y:float} $marker
+     */
+    private static function renderMarkerButton(array $marker): string
+    {
+        $knowledgebaseId = (int) ($marker['button_knowledgebase_id'] ?? 0);
+        $articleSlug = trim((string) ($marker['button_article_slug'] ?? ''));
+        $label = trim((string) ($marker['button_label'] ?? ''));
+
+        if ($knowledgebaseId <= 0 || '' === $articleSlug || '' === $label) {
+            return '';
+        }
+
+        $url = KnowledgebaseUrl::getArticleUrl($knowledgebaseId, $articleSlug);
+        if ('' === trim($url)) {
+            return '';
+        }
+
+        return '<p class="kb-marker-map__modal-actions"><a class="kb-marker-map__modal-button uk-button uk-button-primary" href="' . rex_escape($url) . '">' . rex_escape($label) . '</a></p>';
     }
 
     private static function renderAssets(): string
@@ -149,7 +171,7 @@ class InteractiveImageRenderer
     }
 
     /**
-     * @return list<array{title:string,content:string,x:float,y:float}>
+    * @return list<array{title:string,content:string,button_label:string,button_knowledgebase_id:int,button_article_slug:string,x:float,y:float}>
      */
     private static function parseMarkers(string $rawJson): array
     {
@@ -176,7 +198,10 @@ class InteractiveImageRenderer
 
             $markers[] = [
                 'title' => $title,
-                'content' => (string) ($item['content'] ?? ''),
+                'content' => \rex_string::sanitizeHtml((string) ($item['content'] ?? '')),
+                'button_label' => trim((string) ($item['buttonLabel'] ?? $item['button_label'] ?? '')),
+                'button_knowledgebase_id' => (int) ($item['buttonKnowledgebaseId'] ?? $item['button_knowledgebase_id'] ?? 0),
+                'button_article_slug' => trim((string) ($item['buttonArticleSlug'] ?? $item['button_article_slug'] ?? '')),
                 'x' => max(0.0, min(100.0, (float) ($item['x'] ?? 50))),
                 'y' => max(0.0, min(100.0, (float) ($item['y'] ?? 50))),
             ];

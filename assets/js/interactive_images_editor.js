@@ -1,6 +1,9 @@
 (function ($) {
     'use strict';
 
+    var KB_TINY_PROFILE = 'knowledgebase_interactive_light';
+    var kbLinkTreePromise = null;
+
     if (typeof $ !== 'function') {
         return;
     }
@@ -62,10 +65,213 @@
                 return {
                     title: String(item.title || '').trim(),
                     content: String(item.content || ''),
+                    buttonLabel: String(item.buttonLabel || item.button_label || '').trim(),
+                    buttonKnowledgebaseId: parseInt(String(item.buttonKnowledgebaseId || item.button_knowledgebase_id || '0'), 10) || 0,
+                    buttonArticleSlug: String(item.buttonArticleSlug || item.button_article_slug || '').trim(),
                     x: sanitizePercent(item.x),
                     y: sanitizePercent(item.y)
                 };
             });
+    }
+
+    function fetchKnowledgebaseTree() {
+        if (kbLinkTreePromise !== null) {
+            return kbLinkTreePromise;
+        }
+
+        kbLinkTreePromise = fetch('./index.php?rex-api-call=knowledgebase_links', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(function (response) {
+            return response.ok ? response.json() : { success: false, tree: [] };
+        }).then(function (data) {
+            return data && Array.isArray(data.tree) ? data.tree : [];
+        }).catch(function () {
+            return [];
+        });
+
+        return kbLinkTreePromise;
+    }
+
+    function renderKnowledgebaseTargetOptions(tree, marker) {
+        var currentValue = '';
+        if ((marker.buttonKnowledgebaseId || 0) > 0 && String(marker.buttonArticleSlug || '').trim() !== '') {
+            currentValue = String(marker.buttonKnowledgebaseId) + '::' + String(marker.buttonArticleSlug).trim();
+        }
+
+        var html = '<option value="">Kein Button</option>';
+
+        if (!Array.isArray(tree)) {
+            return html;
+        }
+
+        tree.forEach(function (knowledgebase) {
+            var kbTitle = String(knowledgebase.title || ('Wissensbasis #' + String(knowledgebase.id || '')));
+            var articles = Array.isArray(knowledgebase.articles) ? knowledgebase.articles : [];
+
+            if (articles.length === 0) {
+                return;
+            }
+
+            html += '<optgroup label="' + escapeHtml(kbTitle) + '">';
+
+            articles.forEach(function (article) {
+                var slug = String(article.slug || '').trim();
+                var kbId = parseInt(String(knowledgebase.id || '0'), 10) || 0;
+                if (kbId <= 0 || slug === '') {
+                    return;
+                }
+
+                var optionValue = String(kbId) + '::' + slug;
+                var selected = optionValue === currentValue ? ' selected' : '';
+                var title = String(article.title || slug);
+                html += '<option value="' + escapeHtml(optionValue) + '"' + selected + '>' + escapeHtml(title) + '</option>';
+            });
+
+            html += '</optgroup>';
+        });
+
+        return html;
+    }
+
+    function updateButtonFields($host, state, $markersField) {
+        var marker = state.markers[state.selectedIndex];
+        if (!marker) {
+            return;
+        }
+
+        fetchKnowledgebaseTree().then(function (tree) {
+            var $target = $host.find('[data-role="marker-button-target"]').first();
+            var $label = $host.find('[data-role="marker-button-label"]').first();
+            if (!$target.length || !$label.length) {
+                return;
+            }
+
+            $target.html(renderKnowledgebaseTargetOptions(tree, marker));
+
+            var hasTarget = (marker.buttonKnowledgebaseId || 0) > 0 && String(marker.buttonArticleSlug || '').trim() !== '';
+            $label.prop('disabled', !hasTarget);
+            if (!hasTarget) {
+                $label.val('');
+            } else {
+                $label.val(String(marker.buttonLabel || ''));
+            }
+
+            writeMarkers($markersField, state.markers);
+        });
+    }
+
+    function ensureTinyProfile() {
+        if (typeof window.tinyprofiles !== 'object' || !window.tinyprofiles) {
+            return 'light';
+        }
+
+        if (window.tinyprofiles[KB_TINY_PROFILE]) {
+            return KB_TINY_PROFILE;
+        }
+
+        if (!window.tinyprofiles.light) {
+            return 'light';
+        }
+
+        var profile = $.extend(true, {}, window.tinyprofiles.light);
+        var plugins = String(profile.plugins || '')
+            .split(/\s+/)
+            .filter(function (value) { return value !== ''; });
+
+        if (plugins.indexOf('knowledgebase_link') === -1) {
+            plugins.push('knowledgebase_link');
+        }
+
+        profile.plugins = plugins.join(' ');
+
+        var quickbarsSelectionToolbar = String(profile.quickbars_selection_toolbar || 'bold italic | link');
+        if (quickbarsSelectionToolbar.indexOf('knowledgebase_link_quick') === -1) {
+            quickbarsSelectionToolbar += ' | knowledgebase_link_quick';
+        }
+
+        profile.quickbars_selection_toolbar = quickbarsSelectionToolbar;
+        profile.quickbars_insert_toolbar = false;
+        profile.toolbar = false;
+        profile.height = 320;
+
+        window.tinyprofiles[KB_TINY_PROFILE] = profile;
+
+        return KB_TINY_PROFILE;
+    }
+
+    function syncTinyContentToState($host, state, $markersField) {
+        var marker = state.markers[state.selectedIndex];
+        if (!marker) {
+            return;
+        }
+
+        var $textarea = $host.find('[data-role="marker-content-editor"]').first();
+        if (!$textarea.length) {
+            return;
+        }
+
+        marker.content = String($textarea.val() || '');
+        writeMarkers($markersField, state.markers);
+    }
+
+    function destroyTinyEditor($host, state, $markersField) {
+        if (!state.editorId || typeof window.tinymce === 'undefined') {
+            return;
+        }
+
+        var editor = window.tinymce.get(state.editorId);
+        if (!editor) {
+            return;
+        }
+
+        editor.save();
+        syncTinyContentToState($host, state, $markersField);
+        editor.remove();
+    }
+
+    function initTinyEditor($host, state, $markersField) {
+        var $textarea = $host.find('[data-role="marker-content-editor"]').first();
+        if (!$textarea.length) {
+            return;
+        }
+
+        if (typeof window.tiny_init === 'function') {
+            window.tiny_init($host);
+        }
+
+        if (typeof window.tinymce === 'undefined' || !state.editorId) {
+            return;
+        }
+
+        var bindEditor = function () {
+            var editor = window.tinymce.get(state.editorId);
+            if (!editor || editor._kbInteractiveImageInit) {
+                return;
+            }
+
+            editor._kbInteractiveImageInit = true;
+
+            var sync = function () {
+                if (!state.markers[state.selectedIndex]) {
+                    return;
+                }
+
+                state.markers[state.selectedIndex].content = editor.getContent();
+                writeMarkers($markersField, state.markers);
+            };
+
+            editor.on('change input undo redo setcontent', sync);
+            editor.on('blur', function () {
+                editor.save();
+                sync();
+            });
+        };
+
+        bindEditor();
+        window.setTimeout(bindEditor, 0);
+        window.setTimeout(bindEditor, 150);
     }
 
     function fieldNameMatches(name, fieldName) {
@@ -135,7 +341,9 @@
         return $();
     }
 
-    function renderEditor($root, state) {
+    function renderEditor($root, state, $markersField) {
+        destroyTinyEditor($root, state, $markersField);
+
         var imageUrl = mediaToUrl(state.image);
         var selectedIndex = state.selectedIndex;
 
@@ -198,7 +406,12 @@
                 html += '<label>Titel</label>';
                 html += '<input type="text" class="form-control" data-role="marker-title" value="' + escapeHtml(activeMarker.title) + '">';
                 html += '<label>Modal-Inhalt (HTML erlaubt)</label>';
-                html += '<textarea class="form-control" rows="6" data-role="marker-content">' + escapeHtml(activeMarker.content) + '</textarea>';
+                html += '<textarea class="form-control tiny-editor kb-intimg-editor__tiny" rows="8" data-profile="' + escapeHtml(ensureTinyProfile()) + '" data-role="marker-content-editor" id="' + escapeHtml(state.editorId) + '">' + escapeHtml(activeMarker.content) + '</textarea>';
+                html += '<label>Optionaler Button zur Wissensbasis</label>';
+                html += '<select class="form-control" data-role="marker-button-target"></select>';
+                html += '<label>Button-Beschriftung</label>';
+                html += '<input type="text" class="form-control" data-role="marker-button-label" value="' + escapeHtml(activeMarker.buttonLabel || '') + '" placeholder="z. B. Mehr erfahren">';
+                html += '<p class="kb-intimg-editor__hint">Optional: Wähle einen Knowledgebase-Artikel aus. Dann wird am Ende des Modals ein Button angezeigt.</p>';
                 html += '</div>';
             }
         }
@@ -207,6 +420,8 @@
         html += '</div>';
 
         $root.html(html);
+        initTinyEditor($root, state, $markersField);
+        updateButtonFields($root, state, $markersField);
     }
 
     function writeMarkers($markersField, markers) {
@@ -254,19 +469,20 @@
             image: String($imageField.val() || ''),
             markers: parseMarkers($markersField.val()),
             selectedIndex: 0,
-            dragging: false
+            dragging: false,
+            editorId: 'kb-intimg-editor-' + String(Date.now()) + '-' + String(Math.floor(Math.random() * 100000))
         };
 
         function syncAndRender() {
             writeMarkers($markersField, state.markers);
-            renderEditor($editorHost, state);
+            renderEditor($editorHost, state, $markersField);
         }
 
-        renderEditor($editorHost, state);
+        renderEditor($editorHost, state, $markersField);
 
         $imageField.on('input change', function () {
             state.image = String($(this).val() || '');
-            renderEditor($editorHost, state);
+            renderEditor($editorHost, state, $markersField);
         });
 
         $markersField.on('input change', function () {
@@ -276,12 +492,13 @@
             if ($form.data('kb-intimg-silent-write') === 1) {
                 return;
             }
+            destroyTinyEditor($editorHost, state, $markersField);
             state.markers = parseMarkers($(this).val());
-            renderEditor($editorHost, state);
+            renderEditor($editorHost, state, $markersField);
         });
 
         $editorHost.on('click', '[data-action="add"]', function () {
-            state.markers.push({ title: '', content: '', x: 50, y: 50 });
+            state.markers.push({ title: '', content: '', buttonLabel: '', buttonKnowledgebaseId: 0, buttonArticleSlug: '', x: 50, y: 50 });
             state.selectedIndex = state.markers.length - 1;
             syncAndRender();
         });
@@ -301,8 +518,11 @@
             event.preventDefault();
             var index = parseInt(String($(this).attr('data-index') || '0'), 10);
             if (!Number.isNaN(index) && index >= 0 && index < state.markers.length) {
+                if (index !== state.selectedIndex) {
+                    destroyTinyEditor($editorHost, state, $markersField);
+                }
                 state.selectedIndex = index;
-                renderEditor($editorHost, state);
+                renderEditor($editorHost, state, $markersField);
             }
         });
 
@@ -318,11 +538,36 @@
             $editorHost.find('.kb-intimg-editor__pick[data-index="' + String(state.selectedIndex) + '"] span').last().text(label);
         });
 
-        $editorHost.on('input', '[data-role="marker-content"]', function () {
-            if (!state.markers[state.selectedIndex]) {
+        $editorHost.on('change', '[data-role="marker-button-target"]', function () {
+            var marker = state.markers[state.selectedIndex];
+            if (!marker) {
                 return;
             }
-            state.markers[state.selectedIndex].content = String($(this).val() || '');
+
+            var rawValue = String($(this).val() || '');
+            if (rawValue === '') {
+                marker.buttonKnowledgebaseId = 0;
+                marker.buttonArticleSlug = '';
+                marker.buttonLabel = '';
+            } else {
+                var parts = rawValue.split('::');
+                marker.buttonKnowledgebaseId = parseInt(String(parts[0] || '0'), 10) || 0;
+                marker.buttonArticleSlug = String(parts[1] || '').trim();
+                if (String(marker.buttonLabel || '').trim() === '') {
+                    marker.buttonLabel = 'Mehr erfahren';
+                }
+            }
+
+            updateButtonFields($editorHost, state, $markersField);
+        });
+
+        $editorHost.on('input', '[data-role="marker-button-label"]', function () {
+            var marker = state.markers[state.selectedIndex];
+            if (!marker) {
+                return;
+            }
+
+            marker.buttonLabel = String($(this).val() || '').trim();
             writeMarkers($markersField, state.markers);
         });
 

@@ -260,6 +260,15 @@
     z-index: 70;
 }
 
+.kb-marker-map__modal-actions {
+    margin: 1rem 0 0;
+}
+
+.kb-marker-map__modal-button {
+    display: inline-flex;
+    align-items: center;
+}
+
 .kb-app__scroll-top:hover,
 .kb-app__scroll-top:focus {
     border-color: #9abce0;

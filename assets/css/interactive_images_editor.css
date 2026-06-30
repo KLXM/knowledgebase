@@ -110,6 +110,18 @@
     color: #334155;
 }
 
+.kb-intimg-editor__tiny + .tox-tinymce,
+.kb-intimg-editor__fields .tox-tinymce {
+    border-radius: 6px;
+}
+
+.kb-intimg-editor__hint {
+    margin: 0;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
 .kb-intimg-editor__empty,
 .kb-intimg-editor__empty-inline {
     color: #64748b;
