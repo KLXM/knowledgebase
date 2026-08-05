@@ -506,7 +506,7 @@
         "type_name": "content_builder",
         "name": "content",
         "label": "Inhalt",
-        "db_type": "text",
+        "db_type": "mediumtext",
         "not_required": "1",
         "default_framework": "uikit",
         "description": "Knowledge Base Content",
