@@ -11,10 +11,57 @@
         return isKnowledgebaseArticlePage() && (params.get('func') === 'add' || params.get('func') === 'edit');
     }
 
-    function initHierarchyUi() {
-        var hierarchy = window.rex && window.rex.knowledgebaseArticleHierarchy ? window.rex.knowledgebaseArticleHierarchy : null;
+    function getHierarchyPayload() {
+        if (window.rex && window.rex.knowledgebaseArticleHierarchy && Array.isArray(window.rex.knowledgebaseArticleHierarchy.options)) {
+            return window.rex.knowledgebaseArticleHierarchy;
+        }
 
-        var parentSelect = document.querySelector('select[name$="[parent_id]"]');
+        var holder = document.getElementById('kb-article-hierarchy-data');
+        if (!holder) {
+            return null;
+        }
+
+        var raw = holder.getAttribute('data-hierarchy');
+        if (!raw) {
+            return null;
+        }
+
+        try {
+            var parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.options)) {
+                return parsed;
+            }
+        } catch (error) {
+            return null;
+        }
+
+        return null;
+    }
+
+    function getParentSelect() {
+        var select = document.querySelector('select[name$="[parent_id]"]');
+        if (select) {
+            return select;
+        }
+
+        var label = Array.from(document.querySelectorAll('label')).find(function (el) {
+            return (el.textContent || '').indexOf('Übergeordnete Seite') !== -1;
+        });
+        if (!label) {
+            return null;
+        }
+
+        var fieldId = label.getAttribute('for');
+        if (!fieldId) {
+            return null;
+        }
+
+        return document.getElementById(fieldId);
+    }
+
+    function initHierarchyUi() {
+        var hierarchy = getHierarchyPayload();
+        var parentSelect = getParentSelect();
         if (parentSelect && hierarchy && Array.isArray(hierarchy.options)) {
             var currentValue = String(parentSelect.value || '');
             var rootLabel = hierarchy.rootLabel || 'Keine übergeordnete Seite';
@@ -24,6 +71,8 @@
             rootOption.value = '0';
             rootOption.textContent = rootLabel;
             parentSelect.appendChild(rootOption);
+
+            var currentArticleId = String((hierarchy.currentArticleId || 0));
 
             hierarchy.options.forEach(function (optionData) {
                 if (!optionData || typeof optionData !== 'object') {
@@ -35,6 +84,11 @@
                 option.textContent = Array((parseInt(optionData.depth || 0, 10) || 0) + 1).join('— ') + (optionData.label || optionData.title || option.value);
                 if (optionData.disabled) {
                     option.disabled = true;
+                    if (String(option.value) === currentArticleId) {
+                        option.textContent += ' (aktuelle Seite)';
+                    } else {
+                        option.textContent += ' (nicht erlaubt)';
+                    }
                 }
                 parentSelect.appendChild(option);
             });

@@ -10,6 +10,7 @@ final class AddonSettings
     private const KEY_ELEMENT_MODE = 'element_mode';
     private const KEY_SEARCH_RECENT_DAYS = 'search_recent_days';
     private const KEY_SEARCH_MULTI_CONTEXT_EXCERPTS = 'search_multi_context_excerpts';
+    private const KEY_ALLOW_CHILD_PAGES = 'allow_child_pages';
 
     public static function getMenuTitle(): string
     {
@@ -70,5 +71,27 @@ final class AddonSettings
     public static function setSearchMultiContextExcerpts(bool $enabled): void
     {
         \rex_addon::get('knowledgebase')->setConfig(self::KEY_SEARCH_MULTI_CONTEXT_EXCERPTS, $enabled ? 1 : 0);
+    }
+
+    public static function isChildPagesEnabled(): bool
+    {
+        $configured = \rex_addon::get('knowledgebase')->getConfig(self::KEY_ALLOW_CHILD_PAGES, false);
+
+        if (is_int($configured)) {
+            return $configured === 1;
+        }
+
+        if (is_string($configured)) {
+            $normalized = trim($configured);
+
+            return $normalized === '1' || $normalized === '|1|';
+        }
+
+        return $configured === true;
+    }
+
+    public static function setChildPagesEnabled(bool $enabled): void
+    {
+        \rex_addon::get('knowledgebase')->setConfig(self::KEY_ALLOW_CHILD_PAGES, $enabled ? 1 : 0);
     }
 }

@@ -14,11 +14,13 @@ if ('save' === rex_request('func', 'string') && $csrfToken->isValid()) {
     $elementMode = rex_request('element_mode', 'string', 'merge');
     $searchRecentDays = rex_request('search_recent_days', 'int', 14);
     $searchMultiContextExcerpts = rex_request('search_multi_context_excerpts', 'int', 0) === 1;
+    $allowChildPages = rex_request('allow_child_pages', 'int', 0) === 1;
 
     AddonSettings::setMenuTitle($menuTitle);
     AddonSettings::setElementMode($elementMode);
     AddonSettings::setSearchRecentDays($searchRecentDays);
     AddonSettings::setSearchMultiContextExcerpts($searchMultiContextExcerpts);
+    AddonSettings::setChildPagesEnabled($allowChildPages);
 
     echo rex_view::success('Einstellungen wurden gespeichert.');
 } elseif ('save' === rex_request('func', 'string')) {
@@ -29,6 +31,7 @@ $currentMenuTitle = (string) rex_addon::get('knowledgebase')->getConfig('menu_ti
 $currentElementMode = AddonSettings::getElementMode();
 $currentSearchRecentDays = AddonSettings::getSearchRecentDays();
 $currentSearchMultiContextExcerpts = AddonSettings::isSearchMultiContextExcerptsEnabled();
+$currentAllowChildPages = AddonSettings::isChildPagesEnabled();
 
 $content = '';
 $content .= '<form action="' . rex_url::currentBackendPage() . '" method="post">';
@@ -65,6 +68,18 @@ $content .= '</div>';
 $content .= '<div class="checkbox">';
 $content .= '<label><input type="checkbox" name="search_multi_context_excerpts" value="1"' . ($currentSearchMultiContextExcerpts ? ' checked' : '') . '> Volltextsuche: mehrere Fundstellen-Kontexte anzeigen</label>';
 $content .= '<p class="help-block">Optional. Zeigt pro Treffer mehrere kurze Fundstellen-Ausschnitte statt nur eines einzelnen Teasers.</p>';
+$content .= '</div>';
+$content .= '</fieldset>';
+
+$content .= '<fieldset>';
+$content .= '<legend>Unterseiten</legend>';
+$content .= '<div class="form-group">';
+$content .= '<label class="control-label" for="kb-allow-child-pages">Unterseiten im Artikelbaum</label>';
+$content .= '<select class="form-control" id="kb-allow-child-pages" name="allow_child_pages">';
+$content .= '<option value="0"' . (!$currentAllowChildPages ? ' selected' : '') . '>Deaktiviert</option>';
+$content .= '<option value="1"' . ($currentAllowChildPages ? ' selected' : '') . '>Aktiviert</option>';
+$content .= '</select>';
+$content .= '<p class="help-block">Steuert die Aktion "Unterseite anlegen" in der Artikelliste. Bei "Deaktiviert" werden Unterseiten serverseitig auf Hauptebene erzwungen.</p>';
 $content .= '</div>';
 $content .= '</fieldset>';
 

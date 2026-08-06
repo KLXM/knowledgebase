@@ -2,11 +2,17 @@
 
 use FriendsOfREDAXO\Knowledgebase\KnowledgebaseUrl;
 use FriendsOfREDAXO\Knowledgebase\ArticleHierarchyService;
+use FriendsOfREDAXO\Knowledgebase\AddonSettings;
 
 $tableName = rex::getTable('knowledgebase_article');
 $currentPage = rex_be_controller::getCurrentPage();
 $sessionKey = 'knowledgebase_articles_selected_kb';
 $selectedKnowledgebaseId = rex_request('knowledgebase_id', 'int', 0);
+$table = rex_yform_manager_table::get($tableName);
+$csrfUrlParams = [];
+if ($table instanceof rex_yform_manager_table) {
+    $csrfUrlParams = (array) rex_csrf_token::factory($table->getCSRFKey())->getUrlParams();
+}
 
 if ($selectedKnowledgebaseId <= 0) {
     $requestFilter = rex_request('rex_yform_filter', 'array', []);
@@ -48,6 +54,10 @@ if ($selectedKnowledgebaseId > 0 && !array_key_exists($selectedKnowledgebaseId, 
 if ($selectedKnowledgebaseId > 0) {
     rex_set_session($sessionKey, $selectedKnowledgebaseId);
 }
+
+$childPagesEnabled = AddonSettings::isChildPagesEnabled();
+$requestedSet = rex_request('rex_yform_set', 'array', []);
+$requestedParentId = isset($requestedSet['parent_id']) ? (int) $requestedSet['parent_id'] : 0;
 
 /**
  * Baut eine Frontend-URL-Vorlage für die aktuell gewählte Wissensbasis.
@@ -91,13 +101,13 @@ foreach ($knowledgebaseOptions as $knowledgebaseId => $knowledgebaseTitle) {
 $content .= '</select>';
 $content .= '</div>';
 $content .= '<button class="btn btn-primary" type="submit" style="margin-left:8px;">Anzeigen</button>';
-$content .= ' <a class="btn btn-default" href="' . rex_escape(rex_url::backendPage($currentPage, [
+$content .= ' <a class="btn btn-default" href="' . rex_url::backendPage($currentPage, array_merge([
     'table_name' => $tableName,
     'knowledgebase_id' => $selectedKnowledgebaseId,
     'func' => 'add',
     'rex_yform_filter' => ['knowledgebase_id' => $selectedKnowledgebaseId],
     'rex_yform_set' => ['knowledgebase_id' => $selectedKnowledgebaseId, 'parent_id' => 0],
-])) . '"' . ($selectedKnowledgebaseId <= 0 ? ' style="pointer-events:none;opacity:.6;"' : '') . '><i class="rex-icon fa-plus"></i> Hauptseite anlegen</a>';
+], (array) $csrfUrlParams), false) . '"' . ($selectedKnowledgebaseId <= 0 ? ' style="pointer-events:none;opacity:.6;"' : '') . '><i class="rex-icon fa-plus"></i> Hauptseite anlegen</a>';
 $content .= '</form>';
 
 $fragment = new rex_fragment();
@@ -108,6 +118,10 @@ echo $fragment->parse('core/page/section.php');
 if ($selectedKnowledgebaseId <= 0) {
     echo rex_view::info('Bitte zuerst eine Wissensbasis auswählen. Danach werden nur die zugehörigen Beiträge angezeigt und bearbeitet.');
     return;
+}
+
+if (!$childPagesEnabled && $requestedParentId > 0) {
+    echo rex_view::warning('Unterseiten sind deaktiviert. Der neue Beitrag wird auf Hauptebene angelegt.');
 }
 
 $currentArticleId = rex_request('data_id', 'int', 0);
@@ -136,6 +150,18 @@ if (class_exists(rex_data_knowledgebase_article::class)) {
         'rootLabel' => 'Keine übergeordnete Seite',
         'options' => $hierarchyOptions,
     ]);
+}
+
+$hierarchyPayload = [
+    'knowledgebaseId' => $selectedKnowledgebaseId,
+    'currentArticleId' => $currentArticleId,
+    'rootLabel' => 'Keine übergeordnete Seite',
+    'options' => $hierarchyOptions,
+];
+
+$hierarchyJson = json_encode($hierarchyPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+if (is_string($hierarchyJson) && '' !== $hierarchyJson) {
+    echo '<div id="kb-article-hierarchy-data" data-hierarchy="' . rex_escape($hierarchyJson) . '" hidden></div>';
 }
 
 echo '<style>#yform-data_edit-rex_knowledgebase_article-knowledgebase_id,#yform-data_edit-rex_knowledgebase_article-search_text{display:none;}</style>';
@@ -181,7 +207,7 @@ rex_extension::register(
 
 rex_extension::register(
     'YFORM_MANAGER_DATA_EDIT_SET',
-    static function (rex_extension_point $ep) use ($selectedKnowledgebaseId): array {
+    static function (rex_extension_point $ep) use ($selectedKnowledgebaseId, $childPagesEnabled): array {
         $subject = $ep->getSubject();
         $table = $ep->getParam('table');
         if (!$table instanceof rex_yform_manager_table || $table->getTableName() !== rex::getTable('knowledgebase_article')) {
@@ -190,6 +216,9 @@ rex_extension::register(
 
         $setValues = is_array($subject) ? $subject : [];
         $setValues['knowledgebase_id'] = $selectedKnowledgebaseId;
+        if (!$childPagesEnabled) {
+            $setValues['parent_id'] = 0;
+        }
 
         return $setValues;
     },
@@ -236,32 +265,27 @@ rex_extension::register(
         $list->removeColumn('search_text');
         $list->removeColumn('parent_id');
 
-        $list->setColumnLabel('title', 'Seitenstruktur');
-        $list->setColumnFormat('title', 'custom', static function (array $params) use ($currentPage, $selectedKnowledgebaseId, $hierarchyDepthById): string {
+        $list->setColumnLabel('title', 'Titel');
+        $list->setColumnFormat('title', 'custom', static function (array $params) use ($hierarchyDepthById): string {
             /** @var rex_yform_list $rowList */
             $rowList = $params['list'];
             $articleId = (int) $rowList->getValue('id');
             $depth = $hierarchyDepthById[$articleId] ?? 0;
             $title = trim((string) $params['value']);
             $navTitle = trim((string) $rowList->getValue('nav_title'));
-            $label = '' !== $navTitle ? $navTitle : $title;
-            $editUrl = rex_url::backendPage($currentPage, [
-                'table_name' => rex::getTable('knowledgebase_article'),
-                'knowledgebase_id' => $selectedKnowledgebaseId,
+            $editUrl = $rowList->getUrl([
                 'func' => 'edit',
                 'data_id' => $articleId,
-                'rex_yform_filter' => ['knowledgebase_id' => $selectedKnowledgebaseId],
-                'rex_yform_set' => ['knowledgebase_id' => $selectedKnowledgebaseId],
-            ]);
+            ], false);
 
             $navHint = ('' !== $navTitle && $navTitle !== $title)
-                ? '<span class="kb-article-list-meta">Navi: ' . rex_escape($navTitle) . '</span>'
+                ? '<span class="kb-article-list-meta">Menü: ' . rex_escape($navTitle) . '</span>'
                 : '';
 
             return '<div class="kb-article-list-title-wrap">'
                 . '<span class="kb-article-list-indent kb-article-list-indent--depth-' . $depth . '" aria-hidden="true"></span>'
                 . '<div class="kb-article-list-title-content">'
-                . '<a class="kb-article-list-title" href="' . rex_escape($editUrl) . '">' . rex_escape($label) . '</a>'
+                . '<a class="kb-article-list-title" href="' . $editUrl . '">' . rex_escape($title) . '</a>'
                 . $navHint
                 . '</div>'
                 . '</div>';
@@ -282,7 +306,7 @@ rex_extension::register(
 
 rex_extension::register(
     'YFORM_DATA_LIST_ACTION_BUTTONS',
-    static function (rex_extension_point $ep) use ($articleUrlTemplate, $currentPage, $selectedKnowledgebaseId): array {
+    static function (rex_extension_point $ep) use ($articleUrlTemplate, $childPagesEnabled): array {
         $table = $ep->getParam('table');
         if (!$table instanceof rex_yform_manager_table || $table->getTableName() !== rex::getTable('knowledgebase_article')) {
             return is_array($ep->getSubject()) ? $ep->getSubject() : [];
@@ -302,17 +326,15 @@ rex_extension::register(
             ];
         }
 
-        $actionButtons['add_child'] = [
-            'params' => [],
-            'content' => '<i class="rex-icon fa-level-down"></i> Unterseite anlegen',
-            'url' => rex_url::backendPage($currentPage, [
-                'table_name' => rex::getTable('knowledgebase_article'),
-                'knowledgebase_id' => $selectedKnowledgebaseId,
-                'func' => 'add',
-                'rex_yform_filter' => ['knowledgebase_id' => $selectedKnowledgebaseId],
-                'rex_yform_set' => ['knowledgebase_id' => $selectedKnowledgebaseId, 'parent_id' => '___id___'],
-            ]),
-        ];
+        if ($childPagesEnabled) {
+            $actionButtons['add_child'] = [
+                'params' => [
+                    'func' => 'add',
+                    'rex_yform_set' => ['parent_id' => '___id___'],
+                ],
+                'content' => '<i class="rex-icon fa-level-down"></i> Unterseite anlegen',
+            ];
+        }
 
         return $actionButtons;
     },

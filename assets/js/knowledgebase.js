@@ -42,32 +42,6 @@ function initKnowledgebaseUi() {
     };
 
 
-    document.addEventListener('click', function (event) {
-        var toggle = findNavMainToggle(event.target);
-        if (!toggle) {
-            return;
-        }
-
-        event.preventDefault();
-        event.stopPropagation();
-        toggleKnowledgebaseNavItem(toggle);
-    }, true);
-
-    document.addEventListener('keydown', function (event) {
-        var toggle = findNavMainToggle(event.target);
-        if (!toggle) {
-            return;
-        }
-
-        if (event.key !== 'Enter' && event.key !== ' ') {
-            return;
-        }
-
-        event.preventDefault();
-        event.stopPropagation();
-        toggleKnowledgebaseNavItem(toggle);
-    }, true);
-
     document.querySelectorAll('.kb-app').forEach(function (app) {
         var searchInput = app.querySelector('.kb-app__search-input');
         var searchForm = app.querySelector('.kb-app__search-form');
@@ -324,21 +298,6 @@ function initKnowledgebaseUi() {
                 }
 
                 mainToggle.setAttribute('data-kb-bound', '1');
-                mainToggle.addEventListener('click', function (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    toggleKnowledgebaseNavItem(mainToggle);
-                });
-
-                mainToggle.addEventListener('keydown', function (event) {
-                    if (event.key !== 'Enter' && event.key !== ' ') {
-                        return;
-                    }
-
-                    event.preventDefault();
-                    event.stopPropagation();
-                    toggleKnowledgebaseNavItem(mainToggle);
-                });
             });
 
             var expandAll = function () {
@@ -868,6 +827,32 @@ function initAnchorNavigation(app) {
         return decodeURIComponent(url.hash.replace(/^#/, ''));
     };
 
+    var resolveActiveAnchorId = function () {
+        var rawHash = decodeURIComponent(window.location.hash.replace(/^#/, ''));
+        if (rawHash === '') {
+            return '';
+        }
+
+        var exactMatch = chapterLinks.find(function (link) {
+            return isSamePageAnchorLink(link) && getAnchorId(link) === rawHash;
+        });
+        if (exactMatch) {
+            return rawHash;
+        }
+
+        if (!rawHash.startsWith('kb-chapter-')) {
+            var prefixedHash = 'kb-chapter-' + rawHash;
+            var prefixedMatch = chapterLinks.find(function (link) {
+                return isSamePageAnchorLink(link) && getAnchorId(link) === prefixedHash;
+            });
+            if (prefixedMatch) {
+                return prefixedHash;
+            }
+        }
+
+        return '';
+    };
+
     var getAnchorElement = function (anchorId) {
         if (!anchorId) {
             return null;
@@ -916,6 +901,12 @@ function initAnchorNavigation(app) {
     };
 
     var updateActiveFromScroll = function () {
+        var hashActiveId = resolveActiveAnchorId();
+        if (hashActiveId !== '') {
+            markActiveAnchor(hashActiveId);
+            return;
+        }
+
         var candidates = [];
 
         chapterLinks.forEach(function (link) {
@@ -993,8 +984,13 @@ function initAnchorNavigation(app) {
     var initialHash = decodeURIComponent(window.location.hash.replace(/^#/, ''));
     if (initialHash !== '') {
         window.requestAnimationFrame(function () {
-            scrollToAnchor(initialHash, 'auto');
-            markActiveAnchor(initialHash);
+            var activeAnchorId = resolveActiveAnchorId();
+            if (activeAnchorId === '') {
+                activeAnchorId = initialHash;
+            }
+
+            scrollToAnchor(activeAnchorId, 'auto');
+            markActiveAnchor(activeAnchorId);
         });
     }
 }

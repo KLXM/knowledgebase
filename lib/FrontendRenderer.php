@@ -22,8 +22,8 @@ final class FrontendRenderer
     private static bool $assetsRendered = false;
     private static int $instanceCounter = 0;
     private const NAV_TOGGLE_INLINE_HANDLER = "var item=this.closest('[data-kb-nav-main]');if(!item){return false;}var sub=item.querySelector('[data-kb-nav-sublist]');if(!sub){return false;}var expanded=sub.hidden;sub.hidden=!expanded;item.classList.toggle('is-open',expanded);this.setAttribute('aria-expanded',expanded?'true':'false');var link=item.querySelector('[data-kb-nav-main-link]');if(link){link.setAttribute('aria-expanded',expanded?'true':'false');}return false;";
-    private const SEARCH_OPEN_INLINE_HANDLER = "var app=this.closest('.kb-app');if(!app){return false;}app.classList.add('is-search-open');this.setAttribute('aria-expanded','true');var closeLabel=this.getAttribute('data-kb-label-close');if(closeLabel){this.setAttribute('aria-label',closeLabel);}var input=app.querySelector('.kb-app__search-input');if(input){input.focus();input.dispatchEvent(new Event('focus',{bubbles:true}));}return false;";
-    private const SEARCH_CLOSE_INLINE_HANDLER = "var app=this.closest('.kb-app');if(!app){return false;}app.classList.remove('is-search-open');var results=app.querySelector('.kb-app__search-results');if(results){results.hidden=true;}var toggle=app.querySelector('[data-kb-search-toggle]');if(toggle){toggle.setAttribute('aria-expanded','false');var openLabel=toggle.getAttribute('data-kb-label-open');if(openLabel){toggle.setAttribute('aria-label',openLabel);}toggle.focus();}return false;";
+    private const SEARCH_OPEN_INLINE_HANDLER = "var app=this.closest('.kb-app');if(!app){return false;}app.classList.add('is-search-open');this.setAttribute('aria-expanded','true');var closeLabel=this.getAttribute('data-kb-label-close');if(closeLabel){this.setAttribute('aria-label',closeLabel);this.setAttribute('title',closeLabel);}var input=app.querySelector('.kb-app__search-input');if(input){input.focus();input.dispatchEvent(new Event('focus',{bubbles:true}));}return false;";
+    private const SEARCH_CLOSE_INLINE_HANDLER = "var app=this.closest('.kb-app');if(!app){return false;}app.classList.remove('is-search-open');var results=app.querySelector('.kb-app__search-results');if(results){results.hidden=true;}var toggle=app.querySelector('[data-kb-search-toggle]');if(toggle){toggle.setAttribute('aria-expanded','false');var openLabel=toggle.getAttribute('data-kb-label-open');if(openLabel){toggle.setAttribute('aria-label',openLabel);toggle.setAttribute('title',openLabel);}toggle.focus();}return false;";
     /**
      * @var array<string, int>
      */
@@ -292,9 +292,11 @@ final class FrontendRenderer
         $relatedHeading = FrontendI18n::msg('knowledgebase_related_heading', 'Aehnliche Artikel');
         $relatedEmpty = FrontendI18n::msg('knowledgebase_related_empty', 'Keine passenden Beitraege gefunden.');
         $menuLabel = FrontendI18n::msg('knowledgebase_menu_label', 'Menü');
+        $menuCloseLabel = FrontendI18n::msg('knowledgebase_menu_close_label', 'Menü schließen');
         $searchToggleOpenLabel = FrontendI18n::msg('knowledgebase_search_toggle_open', 'Suche öffnen');
         $searchToggleCloseLabel = FrontendI18n::msg('knowledgebase_search_toggle_close', 'Suche schließen');
         $searchSubmitLabel = FrontendI18n::msg('knowledgebase_search_submit_label', 'Suche starten');
+        $mobileNavTriggerClass = 'kb-app__mobile-nav-trigger' . ('focus' === $layoutMode ? '' : ' uk-hidden@m');
         $searchStateInputs = $usesCleanProfile
             ? ''
             : '<input type="hidden" name="' . rex_escape($glossaryParam) . '" value="0">'
@@ -330,24 +332,24 @@ final class FrontendRenderer
             . '<label class="kb-app__search-label uk-hidden" for="' . rex_escape($instanceId . '-search') . '">' . rex_escape(FrontendI18n::msg('knowledgebase_search_label', 'Suche')) . '</label>'
             . '<div class="kb-app__search-row">'
             . '<div class="kb-app__search-actions">'
-            . '<button class="kb-app__search-toggle" type="button" data-kb-search-toggle data-kb-label-open="' . rex_escape($searchToggleOpenLabel) . '" data-kb-label-close="' . rex_escape($searchToggleCloseLabel) . '" aria-label="' . rex_escape($searchToggleOpenLabel) . '" aria-controls="' . rex_escape($instanceId . '-search-control') . '" aria-expanded="false" onclick="' . rex_escape(self::SEARCH_OPEN_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}"><span uk-icon="search"></span></button>'
+            . '<button class="kb-app__search-toggle" type="button" data-kb-search-toggle data-kb-label-open="' . rex_escape($searchToggleOpenLabel) . '" data-kb-label-close="' . rex_escape($searchToggleCloseLabel) . '" aria-label="' . rex_escape($searchToggleOpenLabel) . '" title="' . rex_escape($searchToggleOpenLabel) . '" uk-tooltip="' . rex_escape($searchToggleOpenLabel) . '" aria-controls="' . rex_escape($instanceId . '-search-control') . '" aria-expanded="false" onclick="' . rex_escape(self::SEARCH_OPEN_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}"><span uk-icon="search"></span></button>'
             . '<div class="kb-app__history-wrap uk-inline">'
-            . '<button class="kb-app__history-toggle uk-button uk-button-default uk-button-small" type="button" data-kb-history-toggle aria-label="' . rex_escape($historyLabel) . '"><span class="kb-app__history-toggle-icon" aria-hidden="true">↺</span></button>'
+            . '<button class="kb-app__history-toggle uk-button uk-button-default uk-button-small" type="button" data-kb-history-toggle aria-label="' . rex_escape($historyLabel) . '" title="' . rex_escape($historyLabel) . '" uk-tooltip="' . rex_escape($historyLabel) . '"><span class="kb-app__history-toggle-icon" aria-hidden="true">↺</span></button>'
             . '<div class="kb-app__history-dropdown" data-kb-history-dropdown uk-dropdown="mode: click; pos: bottom-right; offset: 8">'
             . '<div class="kb-app__history-title">' . rex_escape($historyHeading) . '</div>'
             . '<ul class="kb-app__history-list uk-nav uk-nav-default" data-kb-history-list></ul>'
             . '<div class="kb-app__history-empty" data-kb-history-empty>' . rex_escape($historyEmpty) . '</div>'
             . '</div>'
             . '</div>'
-            . '<button class="kb-app__mobile-nav-trigger" type="button" uk-toggle="target: #' . rex_escape($offcanvasId) . '" aria-label="' . rex_escape($menuLabel) . '"><span uk-icon="menu"></span></button>'
+            . '<button class="' . rex_escape($mobileNavTriggerClass) . '" type="button" uk-toggle="target: #' . rex_escape($offcanvasId) . '" aria-label="' . rex_escape($menuLabel) . '" title="' . rex_escape($menuLabel) . '" uk-tooltip="' . rex_escape($menuLabel) . '"><span uk-icon="menu"></span></button>'
             . '</div>'
             . '<div id="' . rex_escape($instanceId . '-search-control') . '" class="kb-app__search-control" data-kb-search-control>'
             . '<div class="kb-app__search-input-wrap uk-inline">'
             . '<span class="kb-app__search-icon uk-form-icon" uk-icon="search"></span>'
             . '<input id="' . rex_escape($instanceId . '-search') . '" class="kb-app__search-input uk-input" type="search" name="' . rex_escape($searchFieldName) . '" value="' . rex_escape($searchQuery) . '" placeholder="' . rex_escape($knowledgebase->getPlaceholder()) . '" autocomplete="off">'
             . '</div>'
-            . '<button class="kb-app__search-submit uk-button uk-button-primary uk-button-small" type="submit" aria-label="' . rex_escape($searchSubmitLabel) . '"><span class="kb-app__search-submit-icon" uk-icon="search"></span></button>'
-            . '<button class="kb-app__search-close" type="button" data-kb-search-close aria-label="' . rex_escape($searchToggleCloseLabel) . '" onclick="' . rex_escape(self::SEARCH_CLOSE_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}"><span uk-close></span></button>'
+            . '<button class="kb-app__search-submit uk-button uk-button-primary uk-button-small" type="submit" aria-label="' . rex_escape($searchSubmitLabel) . '" title="' . rex_escape($searchSubmitLabel) . '" uk-tooltip="' . rex_escape($searchSubmitLabel) . '"><span class="kb-app__search-submit-icon" uk-icon="search"></span></button>'
+            . '<button class="kb-app__search-close" type="button" data-kb-search-close aria-label="' . rex_escape($searchToggleCloseLabel) . '" title="' . rex_escape($searchToggleCloseLabel) . '" uk-tooltip="' . rex_escape($searchToggleCloseLabel) . '" onclick="' . rex_escape(self::SEARCH_CLOSE_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}"><span uk-close></span></button>'
             . '</div>'
             . '</div>'
             . '<div class="kb-app__search-results" hidden></div>'
@@ -355,9 +357,9 @@ final class FrontendRenderer
             . '</div>'
             . '</div>'
             . '</div>'
-            . '<div id="' . rex_escape($offcanvasId) . '" class="kb-app__offcanvas-panel" uk-offcanvas="mode: slide; overlay: true">'
-            . '<div class="uk-offcanvas-bar kb-app__offcanvas">'
-            . '<button class="uk-offcanvas-close" type="button" uk-close></button>'
+            . '<div id="' . rex_escape($offcanvasId) . '" class="kb-app__offcanvas-panel" uk-offcanvas="mode: push; flip: true; overlay: true">'
+            . '<div class="uk-offcanvas-bar uk-offcanvas-bar-flip kb-app__offcanvas">'
+            . '<button class="uk-offcanvas-close uk-offcanvas-close-default" type="button" uk-close aria-label="' . rex_escape($menuCloseLabel) . '" title="' . rex_escape($menuCloseLabel) . '" uk-tooltip="' . rex_escape($menuCloseLabel) . '"></button>'
             . $nav
             . '</div>'
             . '</div>'
@@ -517,13 +519,14 @@ final class FrontendRenderer
 
         if ($tagFilterEnabled && [] !== $availableTags) {
             $tagExpanded = $tagModeActive || ($tagMultiEnabled ? $selectedTags !== [] : $selectedTag !== '');
+            $navToggleLabel = FrontendI18n::msg('knowledgebase_nav_submenu_toggle', 'Untermenü umschalten');
             $items .= '<li class="kb-app__nav-main-item kb-app__nav-main-item--tags" data-kb-nav-main' . ($tagModeActive ? ' data-kb-nav-default-open="1"' : '') . '>';
             $items .= '<div class="kb-app__nav-main-row">';
-            $items .= '<div class="kb-app__nav-link kb-app__nav-link--tags' . ($tagExpanded ? ' is-current is-trail' : '') . '">';
+            $items .= '<div class="kb-app__nav-link kb-app__nav-link--tags' . ($tagExpanded ? ' is-current is-trail' : '') . '" data-kb-nav-main-toggle role="button" tabindex="0" aria-expanded="' . ($tagExpanded ? 'true' : 'false') . '" aria-label="' . rex_escape($navToggleLabel) . '" title="' . rex_escape($navToggleLabel) . '" uk-tooltip="' . rex_escape($navToggleLabel) . '" onclick="' . rex_escape(self::NAV_TOGGLE_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}">';
             $items .= self::renderNavBadgeIcon('tag');
             $items .= '<span>' . rex_escape($tagsLabel) . '</span>';
             $items .= '</div>';
-            $items .= '<button class="kb-app__nav-main-toggle" data-kb-nav-main-toggle type="button" aria-expanded="' . ($tagExpanded ? 'true' : 'false') . '" aria-label="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_submenu_toggle', 'Untermenü umschalten')) . '" onclick="' . rex_escape(self::NAV_TOGGLE_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}"><span uk-icon="chevron-down"></span></button>';
+            $items .= '<button class="kb-app__nav-main-toggle" data-kb-nav-main-toggle type="button" aria-expanded="' . ($tagExpanded ? 'true' : 'false') . '" aria-label="' . rex_escape($navToggleLabel) . '" title="' . rex_escape($navToggleLabel) . '" uk-tooltip="' . rex_escape($navToggleLabel) . '" onclick="' . rex_escape(self::NAV_TOGGLE_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}"><span uk-icon="chevron-down"></span></button>';
             $items .= '</div>';
 
             $items .= '<ul class="kb-app__nav-list kb-app__nav-sublist kb-app__nav-tag-list" data-kb-nav-sublist' . ($tagExpanded ? '' : ' hidden') . '>';
@@ -1021,7 +1024,7 @@ final class FrontendRenderer
         $html .= '</a>';
 
         if ($hasChildren || $hasChapterLinks) {
-            $html .= '<button class="kb-app__nav-main-toggle" data-kb-nav-main-toggle type="button" aria-expanded="' . ($isExpanded ? 'true' : 'false') . '" aria-label="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_submenu_toggle', 'Untermenü umschalten')) . '" onclick="' . rex_escape(self::NAV_TOGGLE_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}"><span uk-icon="chevron-down"></span></button>';
+            $html .= '<button class="kb-app__nav-main-toggle" data-kb-nav-main-toggle type="button" aria-expanded="' . ($isExpanded ? 'true' : 'false') . '" aria-label="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_submenu_toggle', 'Untermenü umschalten')) . '" title="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_submenu_toggle', 'Untermenü umschalten')) . '" uk-tooltip="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_submenu_toggle', 'Untermenü umschalten')) . '" onclick="' . rex_escape(self::NAV_TOGGLE_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}"><span uk-icon="chevron-down"></span></button>';
         }
         $html .= '</div>';
 

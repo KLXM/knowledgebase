@@ -4,6 +4,19 @@ declare(strict_types=1);
 
 $addon = rex_addon::get('knowledgebase');
 
+$defaultConfigs = [
+    'element_mode' => 'merge',
+    'search_recent_days' => 14,
+    'search_multi_context_excerpts' => 0,
+    'allow_child_pages' => 0,
+];
+
+foreach ($defaultConfigs as $configKey => $configValue) {
+    if (!$addon->hasConfig($configKey)) {
+        $addon->setConfig($configKey, $configValue);
+    }
+}
+
 if (!rex_addon::get('yform')->isAvailable()) {
     throw new rex_functional_exception('YForm muss installiert und aktiviert sein.');
 }

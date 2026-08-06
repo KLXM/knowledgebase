@@ -229,7 +229,11 @@ final class SearchService
 
     private static function buildExcerpt(string $text, string $query): string
     {
-        $cleanedText = self::sanitizeExcerptSource($text);
+        $cleanedText = SearchTextExtractor::extractFromContentBuilder($text);
+        if ('' === $cleanedText) {
+            $cleanedText = self::sanitizeExcerptSource($text);
+        }
+
         $normalized = SearchTextExtractor::normalize($cleanedText);
         if ('' === $normalized) {
             return '';
