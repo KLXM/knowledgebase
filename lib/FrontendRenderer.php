@@ -90,6 +90,7 @@ final class FrontendRenderer
         $relatedEnabled = $knowledgebase->isRelatedArticlesEnabled();
         $relatedLimit = $knowledgebase->getRelatedArticlesLimit();
         $searchHistoryEnabled = $knowledgebase->isSearchHistoryEnabled();
+        $chapterFilterEnabled = $knowledgebase->isChapterFilterEnabled();
         $layoutMode = $knowledgebase->getLayoutMode();
         $tagModeActive = false;
 
@@ -228,6 +229,7 @@ final class FrontendRenderer
             $relatedEnabled,
             $relatedLimit,
             $searchHistoryEnabled,
+            $chapterFilterEnabled,
             $layoutMode,
             max(0, $stickyHeaderOffset),
             max(0, $stickyNavOffset),
@@ -242,7 +244,7 @@ final class FrontendRenderer
      * @param list<array{id:int,title:string,nav_title:string,slug:string,intro:string,excerpt:string}> $searchResults
     * @param list<rex_yform_manager_dataset> $filteredArticles
      */
-    private static function renderInner(string $instanceId, \rex_data_knowledgebase $knowledgebase, array $articles, ?\rex_data_knowledgebase_article $currentArticle, string $articleParam, string $searchParam, string $glossaryParam, string $tocParam, string $tagParam, string $tagsParam, string $searchQuery, array $searchResults, array $filteredArticles, bool $glossaryRequested, bool $tocRequested, bool $showTagPage, bool $tagFilterEnabled, bool $tagMultiEnabled, bool $tagModeActive, array $availableTags, string $selectedTag, array $selectedTags, bool $recentEnabled, int $recentLimit, bool $relatedEnabled, int $relatedLimit, bool $searchHistoryEnabled, string $layoutMode, int $stickyHeaderOffset, int $stickyNavOffset): string
+    private static function renderInner(string $instanceId, \rex_data_knowledgebase $knowledgebase, array $articles, ?\rex_data_knowledgebase_article $currentArticle, string $articleParam, string $searchParam, string $glossaryParam, string $tocParam, string $tagParam, string $tagsParam, string $searchQuery, array $searchResults, array $filteredArticles, bool $glossaryRequested, bool $tocRequested, bool $showTagPage, bool $tagFilterEnabled, bool $tagMultiEnabled, bool $tagModeActive, array $availableTags, string $selectedTag, array $selectedTags, bool $recentEnabled, int $recentLimit, bool $relatedEnabled, int $relatedLimit, bool $searchHistoryEnabled, bool $chapterFilterEnabled, string $layoutMode, int $stickyHeaderOffset, int $stickyNavOffset): string
     {
         $basePath = self::getCurrentPath();
         $stickyOffsetTotal = $stickyHeaderOffset + $stickyNavOffset;
@@ -258,7 +260,7 @@ final class FrontendRenderer
         } elseif ($selectedTag !== '' && isset($availableTags[$selectedTag]['label'])) {
             $selectedTagLabel = (string) $availableTags[$selectedTag]['label'];
         }
-        $nav = self::renderNavigation($articles, $currentArticle, $articleParam, $glossaryParam, $tocParam, $tagParam, $tagsParam, $glossaryEnabled, $showGlossaryPage, $showTocPage, $tagFilterEnabled, $tagMultiEnabled, $tagModeActive, $availableTags, $selectedTag, $selectedTags);
+        $nav = self::renderNavigation($articles, $currentArticle, $articleParam, $glossaryParam, $tocParam, $tagParam, $tagsParam, $glossaryEnabled, $showGlossaryPage, $showTocPage, $tagFilterEnabled, $tagMultiEnabled, $tagModeActive, $availableTags, $selectedTag, $selectedTags, $chapterFilterEnabled);
         $main = '' !== $searchQuery
             ? self::renderSearchResults($searchResults, $articleParam, $searchQuery)
             : ($showGlossaryPage
@@ -310,7 +312,7 @@ final class FrontendRenderer
 
         $offcanvasId = $instanceId . '-nav';
 
-        $layoutClass = ' kb-app--layout-' . rex_escape($layoutMode);
+        $layoutClass = ' kb-app--layout-' . rex_escape($layoutMode) . ' kb-app--search-toggle-enabled';
 
         return $jsonLd
             . '<section id="' . rex_escape($instanceId) . '" class="kb-app uk-card uk-card-default' . $layoutClass . '" data-kb-base-path="' . rex_escape($basePath) . '" data-kb-id="' . $knowledgebase->getId() . '" data-kb-article-param="' . rex_escape($articleParam) . '" data-kb-search-param="' . rex_escape($searchParam) . '" data-kb-tag-param="' . rex_escape($tagFilterEnabled ? $tagParam : '') . '" data-kb-tags-param="' . rex_escape($tagFilterEnabled ? $tagsParam : '') . '" data-kb-tag-selected="' . rex_escape($selectedTag) . '" data-kb-tags-selected="' . rex_escape(self::serializeTagList($selectedTags)) . '" data-kb-api="' . rex_escape(self::buildUrl(['rex-api-call' => 'knowledgebase_search'])) . '" data-kb-sticky-header-offset="' . $stickyHeaderOffset . '" data-kb-sticky-nav-offset="' . $stickyNavOffset . '" data-kb-sticky-offset="' . $stickyOffsetTotal . '" data-kb-sticky-media="960" data-kb-suggest-unavailable="' . rex_escape($suggestUnavailable) . '" data-kb-suggest-empty="' . rex_escape($suggestEmpty) . '" data-kb-search-recent-label="' . rex_escape($recentLabel) . '" data-kb-search-history-enabled="' . ($searchHistoryEnabled ? '1' : '0') . '" data-kb-recent-enabled="' . ($recentEnabled ? '1' : '0') . '" data-kb-recent-limit="' . max(1, $recentLimit) . '" data-kb-related-enabled="' . ($relatedEnabled ? '1' : '0') . '" data-kb-related-limit="' . max(1, $relatedLimit) . '" data-kb-current-article="' . rex_escape($currentArticleSlug) . '" data-kb-articles="' . rex_escape($articleIndexJson) . '" data-kb-history-label="' . rex_escape($historyLabel) . '" data-kb-history-heading="' . rex_escape($historyHeading) . '" data-kb-history-empty="' . rex_escape($historyEmpty) . '" data-kb-related-empty="' . rex_escape($relatedEmpty) . '" data-kb-related-heading="' . rex_escape($relatedHeading) . '">'
@@ -482,7 +484,7 @@ final class FrontendRenderer
     /**
      * @param list<rex_yform_manager_dataset> $articles
      */
-    private static function renderNavigation(array $articles, ?\rex_data_knowledgebase_article $currentArticle, string $articleParam, string $glossaryParam, string $tocParam, string $tagParam, string $tagsParam, bool $glossaryEnabled, bool $glossaryActive, bool $tocActive, bool $tagFilterEnabled, bool $tagMultiEnabled, bool $tagModeActive, array $availableTags, string $selectedTag, array $selectedTags): string
+    private static function renderNavigation(array $articles, ?\rex_data_knowledgebase_article $currentArticle, string $articleParam, string $glossaryParam, string $tocParam, string $tagParam, string $tagsParam, bool $glossaryEnabled, bool $glossaryActive, bool $tocActive, bool $tagFilterEnabled, bool $tagMultiEnabled, bool $tagModeActive, array $availableTags, string $selectedTag, array $selectedTags, bool $chapterFilterEnabled): string
     {
         $currentId = $currentArticle instanceof \rex_data_knowledgebase_article ? $currentArticle->getId() : 0;
         $navSearchId = 'kb-nav-search-' . $articleParam;
@@ -522,7 +524,7 @@ final class FrontendRenderer
             $navToggleLabel = FrontendI18n::msg('knowledgebase_nav_submenu_toggle', 'Untermenü umschalten');
             $items .= '<li class="kb-app__nav-main-item kb-app__nav-main-item--tags" data-kb-nav-main' . ($tagModeActive ? ' data-kb-nav-default-open="1"' : '') . '>';
             $items .= '<div class="kb-app__nav-main-row">';
-            $items .= '<div class="kb-app__nav-link kb-app__nav-link--tags' . ($tagExpanded ? ' is-current is-trail' : '') . '" data-kb-nav-main-toggle role="button" tabindex="0" aria-expanded="' . ($tagExpanded ? 'true' : 'false') . '" aria-label="' . rex_escape($navToggleLabel) . '" title="' . rex_escape($navToggleLabel) . '" uk-tooltip="' . rex_escape($navToggleLabel) . '" onclick="' . rex_escape(self::NAV_TOGGLE_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}">';
+            $items .= '<div class="kb-app__nav-link kb-app__nav-link--tags' . ($tagExpanded ? ' is-current is-trail' : '') . '" data-kb-nav-main-link data-kb-nav-main-toggle role="button" tabindex="0" aria-expanded="' . ($tagExpanded ? 'true' : 'false') . '" aria-label="' . rex_escape($navToggleLabel) . '" title="' . rex_escape($navToggleLabel) . '" uk-tooltip="' . rex_escape($navToggleLabel) . '" onclick="' . rex_escape(self::NAV_TOGGLE_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}">';
             $items .= self::renderNavBadgeIcon('tag');
             $items .= '<span>' . rex_escape($tagsLabel) . '</span>';
             $items .= '</div>';
@@ -600,15 +602,20 @@ final class FrontendRenderer
 
         $items .= '</ul>';
 
+        $navSearchHtml = '';
+        if ($chapterFilterEnabled) {
+            $navSearchHtml = '<label class="kb-app__nav-search-label" for="' . rex_escape($navSearchId) . '">' . rex_escape(FrontendI18n::msg('knowledgebase_nav_filter_label', 'Kapitel filtern')) . '</label>'
+                . '<div class="kb-app__nav-search-control">'
+                . '<span uk-icon="search"></span>'
+                . '<input id="' . rex_escape($navSearchId) . '" class="kb-app__nav-search-input" type="search" placeholder="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_filter_placeholder', 'Titel oder Unterkapitel')) . '" autocomplete="off" data-kb-nav-search>'
+                . '</div>';
+        }
+
         return '<div class="kb-app__nav-shell">'
             . '<div class="kb-app__nav-title">' . rex_escape(FrontendI18n::msg('knowledgebase_nav_title', 'Inhaltsverzeichnis')) . '</div>'
             . '<div class="kb-app__nav-search-wrap">'
-            . '<label class="kb-app__nav-search-label" for="' . rex_escape($navSearchId) . '">' . rex_escape(FrontendI18n::msg('knowledgebase_nav_filter_label', 'Kapitel filtern')) . '</label>'
-            . '<div class="kb-app__nav-search-control">'
-            . '<span uk-icon="search"></span>'
-            . '<input id="' . rex_escape($navSearchId) . '" class="kb-app__nav-search-input" type="search" placeholder="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_filter_placeholder', 'Titel oder Unterkapitel')) . '" autocomplete="off" data-kb-nav-search>'
-            . '</div>'
-                . '<button type="button" class="kb-app__nav-expand-toggle" data-kb-nav-expand-toggle data-kb-label-expand="' . rex_escape($expandLabel) . '" data-kb-label-collapse="' . rex_escape($collapseLabel) . '" aria-pressed="false">' . rex_escape($expandLabel) . '</button>'
+            . $navSearchHtml
+            . '<button type="button" class="kb-app__nav-expand-toggle" data-kb-nav-expand-toggle data-kb-label-expand="' . rex_escape($expandLabel) . '" data-kb-label-collapse="' . rex_escape($collapseLabel) . '" aria-pressed="false">' . rex_escape($expandLabel) . '</button>'
             . '</div>'
             . $items
             . '</div>';

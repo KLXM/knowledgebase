@@ -114,6 +114,18 @@ class rex_data_knowledgebase extends rex_yform_manager_dataset
         return (int) $value === 1;
     }
 
+    public function isChapterFilterEnabled(): bool
+    {
+        $value = $this->getOptionalValue('chapter_filter_enabled');
+
+        // Abwaertskompatibel: Ohne Feld bleibt der Kapitel-Filter aktiv.
+        if ($value === null || $value === '') {
+            return true;
+        }
+
+        return (int) $value === 1;
+    }
+
     public function getRelatedArticlesLimit(): int
     {
         $value = (int) $this->getOptionalValue('related_articles_limit');
