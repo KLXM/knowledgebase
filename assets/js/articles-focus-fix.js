@@ -1,10 +1,66 @@
 (function () {
     'use strict';
 
+    function isKnowledgebaseArticlePage() {
+        var params = new URLSearchParams(window.location.search);
+        return params.get('page') === 'knowledgebase/articles';
+    }
+
     function isKnowledgebaseArticleAddPage() {
         var params = new URLSearchParams(window.location.search);
-        return params.get('page') === 'knowledgebase/articles' && (params.get('func') === 'add' || params.get('func') === 'edit');
+        return isKnowledgebaseArticlePage() && (params.get('func') === 'add' || params.get('func') === 'edit');
     }
+
+    function initHierarchyUi() {
+        var hierarchy = window.rex && window.rex.knowledgebaseArticleHierarchy ? window.rex.knowledgebaseArticleHierarchy : null;
+
+        var parentSelect = document.querySelector('select[name$="[parent_id]"]');
+        if (parentSelect && hierarchy && Array.isArray(hierarchy.options)) {
+            var currentValue = String(parentSelect.value || '');
+            var rootLabel = hierarchy.rootLabel || 'Keine übergeordnete Seite';
+            parentSelect.innerHTML = '';
+
+            var rootOption = document.createElement('option');
+            rootOption.value = '0';
+            rootOption.textContent = rootLabel;
+            parentSelect.appendChild(rootOption);
+
+            hierarchy.options.forEach(function (optionData) {
+                if (!optionData || typeof optionData !== 'object') {
+                    return;
+                }
+
+                var option = document.createElement('option');
+                option.value = String(optionData.id || '');
+                option.textContent = Array((parseInt(optionData.depth || 0, 10) || 0) + 1).join('— ') + (optionData.label || optionData.title || option.value);
+                if (optionData.disabled) {
+                    option.disabled = true;
+                }
+                parentSelect.appendChild(option);
+            });
+
+            parentSelect.value = currentValue !== '' ? currentValue : '0';
+        }
+
+    }
+
+    function onReady(callback) {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', callback, { once: true });
+        } else {
+            callback();
+        }
+
+        if (window.jQuery) {
+            window.jQuery(document).on('rex:ready', callback);
+        }
+    }
+
+    if (!isKnowledgebaseArticlePage()) {
+        return;
+    }
+
+    onReady(initHierarchyUi);
 
     if (!isKnowledgebaseArticleAddPage()) {
         return;

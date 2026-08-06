@@ -1,4 +1,73 @@
-document.addEventListener('DOMContentLoaded', function () {
+function initKnowledgebaseUi() {
+    var findNavMainToggle = function (target) {
+        var current = target;
+
+        while (current && current !== document) {
+            if (current.nodeType === 1 && current.hasAttribute('data-kb-nav-main-toggle')) {
+                return current;
+            }
+
+            current = current.parentNode;
+        }
+
+        return null;
+    };
+
+    var toggleKnowledgebaseNavItem = function (toggle) {
+        if (!toggle) {
+            return;
+        }
+
+        var mainItem = toggle.closest('[data-kb-nav-main]');
+        if (!mainItem) {
+            return;
+        }
+
+        var sublist = mainItem.querySelector('[data-kb-nav-sublist]');
+        if (!sublist) {
+            return;
+        }
+
+        var mainLink = mainItem.querySelector('[data-kb-nav-main-link]');
+        var expanded = sublist.hidden;
+
+        sublist.hidden = !expanded;
+        mainItem.classList.toggle('is-open', expanded);
+
+        if (mainLink) {
+            mainLink.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        }
+
+        toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    };
+
+
+    document.addEventListener('click', function (event) {
+        var toggle = findNavMainToggle(event.target);
+        if (!toggle) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        toggleKnowledgebaseNavItem(toggle);
+    }, true);
+
+    document.addEventListener('keydown', function (event) {
+        var toggle = findNavMainToggle(event.target);
+        if (!toggle) {
+            return;
+        }
+
+        if (event.key !== 'Enter' && event.key !== ' ') {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        toggleKnowledgebaseNavItem(toggle);
+    }, true);
+
     document.querySelectorAll('.kb-app').forEach(function (app) {
         var searchInput = app.querySelector('.kb-app__search-input');
         var searchForm = app.querySelector('.kb-app__search-form');
@@ -18,6 +87,12 @@ document.addEventListener('DOMContentLoaded', function () {
         var searchHistoryHeading = 'Letzte Suchanfragen';
         var searchHistoryKey = 'kb_search_history_' + knowledgebaseId;
         var requestToken = 0;
+
+        var searchToggle = app.querySelector('[data-kb-search-toggle]');
+        var searchControl = app.querySelector('[data-kb-search-control]');
+        if (searchToggle && searchControl) {
+            app.classList.add('kb-app--search-toggle-enabled');
+        }
 
         var readSearchHistory = function () {
             try {
@@ -206,9 +281,6 @@ document.addEventListener('DOMContentLoaded', function () {
         app.querySelectorAll('.kb-app__nav-shell').forEach(function (navShell) {
             var navSearchInput = navShell.querySelector('[data-kb-nav-search]');
             var navExpandToggle = navShell.querySelector('[data-kb-nav-expand-toggle]');
-            if (!navSearchInput) {
-                return;
-            }
 
             var mainItems = Array.prototype.slice.call(navShell.querySelectorAll('[data-kb-nav-main]'));
             var allExpanded = false;
@@ -234,33 +306,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             };
 
-            mainItems.forEach(function (mainItem) {
-                var mainToggle = mainItem.querySelector('[data-kb-nav-main-toggle]');
-                var sublist = mainItem.querySelector('[data-kb-nav-sublist]');
-
-                if (!mainToggle || !sublist) {
-                    return;
-                }
-
-                mainToggle.addEventListener('click', function (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    var expanded = sublist.hidden;
-                    setMainExpanded(mainItem, expanded);
-                });
-
-                mainToggle.addEventListener('keydown', function (event) {
-                    if (event.key !== 'Enter' && event.key !== ' ') {
-                        return;
-                    }
-
-                    event.preventDefault();
-                    event.stopPropagation();
-                    var expanded = sublist.hidden;
-                    setMainExpanded(mainItem, expanded);
-                });
-            });
-
             var updateExpandToggleLabel = function () {
                 if (!navExpandToggle) {
                     return;
@@ -271,6 +316,30 @@ document.addEventListener('DOMContentLoaded', function () {
                 navExpandToggle.textContent = allExpanded ? labelCollapse : labelExpand;
                 navExpandToggle.setAttribute('aria-pressed', allExpanded ? 'true' : 'false');
             };
+
+            mainItems.forEach(function (mainItem) {
+                var mainToggle = mainItem.querySelector('[data-kb-nav-main-toggle]');
+                if (!mainToggle || mainToggle.getAttribute('data-kb-bound') === '1') {
+                    return;
+                }
+
+                mainToggle.setAttribute('data-kb-bound', '1');
+                mainToggle.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    toggleKnowledgebaseNavItem(mainToggle);
+                });
+
+                mainToggle.addEventListener('keydown', function (event) {
+                    if (event.key !== 'Enter' && event.key !== ' ') {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    event.stopPropagation();
+                    toggleKnowledgebaseNavItem(mainToggle);
+                });
+            });
 
             var expandAll = function () {
                 mainItems.forEach(function (mainItem) {
@@ -292,6 +361,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     var mainLink = mainItem.querySelector('[data-kb-nav-main-link]');
                     var sublist = mainItem.querySelector('[data-kb-nav-sublist]');
                     var isCurrent = !!(mainLink && mainLink.classList.contains('is-current'));
+                    var isTrail = !!(mainLink && mainLink.classList.contains('is-trail'));
                     var defaultOpen = mainItem.getAttribute('data-kb-nav-default-open') === '1';
 
                     mainItem.hidden = false;
@@ -302,7 +372,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
 
                     if (sublist) {
-                        setMainExpanded(mainItem, isCurrent || defaultOpen);
+                        setMainExpanded(mainItem, isCurrent || isTrail || defaultOpen);
                     }
                 });
             };
@@ -321,7 +391,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             }
 
-            navSearchInput.addEventListener('input', function () {
+            if (navSearchInput) {
+                navSearchInput.addEventListener('input', function () {
                 var query = navSearchInput.value.trim().toLowerCase();
 
                 if (query === '') {
@@ -338,35 +409,40 @@ document.addEventListener('DOMContentLoaded', function () {
                 mainItems.forEach(function (mainItem) {
                     var mainLink = mainItem.querySelector('[data-kb-nav-main-link]');
                     var sublist = mainItem.querySelector('[data-kb-nav-sublist]');
-                    var chapterLinks = Array.prototype.slice.call(mainItem.querySelectorAll('[data-kb-nav-chapter-link]'));
+                    var descendantLinks = Array.prototype.slice.call(mainItem.querySelectorAll('[data-kb-nav-search-link]'));
 
                     var mainText = (mainLink ? mainLink.textContent : '').toLowerCase();
                     var mainMatch = mainText.indexOf(query) >= 0;
-                    var chapterMatch = false;
+                    var descendantMatch = false;
 
-                    chapterLinks.forEach(function (chapterLink) {
-                        var chapterItem = chapterLink.closest('[data-kb-nav-chapter]');
-                        var chapterText = chapterLink.textContent.toLowerCase();
-                        var currentChapterMatch = chapterText.indexOf(query) >= 0;
-
-                        if (chapterItem) {
-                            chapterItem.hidden = !currentChapterMatch;
+                    descendantLinks.forEach(function (descendantLink) {
+                        if (descendantLink === mainLink) {
+                            return;
                         }
 
-                        if (currentChapterMatch) {
-                            chapterMatch = true;
+                        var descendantItem = descendantLink.closest('[data-kb-nav-main], [data-kb-nav-chapter]');
+                        var descendantText = descendantLink.textContent.toLowerCase();
+                        var currentDescendantMatch = descendantText.indexOf(query) >= 0;
+
+                        if (descendantItem && descendantItem !== mainItem) {
+                            descendantItem.hidden = !currentDescendantMatch;
+                        }
+
+                        if (currentDescendantMatch) {
+                            descendantMatch = true;
                         }
                     });
 
-                    mainItem.hidden = !(mainMatch || chapterMatch);
+                    mainItem.hidden = !(mainMatch || descendantMatch);
 
                     if (sublist) {
-                        setMainExpanded(mainItem, chapterMatch || mainMatch);
+                        setMainExpanded(mainItem, descendantMatch || mainMatch);
                     }
                 });
 
                 updateExpandToggleLabel();
-            });
+                });
+            }
 
             resetNavState();
             updateExpandToggleLabel();
@@ -380,7 +456,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     initInteractiveImageMenuFallback();
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initKnowledgebaseUi);
+} else {
+    initKnowledgebaseUi();
+}
 
 function initInteractiveImageMenuFallback() {
     document.addEventListener('click', function (event) {

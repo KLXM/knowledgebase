@@ -21,6 +21,9 @@ final class FrontendRenderer
 {
     private static bool $assetsRendered = false;
     private static int $instanceCounter = 0;
+    private const NAV_TOGGLE_INLINE_HANDLER = "var item=this.closest('[data-kb-nav-main]');if(!item){return false;}var sub=item.querySelector('[data-kb-nav-sublist]');if(!sub){return false;}var expanded=sub.hidden;sub.hidden=!expanded;item.classList.toggle('is-open',expanded);this.setAttribute('aria-expanded',expanded?'true':'false');var link=item.querySelector('[data-kb-nav-main-link]');if(link){link.setAttribute('aria-expanded',expanded?'true':'false');}return false;";
+    private const SEARCH_OPEN_INLINE_HANDLER = "var app=this.closest('.kb-app');if(!app){return false;}app.classList.add('is-search-open');this.setAttribute('aria-expanded','true');var closeLabel=this.getAttribute('data-kb-label-close');if(closeLabel){this.setAttribute('aria-label',closeLabel);}var input=app.querySelector('.kb-app__search-input');if(input){input.focus();input.dispatchEvent(new Event('focus',{bubbles:true}));}return false;";
+    private const SEARCH_CLOSE_INLINE_HANDLER = "var app=this.closest('.kb-app');if(!app){return false;}app.classList.remove('is-search-open');var results=app.querySelector('.kb-app__search-results');if(results){results.hidden=true;}var toggle=app.querySelector('[data-kb-search-toggle]');if(toggle){toggle.setAttribute('aria-expanded','false');var openLabel=toggle.getAttribute('data-kb-label-open');if(openLabel){toggle.setAttribute('aria-label',openLabel);}toggle.focus();}return false;";
     /**
      * @var array<string, int>
      */
@@ -264,7 +267,7 @@ final class FrontendRenderer
                     ? self::renderTocPage($knowledgebase, $articles, $currentArticle, $articleParam, $tocParam)
                     : ($showTagPage
                         ? self::renderTagResults($filteredArticles, $articleParam, $tagParam, $tagsParam, $selectedTag, $selectedTags, $selectedTagLabel)
-                        : self::renderArticle($knowledgebase, $currentArticle, $relatedEnabled))));
+                        : self::renderArticle($knowledgebase, $articles, $currentArticle, $relatedEnabled))));
         $jsonLd = self::renderJsonLd($knowledgebase, $currentArticle, $searchQuery, $showGlossaryPage, $showTocPage);
         $articleIndexJson = self::buildArticleClientIndexJson($articles, $articleParam);
         $currentArticleSlug = $currentArticle instanceof \rex_data_knowledgebase_article
@@ -288,6 +291,10 @@ final class FrontendRenderer
         $historyEmpty = FrontendI18n::msg('knowledgebase_history_empty', 'Noch keine gelesenen Beitraege vorhanden.');
         $relatedHeading = FrontendI18n::msg('knowledgebase_related_heading', 'Aehnliche Artikel');
         $relatedEmpty = FrontendI18n::msg('knowledgebase_related_empty', 'Keine passenden Beitraege gefunden.');
+        $menuLabel = FrontendI18n::msg('knowledgebase_menu_label', 'Menü');
+        $searchToggleOpenLabel = FrontendI18n::msg('knowledgebase_search_toggle_open', 'Suche öffnen');
+        $searchToggleCloseLabel = FrontendI18n::msg('knowledgebase_search_toggle_close', 'Suche schließen');
+        $searchSubmitLabel = FrontendI18n::msg('knowledgebase_search_submit_label', 'Suche starten');
         $searchStateInputs = $usesCleanProfile
             ? ''
             : '<input type="hidden" name="' . rex_escape($glossaryParam) . '" value="0">'
@@ -320,23 +327,27 @@ final class FrontendRenderer
             . $searchStateInputs
             . $tagStateInput
             . $tagsStateInput
-            . '<label class="kb-app__search-label" for="' . rex_escape($instanceId . '-search') . '">' . rex_escape(FrontendI18n::msg('knowledgebase_search_label', 'Suche')) . '</label>'
+            . '<label class="kb-app__search-label uk-hidden" for="' . rex_escape($instanceId . '-search') . '">' . rex_escape(FrontendI18n::msg('knowledgebase_search_label', 'Suche')) . '</label>'
             . '<div class="kb-app__search-row">'
-            . '<div class="kb-app__search-control">'
-            . '<div class="kb-app__search-input-wrap uk-inline">'
-            . '<span class="kb-app__search-icon uk-form-icon" uk-icon="search"></span>'
-            . '<input id="' . rex_escape($instanceId . '-search') . '" class="kb-app__search-input uk-input" type="search" name="' . rex_escape($searchFieldName) . '" value="' . rex_escape($searchQuery) . '" placeholder="' . rex_escape($knowledgebase->getPlaceholder()) . '" autocomplete="off">'
-            . '</div>'
-            . '<button class="kb-app__search-submit uk-button uk-button-primary uk-button-small" type="submit"><span class="kb-app__search-submit-icon" uk-icon="search"></span><span class="kb-app__search-submit-label">' . rex_escape(FrontendI18n::msg('knowledgebase_search_label', 'Suche')) . '</span></button>'
-            . '<button class="kb-app__mobile-nav-trigger" type="button" uk-toggle="target: #' . rex_escape($offcanvasId) . '" aria-label="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_toggle', 'Kapitel')) . '"><span uk-icon="list"></span><span class="kb-app__mobile-nav-trigger-label">' . rex_escape(FrontendI18n::msg('knowledgebase_nav_toggle', 'Kapitel')) . '</span></button>'
-            . '</div>'
+            . '<div class="kb-app__search-actions">'
+            . '<button class="kb-app__search-toggle" type="button" data-kb-search-toggle data-kb-label-open="' . rex_escape($searchToggleOpenLabel) . '" data-kb-label-close="' . rex_escape($searchToggleCloseLabel) . '" aria-label="' . rex_escape($searchToggleOpenLabel) . '" aria-controls="' . rex_escape($instanceId . '-search-control') . '" aria-expanded="false" onclick="' . rex_escape(self::SEARCH_OPEN_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}"><span uk-icon="search"></span></button>'
             . '<div class="kb-app__history-wrap uk-inline">'
-            . '<button class="kb-app__history-toggle uk-button uk-button-default uk-button-small" type="button" data-kb-history-toggle aria-label="' . rex_escape($historyLabel) . '"><span class="kb-app__history-toggle-icon" aria-hidden="true">↺</span><span class="kb-app__history-toggle-label">' . rex_escape($historyLabel) . '</span></button>'
+            . '<button class="kb-app__history-toggle uk-button uk-button-default uk-button-small" type="button" data-kb-history-toggle aria-label="' . rex_escape($historyLabel) . '"><span class="kb-app__history-toggle-icon" aria-hidden="true">↺</span></button>'
             . '<div class="kb-app__history-dropdown" data-kb-history-dropdown uk-dropdown="mode: click; pos: bottom-right; offset: 8">'
             . '<div class="kb-app__history-title">' . rex_escape($historyHeading) . '</div>'
             . '<ul class="kb-app__history-list uk-nav uk-nav-default" data-kb-history-list></ul>'
             . '<div class="kb-app__history-empty" data-kb-history-empty>' . rex_escape($historyEmpty) . '</div>'
             . '</div>'
+            . '</div>'
+            . '<button class="kb-app__mobile-nav-trigger" type="button" uk-toggle="target: #' . rex_escape($offcanvasId) . '" aria-label="' . rex_escape($menuLabel) . '"><span uk-icon="menu"></span></button>'
+            . '</div>'
+            . '<div id="' . rex_escape($instanceId . '-search-control') . '" class="kb-app__search-control" data-kb-search-control>'
+            . '<div class="kb-app__search-input-wrap uk-inline">'
+            . '<span class="kb-app__search-icon uk-form-icon" uk-icon="search"></span>'
+            . '<input id="' . rex_escape($instanceId . '-search') . '" class="kb-app__search-input uk-input" type="search" name="' . rex_escape($searchFieldName) . '" value="' . rex_escape($searchQuery) . '" placeholder="' . rex_escape($knowledgebase->getPlaceholder()) . '" autocomplete="off">'
+            . '</div>'
+            . '<button class="kb-app__search-submit uk-button uk-button-primary uk-button-small" type="submit" aria-label="' . rex_escape($searchSubmitLabel) . '"><span class="kb-app__search-submit-icon" uk-icon="search"></span></button>'
+            . '<button class="kb-app__search-close" type="button" data-kb-search-close aria-label="' . rex_escape($searchToggleCloseLabel) . '" onclick="' . rex_escape(self::SEARCH_CLOSE_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}"><span uk-close></span></button>'
             . '</div>'
             . '</div>'
             . '<div class="kb-app__search-results" hidden></div>'
@@ -488,48 +499,8 @@ final class FrontendRenderer
             $baseParams[$tagParam] = $selectedTag;
         }
 
-        foreach ($articles as $article) {
-            if (!$article instanceof \rex_data_knowledgebase_article) {
-                continue;
-            }
-
-            if ((int) $article->getValue('show_in_nav') !== 1) {
-                continue;
-            }
-
-            $isCurrent = $article->getId() === $currentId && !$glossaryActive && !$tocActive && !$tagModeActive;
-            $items .= '<li class="kb-app__nav-main-item" data-kb-nav-main>';
-            $chapters = self::extractArticleChapters($article);
-            $hasChapters = count($chapters) > 0;
-            $items .= '<div class="kb-app__nav-main-row">';
-            $articleUrlParams = $baseParams;
-            $articleUrlParams[$articleParam] = (string) $article->getValue('slug');
-
-            $items .= '<a class="kb-app__nav-link' . ($isCurrent ? ' is-current is-trail' : '') . '" data-kb-nav-main-link href="' . rex_escape(self::buildUrl($articleUrlParams)) . '" aria-expanded="' . ($isCurrent ? 'true' : 'false') . '">';
-            $items .= self::renderNavBadge((string) $article->getValue('nav_badge'), 'file-text');
-            $items .= '<span>' . rex_escape($article->getNavLabel()) . '</span>';
-            $items .= '</a>';
-
-            if ($hasChapters) {
-                $items .= '<span class="kb-app__nav-main-toggle" data-kb-nav-main-toggle role="button" tabindex="0" aria-expanded="' . ($isCurrent ? 'true' : 'false') . '" aria-label="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_toggle', 'Kapitel')) . '"><span uk-icon="chevron-down"></span></span>';
-            }
-            $items .= '</div>';
-
-            if (count($chapters) > 0) {
-                $items .= '<ul class="kb-app__nav-list kb-app__nav-sublist" data-kb-nav-sublist' . ($isCurrent ? '' : ' hidden') . '>';
-                foreach ($chapters as $chapter) {
-                    $href = self::buildUrl($articleUrlParams) . '#' . rawurlencode($chapter['anchor']);
-                    $items .= '<li class="kb-app__nav-chapter-item" data-kb-nav-chapter>';
-                    $items .= '<a class="kb-app__nav-link kb-app__nav-link--chapter" data-kb-nav-chapter-link href="' . rex_escape($href) . '">';
-                    $items .= self::renderNavBadge($chapter['badge'], null, $chapter['badge_mode']);
-                    $items .= '<span>' . rex_escape($chapter['title']) . '</span>';
-                    $items .= '</a>';
-                    $items .= '</li>';
-                }
-                $items .= '</ul>';
-            }
-
-            $items .= '</li>';
+        foreach (self::buildArticleTree($articles) as $node) {
+            $items .= self::renderNavigationArticleNode($node, $currentId, $articleParam, $baseParams, $glossaryActive, $tocActive, $tagModeActive);
         }
 
         $items .= '<li class="kb-app__nav-main-item kb-app__nav-main-item--toc" data-kb-nav-main>';
@@ -552,7 +523,7 @@ final class FrontendRenderer
             $items .= self::renderNavBadgeIcon('tag');
             $items .= '<span>' . rex_escape($tagsLabel) . '</span>';
             $items .= '</div>';
-            $items .= '<span class="kb-app__nav-main-toggle" data-kb-nav-main-toggle role="button" tabindex="0" aria-expanded="' . ($tagExpanded ? 'true' : 'false') . '" aria-label="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_toggle', 'Kapitel')) . '"><span uk-icon="chevron-down"></span></span>';
+            $items .= '<button class="kb-app__nav-main-toggle" data-kb-nav-main-toggle type="button" aria-expanded="' . ($tagExpanded ? 'true' : 'false') . '" aria-label="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_submenu_toggle', 'Untermenü umschalten')) . '" onclick="' . rex_escape(self::NAV_TOGGLE_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}"><span uk-icon="chevron-down"></span></button>';
             $items .= '</div>';
 
             $items .= '<ul class="kb-app__nav-list kb-app__nav-sublist kb-app__nav-tag-list" data-kb-nav-sublist' . ($tagExpanded ? '' : ' hidden') . '>';
@@ -801,7 +772,10 @@ final class FrontendRenderer
 
     /**
      */
-    private static function renderArticle(\rex_data_knowledgebase $knowledgebase, ?\rex_data_knowledgebase_article $article, bool $relatedEnabled): string
+    /**
+     * @param list<rex_yform_manager_dataset> $articles
+     */
+    private static function renderArticle(\rex_data_knowledgebase $knowledgebase, array $articles, ?\rex_data_knowledgebase_article $article, bool $relatedEnabled): string
     {
         if (!$article instanceof \rex_data_knowledgebase_article) {
             return '<div class="uk-alert-warning" uk-alert>' . rex_escape(FrontendI18n::msg('knowledgebase_frontend_missing_article', 'Es ist noch kein Beitrag vorhanden.')) . '</div>';
@@ -811,12 +785,15 @@ final class FrontendRenderer
         $introHtml = '' !== $intro ? '<div class="kb-app__intro">' . $intro . '</div>' : '';
         $breadcrumbs = self::renderBreadcrumbs($knowledgebase, $article);
         $editButton = self::renderBackendEditButton($article);
+        $chapters = self::extractArticleChapters($article, false);
         self::beginChapterRenderSession();
         try {
             $articleBody = GlossaryService::enhanceArticleHtml($knowledgebase, $article->renderContent());
         } finally {
             self::endChapterRenderSession();
         }
+        $showSidebarChapters = count($chapters) > 0 && !self::articleHasVisibleChildren($articles, $article->getId());
+        $chapterMenu = $showSidebarChapters ? '' : self::renderArticleChapterMenu($knowledgebase, $article, $chapters);
         $recommendationBlocks = '';
 
         if ($relatedEnabled) {
@@ -836,10 +813,33 @@ final class FrontendRenderer
             . $editButton
             . '<div class="kb-app__article-meta">' . rex_escape(FrontendI18n::msg('knowledgebase_article_label', 'Kapitel')) . '</div>'
             . '<h1 class="kb-app__article-title">' . rex_escape((string) $article->getValue('title')) . '</h1>'
+            . $chapterMenu
             . $introHtml
             . '<div class="kb-app__article-body">' . $articleBody . '</div>'
             . $recommendations
             . '</article>';
+    }
+
+    /**
+     * @param list<rex_yform_manager_dataset> $articles
+     */
+    private static function articleHasVisibleChildren(array $articles, int $articleId): bool
+    {
+        foreach ($articles as $candidate) {
+            if (!$candidate instanceof \rex_data_knowledgebase_article) {
+                continue;
+            }
+
+            if ((int) $candidate->getValue('show_in_nav') !== 1) {
+                continue;
+            }
+
+            if ($candidate->getParentId() === $articleId) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static function renderBackendEditButton(\rex_data_knowledgebase_article $article): string
@@ -949,12 +949,158 @@ final class FrontendRenderer
 
     private static function renderBreadcrumbs(\rex_data_knowledgebase $knowledgebase, \rex_data_knowledgebase_article $article): string
     {
-        $crumbs = [
-            rex_escape((string) $knowledgebase->getValue('title')),
-            rex_escape($article->getNavLabel()),
-        ];
+        $crumbs = [rex_escape((string) $knowledgebase->getValue('title'))];
+        foreach ($article->getAncestorTrail() as $ancestor) {
+            if (!$ancestor instanceof \rex_data_knowledgebase_article) {
+                continue;
+            }
+            $crumbs[] = rex_escape($ancestor->getNavLabel());
+        }
+        $crumbs[] = rex_escape($article->getNavLabel());
 
         return '<div class="kb-app__breadcrumbs">' . implode('<span>/</span>', array_map(static fn (string $crumb): string => '<span>' . $crumb . '</span>', $crumbs)) . '</div>';
+    }
+
+    /**
+     * @param list<rex_yform_manager_dataset> $articles
+     * @return list<array{article: rex_data_knowledgebase_article, children: array}>
+     */
+    private static function buildArticleTree(array $articles, int $parentId = 0): array
+    {
+        $nodes = [];
+
+        foreach ($articles as $article) {
+            if (!$article instanceof \rex_data_knowledgebase_article) {
+                continue;
+            }
+
+            if ((int) $article->getValue('show_in_nav') !== 1) {
+                continue;
+            }
+
+            if ($article->getParentId() !== $parentId) {
+                continue;
+            }
+
+            $nodes[] = [
+                'article' => $article,
+                'children' => self::buildArticleTree($articles, $article->getId()),
+            ];
+        }
+
+        return $nodes;
+    }
+
+    /**
+     * @param array{article: rex_data_knowledgebase_article, children: array} $node
+     * @param array<string, string> $baseParams
+     */
+    private static function renderNavigationArticleNode(array $node, int $currentId, string $articleParam, array $baseParams, bool $glossaryActive, bool $tocActive, bool $tagModeActive): string
+    {
+        $article = $node['article'];
+        if (!$article instanceof \rex_data_knowledgebase_article) {
+            return '';
+        }
+
+        $children = is_array($node['children'] ?? null) ? $node['children'] : [];
+        $hasChildren = count($children) > 0;
+        $chapterLinks = !$hasChildren ? self::extractArticleChapters($article, true) : [];
+        $hasChapterLinks = count($chapterLinks) > 0;
+        $isCurrent = $article->getId() === $currentId && !$glossaryActive && !$tocActive && !$tagModeActive;
+        $isTrail = self::navigationNodeContainsCurrent($node, $currentId);
+        $isExpanded = ($hasChildren && $isTrail) || ($hasChapterLinks && $isCurrent);
+
+        $articleUrlParams = $baseParams;
+        $articleUrlParams[$articleParam] = (string) $article->getValue('slug');
+
+        $html = '<li class="kb-app__nav-main-item kb-app__nav-main-item--page" data-kb-nav-main data-kb-nav-page-depth="' . $article->getDepth() . '">';
+        $html .= '<div class="kb-app__nav-main-row">';
+        $html .= '<a class="kb-app__nav-link' . ($isCurrent ? ' is-current is-trail' : ($isTrail ? ' is-trail' : '')) . '" data-kb-nav-main-link data-kb-nav-search-link href="' . rex_escape(self::buildUrl($articleUrlParams)) . '" aria-expanded="' . ($isExpanded ? 'true' : 'false') . '">';
+        $html .= self::renderNavBadge((string) $article->getValue('nav_badge'), 'file-text');
+        $html .= '<span>' . rex_escape($article->getNavLabel()) . '</span>';
+        $html .= '</a>';
+
+        if ($hasChildren || $hasChapterLinks) {
+            $html .= '<button class="kb-app__nav-main-toggle" data-kb-nav-main-toggle type="button" aria-expanded="' . ($isExpanded ? 'true' : 'false') . '" aria-label="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_submenu_toggle', 'Untermenü umschalten')) . '" onclick="' . rex_escape(self::NAV_TOGGLE_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}"><span uk-icon="chevron-down"></span></button>';
+        }
+        $html .= '</div>';
+
+        if ($hasChildren || $hasChapterLinks) {
+            $html .= '<ul class="kb-app__nav-list kb-app__nav-sublist" data-kb-nav-sublist' . ($isExpanded ? '' : ' hidden') . '>';
+            foreach ($children as $childNode) {
+                if (!is_array($childNode)) {
+                    continue;
+                }
+                $html .= self::renderNavigationArticleNode($childNode, $currentId, $articleParam, $baseParams, $glossaryActive, $tocActive, $tagModeActive);
+            }
+
+            foreach ($chapterLinks as $chapter) {
+                $href = self::buildUrl($articleUrlParams) . '#' . rawurlencode($chapter['anchor']);
+                $html .= '<li class="kb-app__nav-chapter-item" data-kb-nav-chapter>';
+                $html .= '<a class="kb-app__nav-link kb-app__nav-link--chapter" data-kb-nav-chapter-link href="' . rex_escape($href) . '">';
+                $html .= self::renderNavBadge($chapter['badge'], null, $chapter['badge_mode']);
+                $html .= '<span>' . rex_escape($chapter['title']) . '</span>';
+                $html .= '</a>';
+                $html .= '</li>';
+            }
+
+            $html .= '</ul>';
+        }
+
+        $html .= '</li>';
+
+        return $html;
+    }
+
+    /**
+     * @param array{article: rex_data_knowledgebase_article, children: array} $node
+     */
+    private static function navigationNodeContainsCurrent(array $node, int $currentId): bool
+    {
+        $article = $node['article'];
+        if ($article instanceof \rex_data_knowledgebase_article && $article->getId() === $currentId) {
+            return true;
+        }
+
+        foreach ($node['children'] ?? [] as $childNode) {
+            if (is_array($childNode) && self::navigationNodeContainsCurrent($childNode, $currentId)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param list<array{title:string,badge:string,badge_mode:string,anchor:string,level:string}> $chapters
+     */
+    private static function renderArticleChapterMenu(\rex_data_knowledgebase $knowledgebase, \rex_data_knowledgebase_article $article, array $chapters): string
+    {
+        if (count($chapters) === 0) {
+            return '';
+        }
+
+        $articleUrl = KnowledgebaseUrl::getArticleUrl($knowledgebase->getId(), (string) $article->getValue('slug'));
+        $items = '';
+
+        foreach ($chapters as $chapter) {
+            $href = $articleUrl . '#' . rawurlencode($chapter['anchor']);
+            $items .= '<li class="kb-app__chapter-menu-item kb-app__chapter-menu-item--' . rex_escape($chapter['level']) . '">';
+            $items .= '<a class="kb-app__nav-link kb-app__nav-link--chapter" data-kb-nav-chapter-link href="' . rex_escape($href) . '">';
+            $items .= self::renderNavBadge($chapter['badge'], null, $chapter['badge_mode']);
+            $items .= '<span>' . rex_escape($chapter['title']) . '</span>';
+            $items .= '</a>';
+            $items .= '</li>';
+        }
+
+        return '<div class="kb-app__article-chapter-menu">'
+            . '<button class="kb-app__article-chapter-toggle uk-button uk-button-default uk-button-small" type="button">'
+            . '<span uk-icon="list"></span><span>' . rex_escape(FrontendI18n::msg('knowledgebase_nav_toggle', 'Kapitel')) . '</span>'
+            . '</button>'
+            . '<div class="kb-app__article-chapter-dropdown" uk-dropdown="mode: click; pos: bottom-left; offset: 8">'
+            . '<ul class="kb-app__nav-list kb-app__chapter-menu-list">' . $items . '</ul>'
+            . '</div>'
+            . '</div>';
     }
 
     /**

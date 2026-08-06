@@ -14,6 +14,18 @@ class rex_data_knowledgebase_article extends rex_yform_manager_dataset
     /**
         * @return rex_yform_manager_collection<static>
      */
+    public static function findByKnowledgebase(int $knowledgebaseId): rex_yform_manager_collection
+    {
+        return self::query()
+            ->where('knowledgebase_id', $knowledgebaseId)
+            ->orderBy('priority')
+            ->orderBy('title')
+            ->find();
+    }
+
+    /**
+        * @return rex_yform_manager_collection<static>
+     */
     public static function findOnlineByKnowledgebase(int $knowledgebaseId): rex_yform_manager_collection
     {
         return self::query()
@@ -40,6 +52,46 @@ class rex_data_knowledgebase_article extends rex_yform_manager_dataset
         $navTitle = trim((string) $this->getValue('nav_title'));
 
         return '' !== $navTitle ? $navTitle : (string) $this->getValue('title');
+    }
+
+    public function getParentId(): int
+    {
+        return max(0, (int) $this->getValue('parent_id'));
+    }
+
+    public function getParentArticle(): ?self
+    {
+        $parentId = $this->getParentId();
+        if ($parentId <= 0) {
+            return null;
+        }
+
+        $parent = self::get($parentId);
+
+        return $parent instanceof self ? $parent : null;
+    }
+
+    /**
+     * @return list<self>
+     */
+    public function getAncestorTrail(): array
+    {
+        $trail = [];
+        $current = $this->getParentArticle();
+        $guard = 0;
+
+        while ($current instanceof self && $guard < 10) {
+            array_unshift($trail, $current);
+            $current = $current->getParentArticle();
+            ++$guard;
+        }
+
+        return $trail;
+    }
+
+    public function getDepth(): int
+    {
+        return count($this->getAncestorTrail());
     }
 
     public function renderContent(): string
@@ -123,7 +175,7 @@ class rex_data_knowledgebase_article extends rex_yform_manager_dataset
         $result = [];
 
         foreach ($parts as $part) {
-            $tag = trim((string) ($part['label'] ?? ''));
+            $tag = trim((string) $part['label']);
             if ($tag === '') {
                 continue;
             }
@@ -137,7 +189,7 @@ class rex_data_knowledgebase_article extends rex_yform_manager_dataset
             $result[] = [
                 'value' => $normalized,
                 'label' => $tag,
-                'color' => self::normalizeTagColor((string) ($part['color'] ?? '')),
+                'color' => self::normalizeTagColor((string) $part['color']),
             ];
         }
 

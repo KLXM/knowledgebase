@@ -43,6 +43,8 @@ if (rex_addon::get('yform')->isAvailable()) {
         'rex_data_knowledgebase_interactive_image',
     );
 
+    rex_extension::register('YFORM_DATA_ADD', ['FriendsOfREDAXO\\Knowledgebase\\ArticleHierarchyService', 'handleYformBeforeSave'], rex_extension::EARLY);
+    rex_extension::register('YFORM_DATA_UPDATE', ['FriendsOfREDAXO\\Knowledgebase\\ArticleHierarchyService', 'handleYformBeforeSave'], rex_extension::EARLY);
     rex_extension::register('YFORM_DATA_ADD', ['FriendsOfREDAXO\\Knowledgebase\\SlugManager', 'handleYformBeforeSave'], rex_extension::EARLY);
     rex_extension::register('YFORM_DATA_UPDATE', ['FriendsOfREDAXO\\Knowledgebase\\SlugManager', 'handleYformBeforeSave'], rex_extension::EARLY);
     rex_extension::register('YFORM_DATA_ADDED', ['FriendsOfREDAXO\\Knowledgebase\\SearchIndexer', 'handleYformEvent']);
@@ -108,8 +110,26 @@ if (rex::isBackend() && null !== rex::getUser() && rex_addon::get('tinymce')->is
 
 if (rex::isBackend() && null !== rex::getUser() && rex_be_controller::getCurrentPage() === 'knowledgebase/articles') {
     $addon = rex_addon::get('knowledgebase');
-    rex_view::addCssFile(rex_url::addonAssets('knowledgebase', 'css/articles-chapter-toolbar.css') . '?v=' . rawurlencode((string) $addon->getVersion()));
-    rex_view::addJsFile(rex_url::addonAssets('knowledgebase', 'js/articles-focus-fix.js') . '?v=' . rawurlencode((string) $addon->getVersion()));
+    $cssPath = $addon->getAssetsPath('css/articles-chapter-toolbar.css');
+    $cssToken = (string) $addon->getVersion();
+    if (is_file($cssPath)) {
+        $cssMtime = filemtime($cssPath);
+        if (false !== $cssMtime) {
+            $cssToken .= '-' . (string) $cssMtime;
+        }
+    }
+
+    $jsPath = $addon->getAssetsPath('js/articles-focus-fix.js');
+    $jsToken = (string) $addon->getVersion();
+    if (is_file($jsPath)) {
+        $jsMtime = filemtime($jsPath);
+        if (false !== $jsMtime) {
+            $jsToken .= '-' . (string) $jsMtime;
+        }
+    }
+
+    rex_view::addCssFile(rex_url::addonAssets('knowledgebase', 'css/articles-chapter-toolbar.css') . '?v=' . rawurlencode($cssToken));
+    rex_view::addJsFile(rex_url::addonAssets('knowledgebase', 'js/articles-focus-fix.js') . '?v=' . rawurlencode($jsToken));
 }
 
 if (rex_addon::exists('klxmchat') && rex_addon::get('klxmchat')->isAvailable()) {

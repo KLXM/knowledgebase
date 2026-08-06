@@ -331,6 +331,22 @@
       },
       {
         "type_id": "value",
+        "type_name": "be_manager_relation",
+        "name": "parent_id",
+        "label": "Übergeordnete Seite",
+        "db_type": "int(10) unsigned",
+        "table": "rex_knowledgebase_article",
+        "field": "title",
+        "type": "0",
+        "empty_option": "1",
+        "notice": "Leer lassen = Hauptseite. Unterseiten sind bis maximal 2 weitere Ebenen unterhalb der Hauptseite möglich.",
+        "not_required": "1",
+        "search": 0,
+        "list_hidden": 1,
+        "table_name": "rex_knowledgebase_article"
+      },
+      {
+        "type_id": "value",
         "type_name": "fields_structure",
         "name": "kb_article_layout_start",
         "label": "Layout",

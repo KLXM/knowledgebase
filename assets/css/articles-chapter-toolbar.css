@@ -23,3 +23,83 @@ body.rex-theme-dark #rex-page-knowledgebase-articles {
 #rex-page-knowledgebase-articles .content-builder-slice[data-slice-type="kb_chapter_nav"] > .slice-toolbar .slice-label {
   background: var(--kb-chapter-label-bg);
 }
+
+#rex-page-knowledgebase-articles {
+  --kb-article-list-line: #d8dee6;
+  --kb-article-list-subtle: #6b7280;
+}
+
+#rex-page-knowledgebase-articles .kb-article-list-title-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+#rex-page-knowledgebase-articles .kb-article-list-indent {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+  width: 0;
+}
+
+#rex-page-knowledgebase-articles .kb-article-list-indent--depth-1 {
+  width: 1.6rem;
+}
+
+#rex-page-knowledgebase-articles .kb-article-list-indent--depth-2 {
+  width: 3.2rem;
+}
+
+#rex-page-knowledgebase-articles .kb-article-list-indent--depth-1::before,
+#rex-page-knowledgebase-articles .kb-article-list-indent--depth-2::before {
+  content: '';
+  position: absolute;
+  top: 0.15rem;
+  bottom: 0.15rem;
+  left: 0.55rem;
+  width: 2px;
+  background: var(--kb-article-list-line);
+}
+
+#rex-page-knowledgebase-articles .kb-article-list-indent--depth-2::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0.55rem;
+  width: 1.1rem;
+  height: 2px;
+  background: var(--kb-article-list-line);
+}
+
+#rex-page-knowledgebase-articles .kb-article-list-title-content {
+  min-width: 0;
+}
+
+#rex-page-knowledgebase-articles .kb-article-list-title {
+  display: inline-block;
+  font-weight: 600;
+}
+
+#rex-page-knowledgebase-articles .kb-article-list-meta {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--kb-article-list-subtle);
+  font-size: 12px;
+}
+
+#rex-page-knowledgebase-articles .kb-article-list-row--depth-1 td:first-child,
+#rex-page-knowledgebase-articles .kb-article-list-row--depth-2 td:first-child {
+  background-image: linear-gradient(to right, rgba(30, 135, 240, 0.04), rgba(30, 135, 240, 0));
+}
+
+body.rex-theme-dark #rex-page-knowledgebase-articles {
+  --kb-article-list-line: #3a4654;
+  --kb-article-list-subtle: #9fb0c2;
+}
+
+@media (prefers-color-scheme: dark) {
+  body.rex-has-theme:not(.rex-theme-light) #rex-page-knowledgebase-articles {
+    --kb-article-list-line: #3a4654;
+    --kb-article-list-subtle: #9fb0c2;
+  }
+}
