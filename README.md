@@ -124,10 +124,14 @@ Schrift und Farben der Ausgabe lassen sich über CSS-Variablen auf `.kb-app` an 
 .kb-app {
     --kb-heading-font: inherit;   /* Standard: Georgia, serif */
     --kb-heading-color: #222;
-    --kb-accent: #418032;
-    --kb-accent-2: #2f5f24;
+    --kb-accent: #418032;     /* Links, aktive Navigation, Markierungen */
+    --kb-accent-2: #2f5f24;   /* dunkler Ton für Links/Hover */
+    --kb-ink: #222;           /* dunkle Schrift in Navigation und Kopf */
+    --kb-highlight: #418032;  /* Linie am Anreißer, Hervorhebungen */
 }
 ```
+
+Helle Hintergründe und Rahmen (`--kb-accent-soft`, `--kb-accent-line`, `--kb-accent-muted`, `--kb-highlight-soft`) werden per `color-mix()` daraus abgeleitet und lassen sich bei Bedarf einzeln setzen.
 
 ### Glossar-Verlinkung
 

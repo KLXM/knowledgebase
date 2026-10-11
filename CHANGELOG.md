@@ -4,7 +4,7 @@
 
 ### Neu
 - **Element `kb_text`**: Fließtext eines Beitrags (TinyMCE) ohne eigene Section/Container. Bisher gab es im Inhaltsfeld kein reines Textelement – das Builder-Element `text` wird vom Content Builder nicht ausgegeben (keine `templates/*.php`). Wird bei Installation/Update im Inhaltsfeld erlaubt, auch bei angepasster Elementliste.
-- **CSS-Variablen** `--kb-heading-font` und `--kb-heading-color` statt fest eingestellter Georgia-Schrift – die Ausgabe lässt sich an die Website angleichen. Standard unverändert.
+- **Farben komplett über CSS-Variablen**: alle ~40 fest eingetragenen Blautöne (Hintergründe, Rahmen, Links, Markierungen, Schatten) folgen jetzt `--kb-accent` / `--kb-accent-2` (abgeleitet per `color-mix`: `--kb-accent-soft`, `--kb-accent-line`, `--kb-accent-muted`), dunkle Navigationsschrift `--kb-ink`, das Orange der Hervorhebungen `--kb-highlight` / `--kb-highlight-soft`. Dazu `--kb-heading-font` und `--kb-heading-color` statt fester Georgia-Schrift. Wer nur `--kb-accent` setzt, bekommt eine einheitlich eingefärbte Ausgabe; der Standard sieht (bis auf minimal andere Zwischentöne) aus wie bisher.
 
 ### Behoben
 - **AI Chat**: Der Content-Provider implementierte nur `FriendsOfRedaxo\KlxmChat\…\ContentProviderInterface`. Mit AI Chat führte das beim Speichern jedes YForm-Datensatzes zu einem Fatal Error („Interface … not found“), weil AI Chat den Provider lädt. Er implementiert jetzt die Schnittstelle des installierten Chat-AddOns (AI Chat oder KLXM Chat).
