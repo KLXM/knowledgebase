@@ -47,7 +47,7 @@ final class GlossaryService
             return;
         }
 
-        self::clearCacheForKnowledgebase((int) $dataset->getId());
+        self::clearCacheForKnowledgebase($dataset->exists() ? (int) $dataset->getId() : (int) $ep->getParam('id'));
     }
 
     public static function enhanceArticleHtml(\rex_data_knowledgebase $knowledgebase, string $html): string
@@ -151,6 +151,11 @@ final class GlossaryService
         }
     }
 
+    private static function linkAllOccurrences(): bool
+    {
+        return (bool) \rex_addon::get('knowledgebase')->getConfig('glossary_link_all', false);
+    }
+
     /**
      * @param array<string, array{id:int,term:string,definition:string,description:string}> $normalizedMap
      * @param array<int, array{id:int,term:string,definition:string,description:string}> $usedTerms
@@ -175,6 +180,10 @@ final class GlossaryService
                 $termId = (int) $term['id'];
                 $modalId = self::buildModalId($knowledgebaseId, $termId);
 
+                // Standard: nur das erste Vorkommen je Beitrag verlinken (Config glossary_link_all = true verlinkt alle)
+                if (isset($usedTerms[$termId]) && !self::linkAllOccurrences()) {
+                    return $matchedText;
+                }
                 $usedTerms[$termId] = $term;
 
                 return '<a href="#' . self::escapeAttribute($modalId) . '" class="kb-app__glossary-link" data-kb-glossary-link="1" uk-toggle>' . self::escapeText($matchedText) . '</a>';

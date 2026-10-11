@@ -1,0 +1,4 @@
+kb_text_label = KB text
+kb_text_description = Body text of an article (TinyMCE) without its own section/container, for sections below a chapter marker.
+kb_text_group_content = Content
+kb_text_field_text = Text

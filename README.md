@@ -110,6 +110,30 @@ Aktueller Fokus:
 - UIKit-Ausgabe im Frontend
 - Auswahl und Ausgabe wiederverwendbarer interaktiver Bilder
 
+Elemente des Add-ons:
+
+- `kb_chapter_nav` – Kapitelmarke (Navigation und Inhaltsverzeichnis)
+- `kb_text` – Fließtext eines Beitrags (TinyMCE), ohne eigene Section/Container; gehört unter eine Kapitelmarke
+- `kb_interactive_image`, `kb_recent_articles`
+
+### Aussehen anpassen
+
+Schrift und Farben der Ausgabe lassen sich über CSS-Variablen auf `.kb-app` an die Website angleichen, z. B.:
+
+```css
+.kb-app {
+    --kb-heading-font: inherit;   /* Standard: Georgia, serif */
+    --kb-heading-color: #222;
+    --kb-accent: #418032;
+    --kb-accent-2: #2f5f24;
+}
+```
+
+### Glossar-Verlinkung
+
+Ein Glossarbegriff wird je Beitrag nur beim ersten Vorkommen verlinkt. Alle Vorkommen verlinken:
+`rex_config::set('knowledgebase', 'glossary_link_all', true);`
+
 ## Interaktive Bilder
 
 Interaktive Bilder werden als eigene Datensätze gepflegt und anschließend in Artikeln referenziert.
@@ -145,7 +169,10 @@ search_text wird beim Speichern oder Aktualisieren eines Artikels automatisch er
 
 Damit werden auch textuelle Inhalte aus Content-Builder-Feldern berücksichtigt.
 
-## Integration in KLXM Chat (Content-Provider)
+## Integration in AI Chat / KLXM Chat (Content-Provider)
+
+Mit **AI Chat** (FriendsOfREDAXO/ai_chat) wird der Provider automatisch erkannt – keine Registrierung nötig. Der Provider implementiert die Schnittstelle des jeweils installierten Chat-AddOns (`FriendsOfRedaxo\\AiChat\\…` bzw. `FriendsOfRedaxo\\KlxmChat\\…`).
+
 
 Die Knowledgebase kann Inhalte für den KLXM-Chat-Index bereitstellen. Dafür registriert sich das Addon selbst über den Extension-Point `KLXMCHAT_CONTENT_PROVIDERS`.
 

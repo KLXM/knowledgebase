@@ -4,6 +4,9 @@
     --kb-text: #1f2937;
     --kb-accent: #1e87f0;
     --kb-accent-2: #0f6ecd;
+    /* Schrift der Überschriften – im Projekt z. B. mit inherit auf die Website-Schrift setzen */
+    --kb-heading-font: Georgia, 'Times New Roman', serif;
+    --kb-heading-color: #1c3e4c;
     border-radius: 12px;
     color: var(--kb-text);
     overflow: hidden;
@@ -74,7 +77,7 @@
 
 .kb-app__title,
 .kb-app__article-title {
-    font-family: Georgia, 'Times New Roman', serif;
+    font-family: var(--kb-heading-font);
     line-height: 1.1;
 }
 
@@ -1035,7 +1038,7 @@
 
 .kb-app__glossary-modal-title {
     margin-right: 2rem;
-    font-family: Georgia, 'Times New Roman', serif;
+    font-family: var(--kb-heading-font);
 }
 
 .kb-app__glossary-modal-body {
@@ -1130,8 +1133,8 @@
 .kb-app__article-body h2,
 .kb-app__article-body h3,
 .kb-app__article-body h4 {
-    font-family: Georgia, 'Times New Roman', serif;
-    color: #1c3e4c;
+    font-family: var(--kb-heading-font);
+    color: var(--kb-heading-color);
 }
 
 .kb-app__article-body h1 {
