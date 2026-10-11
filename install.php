@@ -30,6 +30,19 @@ rex_yform_manager_table::deleteCache();
 $tablesetContent = rex_file::get($addon->getPath('install/tablesets/knowledgebase.json'));
 if (is_string($tablesetContent) && '' !== $tablesetContent) {
     rex_yform_manager_table_api::importTablesets($tablesetContent);
+
+    // Fließtext-Element kb_text auch in bestehenden (ggf. angepassten) Feldkonfigurationen erlauben
+    $contentField = rex_sql::factory()->getArray(
+        'SELECT id, allowed_elements FROM ' . rex::getTable('yform_field') . ' WHERE table_name = ? AND name = ? AND type_name = ?',
+        [rex::getTable('knowledgebase_article'), 'content', 'content_builder'],
+    )[0] ?? null;
+    if (null !== $contentField) {
+        $allowedElements = array_values(array_filter(array_map('trim', explode(',', (string) $contentField['allowed_elements']))));
+        if ([] !== $allowedElements && !in_array('kb_text', $allowedElements, true)) {
+            array_splice($allowedElements, (int) array_search('kb_chapter_nav', $allowedElements, true) + 1, 0, ['kb_text']);
+            rex_sql::factory()->setQuery('UPDATE ' . rex::getTable('yform_field') . ' SET allowed_elements = ? WHERE id = ?', [implode(',', $allowedElements), $contentField['id']]);
+        }
+    }
 }
 
 rex_sql_table::get(rex::getTable('knowledgebase'))

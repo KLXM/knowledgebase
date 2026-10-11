@@ -1,0 +1,4 @@
+kb_text_label = KB Text
+kb_text_description = Fließtext eines Beitrags (TinyMCE) – ohne eigene Section/Container, für Abschnitte unter einer Kapitelmarke.
+kb_text_group_content = Inhalt
+kb_text_field_text = Text

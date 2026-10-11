@@ -6,11 +6,19 @@ namespace FriendsOfREDAXO\Knowledgebase\ContentProvider;
 
 use FriendsOfREDAXO\Knowledgebase\KnowledgebaseUrl;
 use FriendsOfREDAXO\Knowledgebase\SearchTextExtractor;
-use FriendsOfRedaxo\KlxmChat\ContentProvider\ContentProviderInterface;
 use rex;
 use rex_addon;
 
-final class KnowledgebaseContentProvider implements ContentProviderInterface
+// Schnittstelle des vorhandenen Chat-AddOns: ai_chat (FriendsOfREDAXO) oder klxmchat – beide haben dieselben Methoden
+if (!interface_exists(ChatContentProviderInterface::class, false)) {
+    if (interface_exists(\FriendsOfRedaxo\AiChat\ContentProvider\ContentProviderInterface::class)) {
+        class_alias(\FriendsOfRedaxo\AiChat\ContentProvider\ContentProviderInterface::class, ChatContentProviderInterface::class);
+    } elseif (interface_exists(\FriendsOfRedaxo\KlxmChat\ContentProvider\ContentProviderInterface::class)) {
+        class_alias(\FriendsOfRedaxo\KlxmChat\ContentProvider\ContentProviderInterface::class, ChatContentProviderInterface::class);
+    }
+}
+
+final class KnowledgebaseContentProvider implements ChatContentProviderInterface
 {
     public function getKey(): string
     {

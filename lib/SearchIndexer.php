@@ -29,6 +29,15 @@ final class SearchIndexer
         if (!$dataset instanceof rex_yform_manager_dataset || !$dataset instanceof \rex_data_knowledgebase_article) {
             return;
         }
+        // Beim Anlegen per $dataset->save() kennt der Datensatz seine ID beim Event noch nicht – dann über die ID des Events laden
+        if (!$dataset->exists()) {
+            $id = (int) $ep->getParam('id');
+            $loaded = $id > 0 ? \rex_data_knowledgebase_article::get($id) : null;
+            if (!$loaded instanceof \rex_data_knowledgebase_article) {
+                return;
+            }
+            $dataset = $loaded;
+        }
 
         self::syncArticle($dataset);
     }

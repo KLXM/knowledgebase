@@ -733,7 +733,7 @@
                 "type_name": "unique"
             },
             {
-                "allowed_elements": "kb_chapter_nav,kb_interactive_image,kb_recent_articles,accordion,countdown,feature_grid,cards,testimonial,columns",
+                "allowed_elements": "kb_chapter_nav,kb_text,kb_interactive_image,kb_recent_articles,accordion,countdown,feature_grid,cards,testimonial,columns",
                 "db_type": "mediumtext",
                 "description": "Knowledge Base Content",
                 "framework": "bootstrap",
