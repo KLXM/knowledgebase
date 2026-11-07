@@ -29,19 +29,78 @@ rex_yform_manager_table::deleteCache();
 
 $tablesetContent = rex_file::get($addon->getPath('install/tablesets/knowledgebase.json'));
 if (is_string($tablesetContent) && '' !== $tablesetContent) {
-    rex_yform_manager_table_api::importTablesets($tablesetContent);
+    $kbTables = [
+        rex::getTable('knowledgebase'),
+        rex::getTable('knowledgebase_article'),
+        rex::getTable('knowledgebase_glossary'),
+        rex::getTable('knowledgebase_interactive_image'),
+    ];
+    $tablePlaceholders = implode(',', array_fill(0, count($kbTables), '?'));
+    $fieldColumns = array_column(rex_sql::showColumns(rex::getTable('yform_field')), 'name');
 
-    // Fließtext-Element kb_text auch in bestehenden (ggf. angepassten) Feldkonfigurationen erlauben
-    $contentField = rex_sql::factory()->getArray(
-        'SELECT id, allowed_elements FROM ' . rex::getTable('yform_field') . ' WHERE table_name = ? AND name = ? AND type_name = ?',
-        [rex::getTable('knowledgebase_article'), 'content', 'content_builder'],
-    )[0] ?? null;
-    if (null !== $contentField) {
-        $allowedElements = array_values(array_filter(array_map('trim', explode(',', (string) $contentField['allowed_elements']))));
-        if ([] !== $allowedElements && !in_array('kb_text', $allowedElements, true)) {
-            array_splice($allowedElements, (int) array_search('kb_chapter_nav', $allowedElements, true) + 1, 0, ['kb_text']);
-            rex_sql::factory()->setQuery('UPDATE ' . rex::getTable('yform_field') . ' SET allowed_elements = ? WHERE id = ?', [implode(',', $allowedElements), $contentField['id']]);
+    // Einstellungen, die im Projekt gepflegt werden und ein Update nie überschreiben darf
+    $projectColumns = array_values(array_intersect(['allowed_elements', 'list_hidden', 'search'], $fieldColumns));
+
+    $existingFields = rex_sql::factory()->getArray(
+        'SELECT * FROM ' . rex::getTable('yform_field') . ' WHERE table_name IN (' . $tablePlaceholders . ')',
+        $kbTables,
+    );
+    $fieldKey = static fn (array $field): string => $field['table_name'] . '|' . $field['type_id'] . '|' . $field['type_name'] . '|' . $field['name'];
+
+    // Tabellenschema nur importieren bei Neuinstallation oder wenn es sich im AddOn geändert hat –
+    // sonst bleiben alle im Projekt geänderten Feldeinstellungen unberührt
+    $tablesetHash = md5($tablesetContent);
+    if ([] === $existingFields || $addon->getConfig('tableset_hash') !== $tablesetHash) {
+        $snapshot = [];
+        foreach ($existingFields as $field) {
+            $snapshot[$fieldKey($field)] = $field;
         }
+
+        rex_yform_manager_table_api::importTablesets($tablesetContent);
+
+        // Projekt-Einstellungen bestehender Felder wiederherstellen (neue Felder behalten die Vorgaben)
+        if ([] !== $snapshot && [] !== $projectColumns) {
+            $importedFields = rex_sql::factory()->getArray(
+                'SELECT * FROM ' . rex::getTable('yform_field') . ' WHERE table_name IN (' . $tablePlaceholders . ')',
+                $kbTables,
+            );
+            foreach ($importedFields as $field) {
+                $previous = $snapshot[$fieldKey($field)] ?? null;
+                if (null === $previous) {
+                    continue;
+                }
+                $restore = rex_sql::factory()->setTable(rex::getTable('yform_field'))->setWhere(['id' => $field['id']]);
+                $changed = false;
+                foreach ($projectColumns as $column) {
+                    if ((string) $previous[$column] !== (string) $field[$column]) {
+                        $restore->setValue($column, $previous[$column]);
+                        $changed = true;
+                    }
+                }
+                if ($changed) {
+                    $restore->update();
+                }
+            }
+        }
+
+        $addon->setConfig('tableset_hash', $tablesetHash);
+    }
+
+    // Fließtext-Element kb_text einmalig (Umstieg auf 0.9.7+) auch in angepassten Listen erlauben;
+    // danach entscheidet die Auswahl im Projekt (wer es abwählt, behält das)
+    if (!$addon->getConfig('kb_text_allowed_once', false)) {
+        $contentField = rex_sql::factory()->getArray(
+            'SELECT id, allowed_elements FROM ' . rex::getTable('yform_field') . ' WHERE table_name = ? AND name = ? AND type_name = ?',
+            [rex::getTable('knowledgebase_article'), 'content', 'content_builder'],
+        )[0] ?? null;
+        if (null !== $contentField) {
+            $allowedElements = array_values(array_filter(array_map('trim', explode(',', (string) $contentField['allowed_elements']))));
+            if ([] !== $allowedElements && !in_array('kb_text', $allowedElements, true)) {
+                array_splice($allowedElements, (int) array_search('kb_chapter_nav', $allowedElements, true) + 1, 0, ['kb_text']);
+                rex_sql::factory()->setQuery('UPDATE ' . rex::getTable('yform_field') . ' SET allowed_elements = ? WHERE id = ?', [implode(',', $allowedElements), $contentField['id']]);
+            }
+        }
+        $addon->setConfig('kb_text_allowed_once', true);
     }
 }
 

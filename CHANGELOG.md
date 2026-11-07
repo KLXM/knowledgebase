@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.9] - 2026-11-07
+
+### Behoben
+- **Update überschrieb Feldeinstellungen**: Der Tableset-Import bei Installation/Update setzte alle Feldeinstellungen der Wissensbasis-Tabellen auf die Vorgaben zurück, u. a. die im Projekt angepasste Auswahl „Erlaubte Elemente“ im Inhaltsfeld. Jetzt:
+  - Das Tabellenschema wird nur noch bei Neuinstallation importiert oder wenn es sich im AddOn geändert hat (Prüfsumme in der Konfiguration, `tableset_hash`). Normale Updates lassen die Felder unberührt.
+  - Muss importiert werden, bleiben bei bestehenden Feldern die Projekt-Einstellungen erhalten: „Erlaubte Elemente“, „In Liste ausblenden“, „Durchsuchbar“.
+  - `kb_text` wird nur noch einmalig (Umstieg auf 0.9.7+) ergänzt; wer es danach abwählt, behält das.
+
 ## [0.9.8] - 2026-11-07
 
 ### Neu
