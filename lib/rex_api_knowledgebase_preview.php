@@ -29,7 +29,7 @@ class rex_api_knowledgebase_preview extends rex_api_function
 
         $url = KnowledgebaseUrl::getPreviewUrl((int) $article->getValue('knowledgebase_id'), (string) $article->getValue('slug'));
         if ('' === $url) {
-            throw new rex_api_exception('Für diese Wissensbasis ist keine Standard-Seite hinterlegt (Wissensbasen → „Standard-Seite (Vorschau)“).');
+            throw new rex_api_exception('Für diese Wissensbasis ist keine Standard-Seite hinterlegt (Wissensbasen → „Standard-Seite (Vorschau)“ oder Einstellungen → URL-Profile).');
         }
 
         rex_response::cleanOutputBuffers();

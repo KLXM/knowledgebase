@@ -19,6 +19,7 @@ page:
     block: system
     prio: 500
     subpages:
+        # Redaktion
         overview:
             title: 'Übersicht'
             perm: knowledgebase[overview]
@@ -26,10 +27,6 @@ page:
             title: 'Beiträge'
             subPath: pages/articles.php
             perm: knowledgebase[articles]
-        bases:
-            title: 'Wissensbasen'
-            subPath: pages/yform.php
-            perm: knowledgebase[bases]
         glossary:
             title: 'Glossar'
             subPath: pages/yform.php
@@ -38,20 +35,29 @@ page:
             title: 'Interaktive Bilder'
             subPath: pages/yform.php
             perm: knowledgebase[interactive_images]
+        # Einrichtung
+        bases:
+            title: 'Wissensbasen'
+            subPath: pages/yform.php
+            perm: knowledgebase[bases]
         settings:
             title: 'Einstellungen'
-            subPath: pages/settings.php
-            perm: admin
-        url_profiles:
-            title: 'URL-Profile & Sitemap'
-            subPath: pages/url_profiles.php
-            perm: admin
-        frontend_texts:
-            title: 'Frontend-Texte'
-            subPath: pages/frontend_texts.php
-            perm: knowledgebase[frontend_texts]
+            perm: knowledgebase[]
+            subpages:
+                general:
+                    title: 'Allgemein'
+                    subPath: pages/settings.php
+                    perm: admin
+                url_profiles:
+                    title: 'URL-Profile & Sitemap'
+                    subPath: pages/url_profiles.php
+                    perm: admin
+                frontend_texts:
+                    title: 'Frontend-Texte'
+                    subPath: pages/frontend_texts.php
+                    perm: knowledgebase[frontend_texts]
         redakteurs_guide:
-            title: 'Redakteurs-Guide'
+            title: 'Hilfe'
             subPath: docs/REDAKTEURE.md
             itemClass: 'pull-right'
             perm: knowledgebase[overview]

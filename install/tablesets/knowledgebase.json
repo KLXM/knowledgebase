@@ -452,7 +452,7 @@
                 "list_hidden": 1,
                 "multiple": "0",
                 "name": "preview_article_id",
-                "notice": "Artikel, auf dem diese Wissensbasis normalerweise ausgegeben wird. Nur f\u00fcr die Vorschau-Buttons im Backend \u2013 die Wissensbasis kann trotzdem auf beliebigen Artikeln stehen. Leer = Artikel aus \u201eURL-Profile\u201c.",
+                "notice": "Artikel, auf dem diese Wissensbasis normalerweise ausgegeben wird. Nur f\u00fcr die Vorschau-Buttons im Backend \u2013 die Wissensbasis kann trotzdem auf beliebigen Artikeln stehen. Leer = Artikel aus Einstellungen \u2192 URL-Profile.",
                 "prio": 26,
                 "search": 0,
                 "table_name": "rex_knowledgebase",
