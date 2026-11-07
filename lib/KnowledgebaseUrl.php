@@ -38,6 +38,28 @@ final class KnowledgebaseUrl
     }
 
     /**
+     * Vorschau-Adresse eines Beitrags fürs Backend: URL-Profil, sonst die Standard-Seite der
+     * Wissensbasis mit Parameter (im Backend gibt es keine „aktuelle Seite“ als Basis). Leer, wenn beides fehlt.
+     */
+    public static function getPreviewUrl(int $knowledgebaseId, string $slug): string
+    {
+        if (self::urlAddonAvailable()) {
+            $url = self::resolveViaUrlAddon($knowledgebaseId, $slug);
+            if ('' !== $url) {
+                return $url;
+            }
+        }
+
+        $knowledgebase = \rex_yform_manager_dataset::get($knowledgebaseId, rex::getTable('knowledgebase'));
+        $articleId = $knowledgebase instanceof \rex_data_knowledgebase ? $knowledgebase->getPreviewArticleId() : 0;
+        if ($articleId <= 0) {
+            return '';
+        }
+
+        return rex_getUrl($articleId, '', '' !== $slug ? ['kb_' . $knowledgebaseId . '_article' => $slug] : [], '&');
+    }
+
+    /**
      * Gibt die Basis-URL für eine Wissensbasis zurück (erster Artikel).
      */
     public static function getBaseUrl(int $knowledgebaseId): string

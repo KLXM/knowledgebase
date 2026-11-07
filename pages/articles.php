@@ -59,34 +59,12 @@ $childPagesEnabled = AddonSettings::isChildPagesEnabled();
 $requestedSet = rex_request('rex_yform_set', 'array', []);
 $requestedParentId = isset($requestedSet['parent_id']) ? (int) $requestedSet['parent_id'] : 0;
 
-/**
- * Baut eine Frontend-URL-Vorlage für die aktuell gewählte Wissensbasis.
- */
-function knowledgebaseGetArticleUrlTemplate(int $knowledgebaseId): string
-{
-    if ($knowledgebaseId <= 0 || !KnowledgebaseUrl::hasProfile($knowledgebaseId)) {
-        return '';
-    }
-
-    $baseUrl = trim(KnowledgebaseUrl::getBaseUrl($knowledgebaseId));
-    if ('' === $baseUrl) {
-        return '';
-    }
-
-    $path = trim((string) parse_url($baseUrl, PHP_URL_PATH));
-    if ('' === $path) {
-        return '';
-    }
-
-    $parentPath = dirname(rtrim($path, '/'));
-    if ('.' === $parentPath || '' === $parentPath) {
-        $parentPath = '/';
-    }
-
-    return rtrim($parentPath, '/') . '/___slug___/';
-}
-
-$articleUrlTemplate = knowledgebaseGetArticleUrlTemplate($selectedKnowledgebaseId);
+// Vorschau möglich? URL-Profil oder Standard-Seite der Wissensbasis
+$selectedKnowledgebase = $selectedKnowledgebaseId > 0 ? rex_yform_manager_dataset::get($selectedKnowledgebaseId, rex::getTable('knowledgebase')) : null;
+$previewAvailable = $selectedKnowledgebaseId > 0 && (
+    KnowledgebaseUrl::hasProfile($selectedKnowledgebaseId)
+    || ($selectedKnowledgebase instanceof rex_data_knowledgebase && $selectedKnowledgebase->getPreviewArticleId() > 0)
+);
 
 $content = '<form method="get" action="' . rex_url::currentBackendPage() . '" class="form-inline" style="margin-bottom: 15px;">';
 $content .= '<input type="hidden" name="page" value="' . rex_escape($currentPage) . '">';
@@ -306,7 +284,7 @@ rex_extension::register(
 
 rex_extension::register(
     'YFORM_DATA_LIST_ACTION_BUTTONS',
-    static function (rex_extension_point $ep) use ($articleUrlTemplate, $childPagesEnabled): array {
+    static function (rex_extension_point $ep) use ($previewAvailable, $childPagesEnabled): array {
         $table = $ep->getParam('table');
         if (!$table instanceof rex_yform_manager_table || $table->getTableName() !== rex::getTable('knowledgebase_article')) {
             return is_array($ep->getSubject()) ? $ep->getSubject() : [];
@@ -314,14 +292,17 @@ rex_extension::register(
 
         $actionButtons = is_array($ep->getSubject()) ? $ep->getSubject() : [];
 
-        if ('' !== $articleUrlTemplate) {
+        if ($previewAvailable) {
+            // Weiterleitung über die API ermittelt die echte Adresse (auch für Unterseiten)
             $actionButtons['frontend'] = [
-                'params' => [],
-                'content' => '<i class="rex-icon fa-external-link"></i> Frontend öffnen',
-                'url' => $articleUrlTemplate,
+                'params' => [
+                    'rex-api-call' => 'knowledgebase_preview',
+                    'kb_preview_id' => '___id___',
+                ],
+                'content' => '<i class="rex-icon fa-eye"></i> Vorschau',
                 'attributes' => [
                     'target' => '_blank',
-                    'rel' => 'noopener noreferrer',
+                    'rel' => 'noopener',
                 ],
             ];
         }
@@ -358,6 +339,16 @@ rex_extension::register(
     },
     rex_extension::EARLY,
 );
+
+// Vorschau-Knopf über dem Bearbeiten-Formular
+$editId = 'edit' === rex_request('func', 'string', '') ? rex_request('data_id', 'int', 0) : 0;
+if ($editId > 0 && $previewAvailable) {
+    echo '<p class="text-right" style="margin:0 0 10px;"><a class="btn btn-default" target="_blank" rel="noopener" href="'
+        . rex_url::currentBackendPage(['rex-api-call' => 'knowledgebase_preview', 'kb_preview_id' => $editId, 'knowledgebase_id' => $selectedKnowledgebaseId])
+        . '"><i class="rex-icon fa-eye"></i> Vorschau im Frontend</a></p>';
+} elseif ($editId > 0) {
+    echo rex_view::info('Für die Vorschau unter „Wissensbasen“ eine Standard-Seite hinterlegen.');
+}
 
 if (is_file(rex_path::addon('yform', 'pages/manager.data_edit.php'))) {
     include rex_path::addon('yform', 'pages/manager.data_edit.php');

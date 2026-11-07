@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.10] - 2026-11-07
+
+### Neu
+- **Wissensbasen: Feld „Standard-Seite (Vorschau)“** (Artikelauswahl aus der Struktur). Nur eine Bearbeitungshilfe für die Vorschau – die Wissensbasis kann weiterhin auf beliebigen Artikeln ausgegeben werden. Leer = Artikel aus „URL-Profile“.
+- **Vorschau-Buttons**: In der Beitragsliste „Vorschau“ (Aktionen) und im Bearbeiten-Formular „Vorschau im Frontend“. Beide öffnen die echte Adresse des Beitrags in einem neuen Tab (URL-Profil, sonst Standard-Seite mit Parameter) – auch für Unterseiten. Weiterleitung über die Backend-API `knowledgebase_preview` (Recht `knowledgebase[articles]`).
+
+### Geändert
+- Der bisherige Button „Frontend öffnen“ baute die Adresse aus einer Vorlage (nur oberste Ebene, nur mit URL-Profil) und ist durch „Vorschau“ ersetzt.
+
 ## [0.9.9] - 2026-11-07
 
 ### Behoben

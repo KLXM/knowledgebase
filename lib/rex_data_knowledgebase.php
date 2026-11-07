@@ -147,6 +147,26 @@ class rex_data_knowledgebase extends rex_yform_manager_dataset
         return in_array($mode, ['classic', 'compact', 'focus', 'handbook'], true) ? $mode : 'classic';
     }
 
+    /**
+     * Standard-Seite für die Vorschau im Backend: Feld „Standard-Seite (Vorschau)“,
+     * sonst der Artikel aus „URL-Profile“. Die Wissensbasis kann trotzdem auf beliebigen Artikeln stehen.
+     */
+    public function getPreviewArticleId(): int
+    {
+        $articleId = (int) $this->getOptionalValue('preview_article_id');
+        if ($articleId > 0 && \rex_article::get($articleId) instanceof \rex_article) {
+            return $articleId;
+        }
+
+        foreach (\FriendsOfREDAXO\Knowledgebase\UrlProfileManager::getMappings() as $mapping) {
+            if ($mapping['kb_id'] === (int) $this->getId() && $mapping['article_id'] > 0) {
+                return $mapping['article_id'];
+            }
+        }
+
+        return 0;
+    }
+
     public function getArticleSortField(): string
     {
         $field = trim((string) $this->getOptionalValue('article_sort_field'));
