@@ -116,6 +116,23 @@ Elemente des Add-ons:
 - `kb_text` – Fließtext eines Beitrags (TinyMCE), ohne eigene Section/Container; gehört unter eine Kapitelmarke
 - `kb_interactive_image`, `kb_recent_articles`
 
+### Layout-Modus
+
+Einstellung je Wissensbasis (Feld „Layout-Modus“):
+
+| Modus | Navigation | Abschnitte eines Beitrags |
+|---|---|---|
+| Klassisch | Sidebar links, mitlaufend mit eigener Scrollfläche | in der Sidebar unter dem Beitrag |
+| Kompakt | wie Klassisch, kleinerer Kopf | in der Sidebar |
+| Fokus | ohne Sidebar; Menü-Knopf öffnet auf dem Desktop eine Schublade am Rand des Inhaltsbereichs, mobil das Off-Canvas | in der Schublade |
+| Handbuch | Sidebar links nur mit den Kapiteln (Beiträgen) | Übersicht „In diesem Kapitel“: ab 1200 px mitlaufende Spalte rechts, darunter aufklappbarer Kasten unter der Überschrift |
+
+„Handbuch“ passt für lange Handreichungen mit vielen Abschnitten je Kapitel: die Sidebar bleibt kurz, die Abschnitte stehen neben dem Text.
+
+Abstand: Im Element `kb_chapter_nav` lässt sich unter „Abstand davor“ mehr Luft vor einem Kapitel einstellen (Mehr / Viel), z. B. wenn ein neuer Themenblock beginnt.
+
+Kapitelnummern: Im Element `kb_chapter_nav` die Nummer als Freitext setzen (z. B. „2.1“) und „Nummer auch in der Überschrift zeigen“ aktivieren – dann steht sie auch vor dem Titel im Inhalt (Klasse `.kb-chapter-nav__number`).
+
 ### Aussehen anpassen
 
 Schrift und Farben der Ausgabe lassen sich über CSS-Variablen auf `.kb-app` an die Website angleichen, z. B.:

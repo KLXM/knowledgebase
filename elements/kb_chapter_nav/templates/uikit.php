@@ -16,13 +16,16 @@ if ('' === $title) {
 }
 
 $anchor = \FriendsOfREDAXO\Knowledgebase\FrontendRenderer::resolveChapterRenderAnchor($anchorInput, $title);
+$headingNumber = \FriendsOfREDAXO\Knowledgebase\FrontendRenderer::chapterHeadingNumber($elementData);
+$spacingTop = (string) ($elementData['spacing_top'] ?? '');
+$spacingTop = in_array($spacingTop, ['medium', 'large'], true) ? $spacingTop : '';
 
 if ('' === $anchor) {
     return;
 }
 ?>
-<section id="<?= rex_escape($anchor) ?>" class="kb-chapter-nav uk-section uk-section-xsmall uk-padding-remove-top uk-padding-remove-horizontal">
-        <<?= $headingLevel ?> class="uk-heading-bullet uk-margin-small-bottom"><?= rex_escape($title) ?></<?= $headingLevel ?>>
+<section id="<?= rex_escape($anchor) ?>" class="kb-chapter-nav uk-section uk-section-xsmall uk-padding-remove-top uk-padding-remove-horizontal<?= '' !== $spacingTop ? ' kb-chapter-nav--space-' . $spacingTop : '' ?>">
+        <<?= $headingLevel ?> class="uk-heading-bullet uk-margin-small-bottom"><?php if ('' !== $headingNumber): ?><span class="kb-chapter-nav__number"><?= rex_escape($headingNumber) ?></span> <?php endif ?><?= rex_escape($title) ?></<?= $headingLevel ?>>
 
     <?php
     if ('' !== $text) {

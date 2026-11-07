@@ -274,7 +274,7 @@
                 "attributes": "",
                 "choice_attributes": "",
                 "choice_label": "",
-                "choices": "Klassisch (Sidebar)=classic,Kompakt (kleiner Header)=compact,Fokus (ohne Sidebar)=focus",
+                "choices": "Klassisch (Sidebar)=classic,Kompakt (kleiner Header)=compact,Fokus (ohne Sidebar)=focus,Handbuch (Kapitel links / Abschnitte rechts)=handbook",
                 "db_type": "varchar(16)",
                 "default": "classic",
                 "expanded": "0",

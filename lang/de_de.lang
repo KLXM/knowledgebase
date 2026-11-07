@@ -11,6 +11,7 @@ knowledgebase_search_label = Suche
 knowledgebase_search_submit = Volltextsuche
 knowledgebase_nav_title = Inhaltsverzeichnis
 knowledgebase_nav_toggle = Kapitel
+knowledgebase_toc_heading = In diesem Kapitel
 knowledgebase_article_label = Kapitel
 knowledgebase_nav_filter_label = Kapitel filtern
 knowledgebase_nav_filter_placeholder = Titel oder Unterkapitel

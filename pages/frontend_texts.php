@@ -41,6 +41,7 @@ $labels = [
     'knowledgebase_suggest_unavailable' => 'Hinweis: Autosuggest nicht verfügbar',
     'knowledgebase_suggest_empty' => 'Hinweis: Keine Vorschläge (Autosuggest)',
     'knowledgebase_nav_toggle' => 'Button: Kapitel (mobil)',
+    'knowledgebase_toc_heading' => 'Titel: Übersicht „In diesem Kapitel“ (Layout Handbuch)',
     'knowledgebase_nav_title' => 'Titel: Inhaltsverzeichnis',
     'knowledgebase_nav_filter_label' => 'Label: Kapitel filtern',
     'knowledgebase_nav_filter_placeholder' => 'Placeholder: Kapitel filtern',

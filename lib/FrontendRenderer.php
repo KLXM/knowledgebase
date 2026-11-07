@@ -30,6 +30,9 @@ final class FrontendRenderer
     private static array $chapterRenderRegistry = [];
     private static bool $chapterRenderSessionActive = false;
 
+    /** Layout-Modus der gerade ausgegebenen Wissensdatenbank (für Navigation und Artikel). */
+    private static string $renderLayoutMode = 'classic';
+
     public static function beginChapterRenderSession(): void
     {
         self::$chapterRenderRegistry = [];
@@ -92,6 +95,7 @@ final class FrontendRenderer
         $searchHistoryEnabled = $knowledgebase->isSearchHistoryEnabled();
         $chapterFilterEnabled = $knowledgebase->isChapterFilterEnabled();
         $layoutMode = $knowledgebase->getLayoutMode();
+        self::$renderLayoutMode = $layoutMode;
         $tagModeActive = false;
 
         $requestedSlug = trim((string) \rex_request($articleParam, 'string', $startSlug));
@@ -343,7 +347,7 @@ final class FrontendRenderer
             . '<div class="kb-app__history-empty" data-kb-history-empty>' . rex_escape($historyEmpty) . '</div>'
             . '</div>'
             . '</div>'
-            . '<button class="' . rex_escape($mobileNavTriggerClass) . '" type="button" uk-toggle="target: #' . rex_escape($offcanvasId) . '" aria-label="' . rex_escape($menuLabel) . '" title="' . rex_escape($menuLabel) . '" uk-tooltip="' . rex_escape($menuLabel) . '"><span uk-icon="menu"></span></button>'
+            . '<button class="' . rex_escape($mobileNavTriggerClass) . '" type="button" data-kb-nav-trigger data-kb-offcanvas="' . rex_escape($offcanvasId) . '" aria-controls="' . rex_escape($instanceId . '-sidebar') . '" aria-expanded="false" aria-label="' . rex_escape($menuLabel) . '" title="' . rex_escape($menuLabel) . '" uk-tooltip="' . rex_escape($menuLabel) . '"><span uk-icon="menu"></span></button>'
             . '</div>'
             . '<div id="' . rex_escape($instanceId . '-search-control') . '" class="kb-app__search-control" data-kb-search-control>'
             . '<div class="kb-app__search-input-wrap uk-inline">'
@@ -366,7 +370,10 @@ final class FrontendRenderer
             . '</div>'
             . '</div>'
             . '<div class="kb-app__layout">'
-            . '<aside class="kb-app__sidebar">' . $nav . '</aside>'
+            . '<aside id="' . rex_escape($instanceId . '-sidebar') . '" class="kb-app__sidebar" aria-label="' . rex_escape($menuLabel) . '">'
+            . '<button class="kb-app__drawer-close" type="button" data-kb-drawer-close aria-label="' . rex_escape($menuCloseLabel) . '" title="' . rex_escape($menuCloseLabel) . '"><span uk-icon="close"></span></button>'
+            . $nav
+            . '</aside>'
             . '<div class="kb-app__content">' . $main . '</div>'
             . '</div>'
             . '</section>';
@@ -802,8 +809,11 @@ final class FrontendRenderer
         } finally {
             self::endChapterRenderSession();
         }
-        $showSidebarChapters = count($chapters) > 0 && !self::articleHasVisibleChildren($articles, $article->getId());
-        $chapterMenu = $showSidebarChapters ? '' : self::renderArticleChapterMenu($knowledgebase, $article, $chapters);
+        $isHandbook = self::$renderLayoutMode === 'handbook';
+        $showSidebarChapters = !$isHandbook && count($chapters) > 0 && !self::articleHasVisibleChildren($articles, $article->getId());
+        $chapterMenu = $isHandbook
+            ? self::renderArticleToc($knowledgebase, $article, $chapters, 'inline')
+            : ($showSidebarChapters ? '' : self::renderArticleChapterMenu($knowledgebase, $article, $chapters));
         $recommendationBlocks = '';
 
         if ($relatedEnabled) {
@@ -818,7 +828,7 @@ final class FrontendRenderer
             ? '<section class="kb-app__recommendations">' . $recommendationBlocks . '</section>'
             : '';
 
-        return '<article class="kb-app__article">'
+        $articleHtml = '<article class="kb-app__article">'
             . $breadcrumbs
             . $editButton
             . '<div class="kb-app__article-meta">' . rex_escape(FrontendI18n::msg('knowledgebase_article_label', 'Kapitel')) . '</div>'
@@ -828,6 +838,56 @@ final class FrontendRenderer
             . '<div class="kb-app__article-body">' . $articleBody . '</div>'
             . $recommendations
             . '</article>';
+
+        if (!$isHandbook) {
+            return $articleHtml;
+        }
+
+        $asideToc = self::renderArticleToc($knowledgebase, $article, $chapters, 'aside');
+
+        return '<div class="kb-app__article-layout' . ($asideToc !== '' ? ' has-toc' : '') . '">' . $articleHtml . $asideToc . '</div>';
+    }
+
+    /**
+     * Übersicht „In diesem Kapitel“ (Layout „Handbuch“): Abschnitte des Artikels mit Nummern.
+     * 'aside' = mitlaufende Spalte rechts (breite Bildschirme), 'inline' = aufklappbarer Kasten unter der Überschrift.
+     *
+     * @param list<array{title:string,badge:string,badge_mode:string,anchor:string,level:string}> $chapters
+     */
+    private static function renderArticleToc(\rex_data_knowledgebase $knowledgebase, \rex_data_knowledgebase_article $article, array $chapters, string $variant): string
+    {
+        if (count($chapters) === 0) {
+            return '';
+        }
+
+        $heading = FrontendI18n::msg('knowledgebase_toc_heading', 'In diesem Kapitel');
+        $articleUrl = KnowledgebaseUrl::getArticleUrl($knowledgebase->getId(), (string) $article->getValue('slug'));
+        $items = '';
+        foreach ($chapters as $chapter) {
+            $href = $articleUrl . '#' . rawurlencode($chapter['anchor']);
+            $items .= '<li class="kb-app__toc-item kb-app__toc-item--' . rex_escape($chapter['level']) . '">'
+                . '<a class="kb-app__nav-link kb-app__nav-link--chapter" data-kb-nav-chapter-link href="' . rex_escape($href) . '">'
+                . self::renderNavBadge($chapter['badge'], null, $chapter['badge_mode'])
+                . '<span>' . rex_escape($chapter['title']) . '</span>'
+                . '</a></li>';
+        }
+        $list = '<ul class="kb-app__toc-list">' . $items . '</ul>';
+
+        if ($variant === 'inline') {
+            return '<details class="kb-app__toc kb-app__toc--inline">'
+                . '<summary class="kb-app__toc-summary"><span uk-icon="icon: list; ratio: 0.9" aria-hidden="true"></span>'
+                . '<span>' . rex_escape($heading) . '</span> <span class="kb-app__toc-count">(' . count($chapters) . ')</span></summary>'
+                . '<nav class="kb-app__toc-nav" aria-label="' . rex_escape($heading) . '">' . $list . '</nav>'
+                . '</details>';
+        }
+
+        $headingId = 'kb-toc-' . (int) $article->getId();
+
+        return '<aside class="kb-app__toc kb-app__toc--aside">'
+            . '<nav class="kb-app__toc-nav" aria-labelledby="' . rex_escape($headingId) . '">'
+            . '<div class="kb-app__toc-title" id="' . rex_escape($headingId) . '">' . rex_escape($heading) . '</div>'
+            . $list
+            . '</nav></aside>';
     }
 
     /**
@@ -1014,7 +1074,8 @@ final class FrontendRenderer
 
         $children = is_array($node['children'] ?? null) ? $node['children'] : [];
         $hasChildren = count($children) > 0;
-        $chapterLinks = !$hasChildren ? self::extractArticleChapters($article, true) : [];
+        // Handbuch: Abschnitte stehen in der Übersicht „In diesem Kapitel“, die Navigation zeigt nur Kapitel
+        $chapterLinks = !$hasChildren && self::$renderLayoutMode !== 'handbook' ? self::extractArticleChapters($article, true) : [];
         $hasChapterLinks = count($chapterLinks) > 0;
         $isCurrent = $article->getId() === $currentId && !$glossaryActive && !$tocActive && !$tagModeActive;
         $isTrail = self::navigationNodeContainsCurrent($node, $currentId);
@@ -1258,6 +1319,30 @@ final class FrontendRenderer
         }
 
         return $chapters;
+    }
+
+    /**
+     * Kapitelnummer für die Überschrift im Inhalt (Element kb_chapter_nav, Option „Nummer auch in der Überschrift“).
+     * Nur Freitext-Nummern („2.1“, „A“) und automatische Zahlen-Badges, keine Icons.
+     *
+     * @param array<string, mixed> $data Elementdaten
+     */
+    public static function chapterHeadingNumber(array $data): string
+    {
+        if (empty($data['show_number_in_heading'])) {
+            return '';
+        }
+
+        $badge = self::resolveChapterBadge($data);
+        $value = trim($badge['badge']);
+        if ($badge['mode'] === 'text') {
+            return $value;
+        }
+        if ($badge['mode'] === 'auto' && preg_match('/^\d{1,2}$/', $value) === 1 && (int) $value > 0) {
+            return (string) (int) $value;
+        }
+
+        return '';
     }
 
     /**
