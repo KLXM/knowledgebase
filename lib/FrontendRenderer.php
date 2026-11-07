@@ -809,7 +809,8 @@ final class FrontendRenderer
         } finally {
             self::endChapterRenderSession();
         }
-        $isHandbook = self::$renderLayoutMode === 'handbook';
+        // Handbuch: Abschnitte in „In diesem Kapitel“; Variante „kompakt“ nur als Menü unter der Überschrift, ohne Spalte rechts
+        $isHandbook = in_array(self::$renderLayoutMode, ['handbook', 'handbook_menu'], true);
         $showSidebarChapters = !$isHandbook && count($chapters) > 0 && !self::articleHasVisibleChildren($articles, $article->getId());
         $chapterMenu = $isHandbook
             ? self::renderArticleToc($knowledgebase, $article, $chapters, 'inline')
@@ -843,7 +844,7 @@ final class FrontendRenderer
             return $articleHtml;
         }
 
-        $asideToc = self::renderArticleToc($knowledgebase, $article, $chapters, 'aside');
+        $asideToc = self::$renderLayoutMode === 'handbook' ? self::renderArticleToc($knowledgebase, $article, $chapters, 'aside') : '';
 
         return '<div class="kb-app__article-layout' . ($asideToc !== '' ? ' has-toc' : '') . '">' . $articleHtml . $asideToc . '</div>';
     }
@@ -1075,7 +1076,7 @@ final class FrontendRenderer
         $children = is_array($node['children'] ?? null) ? $node['children'] : [];
         $hasChildren = count($children) > 0;
         // Handbuch: Abschnitte stehen in der Übersicht „In diesem Kapitel“, die Navigation zeigt nur Kapitel
-        $chapterLinks = !$hasChildren && self::$renderLayoutMode !== 'handbook' ? self::extractArticleChapters($article, true) : [];
+        $chapterLinks = !$hasChildren && !in_array(self::$renderLayoutMode, ['handbook', 'handbook_menu'], true) ? self::extractArticleChapters($article, true) : [];
         $hasChapterLinks = count($chapterLinks) > 0;
         $isCurrent = $article->getId() === $currentId && !$glossaryActive && !$tocActive && !$tagModeActive;
         $isTrail = self::navigationNodeContainsCurrent($node, $currentId);

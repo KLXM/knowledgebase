@@ -2,6 +2,9 @@
 
 ## [0.9.11] - 2026-11-07
 
+### Neu
+- **Layout „Handbuch kompakt“**: wie „Handbuch“ (links nur die Kapitel), die Abschnitte aber immer als aufklappbares Menü „In diesem Kapitel“ unter der Überschrift – auch auf dem Desktop, ohne Spalte rechts. Mehr Platz für den Text.
+
 ### Verbessert
 - **Beiträge**: In der Leiste „Beiträge nach Wissensbasis“ öffnet „Wissensbasis im Frontend“ die Standard-Seite der gewählten Wissensbasis (sonst die Basis-Adresse des URL-Profils).
 - Die Auswahl der Wissensbasis nutzt den Selectpicker des Backends und wechselt beim Auswählen direkt; Label und Knöpfe stehen auf einer Linie.
