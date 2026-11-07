@@ -16,7 +16,7 @@ return [
         'content' => [
             'label' => $_ci('group_content', 'Inhalt'),
             'icon' => 'fa-book',
-            'fields' => ['title', 'heading_level', 'text', 'badge_mode', 'badge_icon', 'badge_text', 'anchor_id'],
+            'fields' => ['title', 'heading_level', 'text', 'badge_mode', 'badge_icon', 'badge_text', 'show_number_in_heading', 'anchor_id'],
         ],
     ],
     'fields' => [
@@ -114,6 +114,11 @@ return [
             'col' => 4,
             'notice' => $_ci('field_badge_text_notice', 'Beispiele: 1, 2.1, A, Intro'),
             'visible_if' => ['badge_mode' => 'text'],
+        ],
+        'show_number_in_heading' => [
+            'type' => 'checkbox',
+            'label' => $_ci('field_show_number_in_heading', 'Nummer auch in der Überschrift zeigen'),
+            'notice' => $_ci('field_show_number_in_heading_notice', 'Zeigt die Kapitelnummer (Freitext oder Zahl) zusätzlich vor dem Titel im Inhalt, z. B. „2.1 Gesetzliche Grundlagen“.'),
         ],
         'anchor_id' => [
             'type' => 'text',

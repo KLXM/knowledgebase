@@ -409,6 +409,7 @@ function initKnowledgebaseUi() {
 
         initResponsiveSidebarState(app);
         initStickyNavigation(app);
+        initNavTrigger(app);
         initAnchorNavigation(app);
         initArticleRecommendations(app);
         initScrollToTopButton(app);
@@ -881,7 +882,10 @@ function initAnchorNavigation(app) {
         return true;
     };
 
+    var lastActiveAnchorId = null;
     var markActiveAnchor = function (activeAnchorId) {
+        var changed = activeAnchorId !== lastActiveAnchorId;
+        lastActiveAnchorId = activeAnchorId;
         chapterLinks.forEach(function (link) {
             if (!isSamePageAnchorLink(link)) {
                 link.classList.remove('is-active-anchor');
@@ -894,19 +898,20 @@ function initAnchorNavigation(app) {
             link.classList.toggle('is-active-anchor', isActive);
             if (isActive) {
                 link.setAttribute('aria-current', 'location');
+                if (changed) {
+                    var shell = link.closest('.kb-app__sidebar .kb-app__nav-shell, .kb-app__toc--aside');
+                    if (shell) {
+                        kbScrollNavIntoView(shell, link);
+                    }
+                }
             } else {
                 link.removeAttribute('aria-current');
             }
         });
     };
 
+    // Aktiver Abschnitt folgt immer der Scrollposition (ein Anker in der Adresse gilt nur beim Laden)
     var updateActiveFromScroll = function () {
-        var hashActiveId = resolveActiveAnchorId();
-        if (hashActiveId !== '') {
-            markActiveAnchor(hashActiveId);
-            return;
-        }
-
         var candidates = [];
 
         chapterLinks.forEach(function (link) {
@@ -943,6 +948,11 @@ function initAnchorNavigation(app) {
             }
         });
 
+        // Seitenende erreicht: letzter Abschnitt, auch wenn er die Schwelle nicht mehr erreicht
+        if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
+            activeId = candidates[candidates.length - 1].id;
+        }
+
         markActiveAnchor(activeId);
     };
 
@@ -950,6 +960,12 @@ function initAnchorNavigation(app) {
         var link = event.target.closest('[data-kb-nav-chapter-link]');
         if (!link || !app.contains(link) || !isSamePageAnchorLink(link)) {
             return;
+        }
+
+        // aufklappbare Übersicht „In diesem Kapitel“ nach der Auswahl schließen
+        var inlineToc = link.closest('details.kb-app__toc--inline');
+        if (inlineToc) {
+            inlineToc.open = false;
         }
 
         var anchorId = getAnchorId(link);
@@ -979,7 +995,9 @@ function initAnchorNavigation(app) {
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     window.addEventListener('hashchange', onScroll);
-    updateActiveFromScroll();
+    if (resolveActiveAnchorId() === '') {
+        updateActiveFromScroll();
+    }
 
     var initialHash = decodeURIComponent(window.location.hash.replace(/^#/, ''));
     if (initialHash !== '') {
@@ -1076,75 +1094,164 @@ function initResponsiveSidebarState(app) {
 }
 
 function initStickyNavigation(app) {
-    var navShell = app.querySelector('.kb-app__sidebar .kb-app__nav-shell');
+    // Die Navigation klebt per CSS (position: sticky, eigene Scrollfläche); hier nur den Abstand
+    // unter einem festen Seitenkopf setzen und den aktuellen Eintrag in den sichtbaren Bereich holen.
     var stickyOffset = parseInt(app.getAttribute('data-kb-sticky-offset') || '0', 10);
-    var stickyMedia = parseInt(app.getAttribute('data-kb-sticky-media') || '960', 10);
-
-    if (!navShell) {
-        return;
-    }
-
     if (isNaN(stickyOffset) || stickyOffset < 0) {
         stickyOffset = 0;
     }
+    app.style.setProperty('--kb-sidebar-sticky-top', stickyOffset + 'px');
 
-    if (isNaN(stickyMedia) || stickyMedia < 1) {
-        stickyMedia = 960;
+    var shell = app.querySelector('.kb-app__sidebar .kb-app__nav-shell');
+    if (shell) {
+        var current = shell.querySelector('.kb-app__nav-link.is-current');
+        if (current) {
+            kbScrollNavIntoView(shell, current);
+        }
     }
+}
 
-    var stickyInstance = null;
-
-    var applyStickyOffset = function () {
-        app.style.setProperty('--kb-sidebar-sticky-top', stickyOffset + 'px');
-    };
-
-    var initUIKitSticky = function () {
-        if (typeof window.UIkit === 'undefined' || typeof window.UIkit.sticky !== 'function') {
-            return false;
-        }
-
-        if (stickyInstance && typeof stickyInstance.$destroy === 'function') {
-            stickyInstance.$destroy(true);
-        }
-
-        stickyInstance = window.UIkit.sticky(navShell, {
-            start: 0,
-            offset: stickyOffset,
-            offsetEnd: stickyOffset,
-            media: stickyMedia,
-            end: '.kb-app__layout',
-            overflowFlip: false,
-            targetOffset: stickyOffset + 8,
-        });
-
-        if (typeof window.UIkit.update === 'function') {
-            window.UIkit.update(navShell);
-        }
-
-        return true;
-    };
-
-    applyStickyOffset();
-    window.addEventListener('resize', applyStickyOffset, { passive: true });
-    window.addEventListener('orientationchange', applyStickyOffset, { passive: true });
-
-    if (initUIKitSticky()) {
+/**
+ * Eintrag innerhalb einer scrollbaren Navigation sichtbar machen, ohne die Seite zu bewegen.
+ */
+function kbScrollNavIntoView(container, link) {
+    if (!container || !link || container.scrollHeight <= container.clientHeight + 1) {
         return;
     }
 
-    var retryCount = 0;
-    var retryTimer = window.setInterval(function () {
-        retryCount += 1;
-        if (initUIKitSticky() || retryCount >= 40) {
-            window.clearInterval(retryTimer);
-        }
-    }, 100);
+    var containerRect = container.getBoundingClientRect();
+    var linkRect = link.getBoundingClientRect();
+    var margin = 48;
 
-    window.addEventListener('load', function () {
-        if (initUIKitSticky()) {
-            window.clearInterval(retryTimer);
+    if (linkRect.top < containerRect.top + margin) {
+        container.scrollTop += linkRect.top - containerRect.top - margin;
+    } else if (linkRect.bottom > containerRect.bottom - margin) {
+        container.scrollTop += linkRect.bottom - containerRect.bottom + margin;
+    }
+}
+
+/**
+ * Menü-Knopf: auf dem Desktop im Layout „focus“ Schublade am Container-Rand,
+ * sonst (mobil) das Off-Canvas.
+ */
+function initNavTrigger(app) {
+    var trigger = app.querySelector('[data-kb-nav-trigger]');
+    var sidebar = app.querySelector('.kb-app__sidebar');
+    if (!trigger || !sidebar) {
+        return;
+    }
+
+    var desktopMedia = parseInt(app.getAttribute('data-kb-sticky-media') || '960', 10);
+    if (isNaN(desktopMedia) || desktopMedia < 1) {
+        desktopMedia = 960;
+    }
+
+    var isFocusLayout = app.classList.contains('kb-app--layout-focus');
+    var isDesktop = function () {
+        return window.innerWidth >= desktopMedia;
+    };
+    var useDrawer = function () {
+        return isFocusLayout && isDesktop();
+    };
+
+    var focusFirstIn = function (container) {
+        var target = container.querySelector('input, a[href], button:not([data-kb-drawer-close])');
+        if (target && typeof target.focus === 'function') {
+            target.focus({ preventScroll: true });
         }
-    }, { once: true });
+    };
+
+    var showCurrentIn = function (container) {
+        var scroller = container.querySelector('.kb-app__nav-shell') || container;
+        var active = container.querySelector('.kb-app__nav-link.is-active-anchor') || container.querySelector('.kb-app__nav-link.is-current');
+        if (active) {
+            kbScrollNavIntoView(scroller, active);
+            kbScrollNavIntoView(container, active);
+        }
+    };
+
+    var openDrawer = function () {
+        app.classList.add('is-drawer-open');
+        trigger.setAttribute('aria-expanded', 'true');
+        window.setTimeout(function () {
+            showCurrentIn(sidebar);
+            focusFirstIn(sidebar);
+        }, 60);
+    };
+
+    var closeDrawer = function (returnFocus) {
+        if (!app.classList.contains('is-drawer-open')) {
+            return;
+        }
+        app.classList.remove('is-drawer-open');
+        trigger.setAttribute('aria-expanded', 'false');
+        if (returnFocus) {
+            trigger.focus({ preventScroll: true });
+        }
+    };
+
+    var offcanvasNode = function () {
+        var id = trigger.getAttribute('data-kb-offcanvas');
+        return id ? document.getElementById(id) : null;
+    };
+
+    trigger.addEventListener('click', function (event) {
+        event.preventDefault();
+        if (useDrawer()) {
+            if (app.classList.contains('is-drawer-open')) {
+                closeDrawer(false);
+            } else {
+                openDrawer();
+            }
+            return;
+        }
+
+        var node = offcanvasNode();
+        if (node && typeof window.UIkit !== 'undefined' && typeof window.UIkit.offcanvas === 'function') {
+            window.UIkit.offcanvas(node).show();
+        }
+    });
+
+    var node = offcanvasNode();
+    if (node) {
+        node.addEventListener('shown', function () {
+            var bar = node.querySelector('.uk-offcanvas-bar') || node;
+            showCurrentIn(bar);
+        });
+    }
+
+    var closeButton = sidebar.querySelector('[data-kb-drawer-close]');
+    if (closeButton) {
+        closeButton.addEventListener('click', function () {
+            closeDrawer(true);
+        });
+    }
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && app.classList.contains('is-drawer-open')) {
+            closeDrawer(true);
+        }
+    });
+
+    document.addEventListener('click', function (event) {
+        if (!app.classList.contains('is-drawer-open')) {
+            return;
+        }
+        if (sidebar.contains(event.target) || trigger.contains(event.target)) {
+            // Klick auf einen Kapitel-Link derselben Seite: Schublade schließen, Text bleibt sichtbar
+            if (event.target.closest && event.target.closest('[data-kb-nav-chapter-link]')) {
+                closeDrawer(false);
+            }
+            return;
+        }
+        closeDrawer(false);
+    });
+
+    window.addEventListener('resize', function () {
+        if (!useDrawer()) {
+            closeDrawer(false);
+        }
+    });
 }
 
 function escapeHtml(value) {
