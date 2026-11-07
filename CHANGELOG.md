@@ -3,9 +3,12 @@
 ## [0.9.12] - 2026-11-07
 
 ### Behoben
+- **Slug-Skript war nie aktiv**: `knowledgebase_backend_slug.js` wurde nicht eingebunden und hätte die Felder in YForm 5 (numerische Feldnamen) auch nicht gefunden. Jetzt auf „Beiträge“ und „Wissensbasen“ geladen, Felder über die ID der Feldgruppe erkannt.
+- **Umlaute im Slug**: Browser und Server schreiben jetzt gleich um (ä → ae, ö → oe, ü → ue, ß → ss); vorher machte das Skript aus „ü“ ein „u“. Quelle ist auf beiden Seiten zuerst der Navigationstitel.
 - **TinyMCE-Plugin „Knowledgebase-Link“: Abschnitts-Links sprangen nicht**: Das Plugin baute die Anker anders als die Ausgabe – ohne das Präfix `kb-chapter-` automatisch erzeugter Anker und ohne Nummerierung bei gleichen Titeln. Auf hage.de passte keiner der 89 Anker zur Seite; innerhalb der Wissensbasis fing das Skript es teilweise ab, von außen und bei gleichen Titeln nicht. Jetzt nutzt das Plugin dieselbe Logik wie die Ausgabe (`FrontendRenderer::chapterAnchorFor()`): alle Anker der Online-Beiträge passen. Bereits eingefügte Links funktionieren innerhalb der Wissensbasis weiter.
 
 ### Neu
+- **Slug-Generator**: Am Slug-Feld (Beiträge, Wissensbasen) erzeugt „Aus Navigationstitel erzeugen“ den Slug aus dem Navigationstitel (sonst Titel). Bei bestehenden Beiträgen erscheint ein Hinweis, dass sich die Adresse ändert. Neue Einträge füllen den Slug beim Tippen automatisch; ein vorhandener Slug wird nie von selbst überschrieben.
 - **Selbstreparierende Links aus dem Plugin**: Das Plugin fügt keinen festen Link mehr ein, sondern einen Verweis auf Beitrag und Kapitelanker per ID (`data-kb-article`, `data-kb-chapter`). Bei der Ausgabe wird daraus die aktuelle Adresse über das URL-Profil (Einstellungen → URL-Profile; ohne Profil die Fallback-Adresse) samt aktuellem Anker – auf derselben Domain als Pfad (`/kb/…/#…` statt `//hage.de/kb/…`). Links stimmen damit auch nach Umbenennen von Beitrag (Slug) oder Kapitel und nach Ändern des Profil-Artikels. Unabhängig vom URL-AddOn (`KnowledgebaseLinkService::rewriteContentLinks()`, `KnowledgebaseUrl::resolveContentLink()`).
 
 ### Verbessert
