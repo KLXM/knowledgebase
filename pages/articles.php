@@ -69,8 +69,8 @@ $previewAvailable = $selectedKnowledgebaseId > 0 && (
 $content = '<form method="get" action="' . rex_url::currentBackendPage() . '" class="form-inline" style="margin-bottom: 15px;">';
 $content .= '<input type="hidden" name="page" value="' . rex_escape($currentPage) . '">';
 $content .= '<div class="form-group">';
-$content .= '<label for="kb-article-kb-filter" style="margin-right:8px;">Wissensbasis</label>';
-$content .= '<select id="kb-article-kb-filter" name="knowledgebase_id" class="form-control" style="min-width:280px;">';
+$content .= '<label for="kb-article-kb-filter" class="control-label" style="margin-right:8px;">Wissensbasis</label>';
+$content .= '<select id="kb-article-kb-filter" name="knowledgebase_id" class="form-control selectpicker" data-width="fit" onchange="this.form.submit()">';
 $content .= '<option value="0">Bitte Wissensbasis wählen</option>';
 foreach ($knowledgebaseOptions as $knowledgebaseId => $knowledgebaseTitle) {
     $selected = $knowledgebaseId === $selectedKnowledgebaseId ? ' selected' : '';
@@ -86,6 +86,17 @@ $content .= ' <a class="btn btn-default" href="' . rex_url::backendPage($current
     'rex_yform_filter' => ['knowledgebase_id' => $selectedKnowledgebaseId],
     'rex_yform_set' => ['knowledgebase_id' => $selectedKnowledgebaseId, 'parent_id' => 0],
 ], (array) $csrfUrlParams), false) . '"' . ($selectedKnowledgebaseId <= 0 ? ' style="pointer-events:none;opacity:.6;"' : '') . '><i class="rex-icon fa-plus"></i> Hauptseite anlegen</a>';
+
+// Standard-Seite der Wissensbasis im Frontend öffnen
+$baseFrontendUrl = '';
+if ($selectedKnowledgebase instanceof rex_data_knowledgebase && $selectedKnowledgebase->getPreviewArticleId() > 0) {
+    $baseFrontendUrl = rex_getUrl($selectedKnowledgebase->getPreviewArticleId());
+} elseif ($selectedKnowledgebaseId > 0 && KnowledgebaseUrl::hasProfile($selectedKnowledgebaseId)) {
+    $baseFrontendUrl = KnowledgebaseUrl::getBaseUrl($selectedKnowledgebaseId);
+}
+if ('' !== $baseFrontendUrl) {
+    $content .= ' <a class="btn btn-default" target="_blank" rel="noopener" href="' . rex_escape($baseFrontendUrl) . '"><i class="rex-icon fa-external-link"></i> Wissensbasis im Frontend</a>';
+}
 
 // Beim Bearbeiten: Vorschau des Beitrags in derselben Leiste
 $editId = 'edit' === rex_request('func', 'string', '') ? rex_request('data_id', 'int', 0) : 0;

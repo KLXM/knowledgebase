@@ -103,3 +103,11 @@ body.rex-theme-dark #rex-page-knowledgebase-articles {
     --kb-article-list-subtle: #9fb0c2;
   }
 }
+
+
+/* Leiste „Beiträge nach Wissensbasis“: Label, Auswahl und Knöpfe auf einer Linie */
+#rex-page-knowledgebase-articles .form-inline .form-group,
+#rex-page-knowledgebase-articles .form-inline .control-label {
+    vertical-align: middle;
+    margin-bottom: 0;
+}

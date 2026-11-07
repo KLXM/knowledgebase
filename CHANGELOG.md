@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.11] - 2026-11-07
+
+### Verbessert
+- **Beiträge**: In der Leiste „Beiträge nach Wissensbasis“ öffnet „Wissensbasis im Frontend“ die Standard-Seite der gewählten Wissensbasis (sonst die Basis-Adresse des URL-Profils).
+- Die Auswahl der Wissensbasis nutzt den Selectpicker des Backends und wechselt beim Auswählen direkt; Label und Knöpfe stehen auf einer Linie.
+
 ## [0.9.10] - 2026-11-07
 
 ### Neu
