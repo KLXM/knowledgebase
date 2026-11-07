@@ -86,6 +86,16 @@ $content .= ' <a class="btn btn-default" href="' . rex_url::backendPage($current
     'rex_yform_filter' => ['knowledgebase_id' => $selectedKnowledgebaseId],
     'rex_yform_set' => ['knowledgebase_id' => $selectedKnowledgebaseId, 'parent_id' => 0],
 ], (array) $csrfUrlParams), false) . '"' . ($selectedKnowledgebaseId <= 0 ? ' style="pointer-events:none;opacity:.6;"' : '') . '><i class="rex-icon fa-plus"></i> Hauptseite anlegen</a>';
+
+// Beim Bearbeiten: Vorschau des Beitrags in derselben Leiste
+$editId = 'edit' === rex_request('func', 'string', '') ? rex_request('data_id', 'int', 0) : 0;
+if ($editId > 0 && $previewAvailable) {
+    $content .= ' <a class="btn btn-default" target="_blank" rel="noopener" href="'
+        . rex_url::currentBackendPage(['rex-api-call' => 'knowledgebase_preview', 'kb_preview_id' => $editId, 'knowledgebase_id' => $selectedKnowledgebaseId])
+        . '"><i class="rex-icon fa-eye"></i> Vorschau im Frontend</a>';
+} elseif ($editId > 0) {
+    $content .= ' <span class="text-muted" style="margin-left:8px;">Für die Vorschau unter „Wissensbasen“ eine Standard-Seite hinterlegen.</span>';
+}
 $content .= '</form>';
 
 $fragment = new rex_fragment();
@@ -339,16 +349,6 @@ rex_extension::register(
     },
     rex_extension::EARLY,
 );
-
-// Vorschau-Knopf über dem Bearbeiten-Formular
-$editId = 'edit' === rex_request('func', 'string', '') ? rex_request('data_id', 'int', 0) : 0;
-if ($editId > 0 && $previewAvailable) {
-    echo '<p class="text-right" style="margin:0 0 10px;"><a class="btn btn-default" target="_blank" rel="noopener" href="'
-        . rex_url::currentBackendPage(['rex-api-call' => 'knowledgebase_preview', 'kb_preview_id' => $editId, 'knowledgebase_id' => $selectedKnowledgebaseId])
-        . '"><i class="rex-icon fa-eye"></i> Vorschau im Frontend</a></p>';
-} elseif ($editId > 0) {
-    echo rex_view::info('Für die Vorschau unter „Wissensbasen“ eine Standard-Seite hinterlegen.');
-}
 
 if (is_file(rex_path::addon('yform', 'pages/manager.data_edit.php'))) {
     include rex_path::addon('yform', 'pages/manager.data_edit.php');
