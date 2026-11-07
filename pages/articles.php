@@ -59,34 +59,12 @@ $childPagesEnabled = AddonSettings::isChildPagesEnabled();
 $requestedSet = rex_request('rex_yform_set', 'array', []);
 $requestedParentId = isset($requestedSet['parent_id']) ? (int) $requestedSet['parent_id'] : 0;
 
-/**
- * Baut eine Frontend-URL-Vorlage für die aktuell gewählte Wissensbasis.
- */
-function knowledgebaseGetArticleUrlTemplate(int $knowledgebaseId): string
-{
-    if ($knowledgebaseId <= 0 || !KnowledgebaseUrl::hasProfile($knowledgebaseId)) {
-        return '';
-    }
-
-    $baseUrl = trim(KnowledgebaseUrl::getBaseUrl($knowledgebaseId));
-    if ('' === $baseUrl) {
-        return '';
-    }
-
-    $path = trim((string) parse_url($baseUrl, PHP_URL_PATH));
-    if ('' === $path) {
-        return '';
-    }
-
-    $parentPath = dirname(rtrim($path, '/'));
-    if ('.' === $parentPath || '' === $parentPath) {
-        $parentPath = '/';
-    }
-
-    return rtrim($parentPath, '/') . '/___slug___/';
-}
-
-$articleUrlTemplate = knowledgebaseGetArticleUrlTemplate($selectedKnowledgebaseId);
+// Vorschau möglich? URL-Profil oder Standard-Seite der Wissensbasis
+$selectedKnowledgebase = $selectedKnowledgebaseId > 0 ? rex_yform_manager_dataset::get($selectedKnowledgebaseId, rex::getTable('knowledgebase')) : null;
+$previewAvailable = $selectedKnowledgebaseId > 0 && (
+    KnowledgebaseUrl::hasProfile($selectedKnowledgebaseId)
+    || ($selectedKnowledgebase instanceof rex_data_knowledgebase && $selectedKnowledgebase->getPreviewArticleId() > 0)
+);
 
 $content = '<form method="get" action="' . rex_url::currentBackendPage() . '" class="form-inline" style="margin-bottom: 15px;">';
 $content .= '<input type="hidden" name="page" value="' . rex_escape($currentPage) . '">';
@@ -108,6 +86,16 @@ $content .= ' <a class="btn btn-default" href="' . rex_url::backendPage($current
     'rex_yform_filter' => ['knowledgebase_id' => $selectedKnowledgebaseId],
     'rex_yform_set' => ['knowledgebase_id' => $selectedKnowledgebaseId, 'parent_id' => 0],
 ], (array) $csrfUrlParams), false) . '"' . ($selectedKnowledgebaseId <= 0 ? ' style="pointer-events:none;opacity:.6;"' : '') . '><i class="rex-icon fa-plus"></i> Hauptseite anlegen</a>';
+
+// Beim Bearbeiten: Vorschau des Beitrags in derselben Leiste
+$editId = 'edit' === rex_request('func', 'string', '') ? rex_request('data_id', 'int', 0) : 0;
+if ($editId > 0 && $previewAvailable) {
+    $content .= ' <a class="btn btn-default" target="_blank" rel="noopener" href="'
+        . rex_url::currentBackendPage(['rex-api-call' => 'knowledgebase_preview', 'kb_preview_id' => $editId, 'knowledgebase_id' => $selectedKnowledgebaseId])
+        . '"><i class="rex-icon fa-eye"></i> Vorschau im Frontend</a>';
+} elseif ($editId > 0) {
+    $content .= ' <span class="text-muted" style="margin-left:8px;">Für die Vorschau unter „Wissensbasen“ eine Standard-Seite hinterlegen.</span>';
+}
 $content .= '</form>';
 
 $fragment = new rex_fragment();
@@ -306,7 +294,7 @@ rex_extension::register(
 
 rex_extension::register(
     'YFORM_DATA_LIST_ACTION_BUTTONS',
-    static function (rex_extension_point $ep) use ($articleUrlTemplate, $childPagesEnabled): array {
+    static function (rex_extension_point $ep) use ($previewAvailable, $childPagesEnabled): array {
         $table = $ep->getParam('table');
         if (!$table instanceof rex_yform_manager_table || $table->getTableName() !== rex::getTable('knowledgebase_article')) {
             return is_array($ep->getSubject()) ? $ep->getSubject() : [];
@@ -314,14 +302,17 @@ rex_extension::register(
 
         $actionButtons = is_array($ep->getSubject()) ? $ep->getSubject() : [];
 
-        if ('' !== $articleUrlTemplate) {
+        if ($previewAvailable) {
+            // Weiterleitung über die API ermittelt die echte Adresse (auch für Unterseiten)
             $actionButtons['frontend'] = [
-                'params' => [],
-                'content' => '<i class="rex-icon fa-external-link"></i> Frontend öffnen',
-                'url' => $articleUrlTemplate,
+                'params' => [
+                    'rex-api-call' => 'knowledgebase_preview',
+                    'kb_preview_id' => '___id___',
+                ],
+                'content' => '<i class="rex-icon fa-eye"></i> Vorschau',
                 'attributes' => [
                     'target' => '_blank',
-                    'rel' => 'noopener noreferrer',
+                    'rel' => 'noopener',
                 ],
             ];
         }
