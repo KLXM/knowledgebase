@@ -16,7 +16,7 @@ return [
         'content' => [
             'label' => $_ci('group_content', 'Inhalt'),
             'icon' => 'fa-book',
-            'fields' => ['title', 'heading_level', 'text', 'badge_mode', 'badge_icon', 'badge_text', 'show_number_in_heading', 'anchor_id'],
+            'fields' => ['title', 'heading_level', 'text', 'badge_mode', 'badge_icon', 'badge_text', 'show_number_in_heading', 'spacing_top', 'anchor_id'],
         ],
     ],
     'fields' => [
@@ -119,6 +119,17 @@ return [
             'type' => 'checkbox',
             'label' => $_ci('field_show_number_in_heading', 'Nummer auch in der Überschrift zeigen'),
             'notice' => $_ci('field_show_number_in_heading_notice', 'Zeigt die Kapitelnummer (Freitext oder Zahl) zusätzlich vor dem Titel im Inhalt, z. B. „2.1 Gesetzliche Grundlagen“.'),
+        ],
+        'spacing_top' => [
+            'type' => 'choice',
+            'label' => $_ci('field_spacing_top', 'Abstand davor'),
+            'choices' => [
+                '' => $_ci('field_spacing_top_default', 'Standard'),
+                'medium' => $_ci('field_spacing_top_medium', 'Mehr Abstand'),
+                'large' => $_ci('field_spacing_top_large', 'Viel Abstand (neuer Abschnitt)'),
+            ],
+            'default' => '',
+            'notice' => $_ci('field_spacing_top_notice', 'Mehr Luft vor diesem Kapitel, z. B. wenn ein neuer Themenblock beginnt.'),
         ],
         'anchor_id' => [
             'type' => 'text',

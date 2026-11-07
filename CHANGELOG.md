@@ -5,6 +5,7 @@
 ### Neu
 - **Layout „Handbuch“** (Einstellung Layout-Modus): für lange Handreichungen mit vielen Abschnitten. Links nur die Kapitel (Beiträge), die Abschnitte eines Beitrags stehen in einer eigenen Übersicht „In diesem Kapitel“ – ab 1200 px als mitlaufende Spalte rechts, darunter als aufklappbarer Kasten unter der Überschrift. Der aktuelle Abschnitt ist markiert und bleibt sichtbar. Text der Überschrift: Frontend-Texte → `knowledgebase_toc_heading`.
 - **Element „KB Kapitel / Überschrift“**: Option „Nummer auch in der Überschrift zeigen“ – die gewählte Kapitelnummer (Freitext wie „2.1“ oder Zahl) steht dann auch vor dem Titel im Inhalt (`.kb-chapter-nav__number`).
+- **Element „KB Kapitel / Überschrift“**: Auswahl „Abstand davor“ (Standard / Mehr Abstand / Viel Abstand) für mehr Luft vor einem neuen Themenblock (`.kb-chapter-nav--space-medium|large`).
 
 ### Verbessert
 - **Navigation links (Desktop)**: bleibt beim Lesen sichtbar (CSS `position: sticky` statt UIkit-Sticky) und hat eine eigene Scrollfläche (höchstens Fensterhöhe). Das Mausrad scrollt in der Navigation, nicht die ganze Seite; der aktuelle Abschnitt wird darin automatisch sichtbar gehalten.

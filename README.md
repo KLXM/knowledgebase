@@ -129,6 +129,8 @@ Einstellung je Wissensbasis (Feld „Layout-Modus“):
 
 „Handbuch“ passt für lange Handreichungen mit vielen Abschnitten je Kapitel: die Sidebar bleibt kurz, die Abschnitte stehen neben dem Text.
 
+Abstand: Im Element `kb_chapter_nav` lässt sich unter „Abstand davor“ mehr Luft vor einem Kapitel einstellen (Mehr / Viel), z. B. wenn ein neuer Themenblock beginnt.
+
 Kapitelnummern: Im Element `kb_chapter_nav` die Nummer als Freitext setzen (z. B. „2.1“) und „Nummer auch in der Überschrift zeigen“ aktivieren – dann steht sie auch vor dem Titel im Inhalt (Klasse `.kb-chapter-nav__number`).
 
 ### Aussehen anpassen

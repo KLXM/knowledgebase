@@ -1971,3 +1971,22 @@
         scrollbar-width: thin;
     }
 }
+
+/* Element kb_chapter_nav: „Abstand davor“ */
+.kb-chapter-nav.kb-chapter-nav--space-medium {
+    margin-top: 2.5rem !important;
+}
+
+.kb-chapter-nav.kb-chapter-nav--space-large {
+    margin-top: 4.5rem !important;
+}
+
+@media (max-width: 639px) {
+    .kb-chapter-nav.kb-chapter-nav--space-medium {
+        margin-top: 1.75rem !important;
+    }
+
+    .kb-chapter-nav.kb-chapter-nav--space-large {
+        margin-top: 3rem !important;
+    }
+}
