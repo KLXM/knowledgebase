@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.9.9] - 2026-11-07
+
+### Behoben
+- **Update überschrieb „Erlaubte Elemente“**: Der Tableset-Import bei Installation/Update setzte im Inhaltsfeld der Beiträge die Standardliste der Elemente – eine im Projekt angepasste Auswahl ging verloren. Die vorhandene Auswahl bleibt jetzt erhalten. `kb_text` wird nur noch einmalig (Umstieg auf 0.9.7+) ergänzt; wer es danach abwählt, behält das.
+
 ## [0.9.8] - 2026-11-07
 
 ### Neu
