@@ -45,6 +45,7 @@ $labels = [
     'knowledgebase_nav_title' => 'Titel: Inhaltsverzeichnis',
     'knowledgebase_nav_filter_label' => 'Label: Kapitel filtern',
     'knowledgebase_nav_filter_placeholder' => 'Placeholder: Kapitel filtern',
+    'knowledgebase_nav_filter_placeholder_pages' => 'Placeholder: Kapitel filtern (Layout Handbuch, nur Kapitel)',
     'knowledgebase_nav_expand_all' => 'Button: Alle aufklappen',
     'knowledgebase_nav_collapse_all' => 'Button: Alle einklappen',
     'knowledgebase_nav_glossary' => 'Button/Link: Glossar',

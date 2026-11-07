@@ -609,12 +609,20 @@ final class FrontendRenderer
 
         $items .= '</ul>';
 
+        // Handbuch-Layouts: in der Sidebar stehen nur Kapitel (keine Abschnitte)
+        $pagesOnly = in_array(self::$renderLayoutMode, ['handbook', 'handbook_menu'], true);
+        $filterPlaceholder = $pagesOnly
+            ? FrontendI18n::msg('knowledgebase_nav_filter_placeholder_pages', 'Kapitel suchen')
+            : FrontendI18n::msg('knowledgebase_nav_filter_placeholder', 'Titel oder Unterkapitel');
+        // „Alle aufklappen“ nur, wenn Kapitel aufklappbar sind (Unterseiten oder Abschnitte)
+        $hasExpandable = str_contains($items, 'kb-app__nav-sublist" data-kb-nav-sublist');
+
         $navSearchHtml = '';
         if ($chapterFilterEnabled) {
             $navSearchHtml = '<label class="kb-app__nav-search-label" for="' . rex_escape($navSearchId) . '">' . rex_escape(FrontendI18n::msg('knowledgebase_nav_filter_label', 'Kapitel filtern')) . '</label>'
                 . '<div class="kb-app__nav-search-control">'
                 . '<span uk-icon="search"></span>'
-                . '<input id="' . rex_escape($navSearchId) . '" class="kb-app__nav-search-input" type="search" placeholder="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_filter_placeholder', 'Titel oder Unterkapitel')) . '" autocomplete="off" data-kb-nav-search>'
+                . '<input id="' . rex_escape($navSearchId) . '" class="kb-app__nav-search-input" type="search" placeholder="' . rex_escape($filterPlaceholder) . '" autocomplete="off" data-kb-nav-search>'
                 . '</div>';
         }
 
@@ -622,7 +630,7 @@ final class FrontendRenderer
             . '<div class="kb-app__nav-title">' . rex_escape(FrontendI18n::msg('knowledgebase_nav_title', 'Inhaltsverzeichnis')) . '</div>'
             . '<div class="kb-app__nav-search-wrap">'
             . $navSearchHtml
-            . '<button type="button" class="kb-app__nav-expand-toggle" data-kb-nav-expand-toggle data-kb-label-expand="' . rex_escape($expandLabel) . '" data-kb-label-collapse="' . rex_escape($collapseLabel) . '" aria-pressed="false">' . rex_escape($expandLabel) . '</button>'
+            . ($hasExpandable ? '<button type="button" class="kb-app__nav-expand-toggle" data-kb-nav-expand-toggle data-kb-label-expand="' . rex_escape($expandLabel) . '" data-kb-label-collapse="' . rex_escape($collapseLabel) . '" aria-pressed="false">' . rex_escape($expandLabel) . '</button>' : '')
             . '</div>'
             . $items
             . '</div>';

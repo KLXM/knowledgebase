@@ -7,6 +7,7 @@
 
 ### Verbessert
 - **Beiträge**: In der Leiste „Beiträge nach Wissensbasis“ öffnet „Wissensbasis im Frontend“ die Standard-Seite der gewählten Wissensbasis (sonst die Basis-Adresse des URL-Profils).
+- **Handbuch-Layouts**: Die Suche in der Sidebar heißt „Kapitel suchen“ statt „Titel oder Unterkapitel“ (dort stehen nur Kapitel; Frontend-Text `knowledgebase_nav_filter_placeholder_pages`). „Alle aufklappen“ erscheint nur noch, wenn es aufklappbare Kapitel gibt.
 - Die Auswahl der Wissensbasis nutzt den Selectpicker des Backends und wechselt beim Auswählen direkt; Label und Knöpfe stehen auf einer Linie.
 
 ## [0.9.10] - 2026-11-07

@@ -15,3 +15,4 @@ knowledgebase_toc_heading = In this chapter
 knowledgebase_article_label = Chapter
 knowledgebase_nav_filter_label = Filter chapters
 knowledgebase_nav_filter_placeholder = Title or subchapter
+knowledgebase_nav_filter_placeholder_pages = Search chapters
