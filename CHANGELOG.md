@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.12] - 2026-11-07
+
+### Behoben
+- **TinyMCE-Plugin „Knowledgebase-Link“: Abschnitts-Links sprangen nicht**: Das Plugin baute die Anker anders als die Ausgabe – ohne das Präfix `kb-chapter-` automatisch erzeugter Anker und ohne Nummerierung bei gleichen Titeln. Auf hage.de passte keiner der 89 Anker zur Seite; innerhalb der Wissensbasis fing das Skript es teilweise ab, von außen und bei gleichen Titeln nicht. Jetzt nutzt das Plugin dieselbe Logik wie die Ausgabe (`FrontendRenderer::chapterAnchorFor()`): alle Anker der Online-Beiträge passen. Bereits eingefügte Links funktionieren innerhalb der Wissensbasis weiter.
+
+### Verbessert
+- Im Plugin-Menü „Abschnitt im Artikel“ (vorher „Anker im Artikel“) stehen die Kapitelnummern vor dem Titel, Unterabschnitte (H3/H4) sind eingerückt.
+
 ## [0.9.11] - 2026-11-07
 
 ### Neu

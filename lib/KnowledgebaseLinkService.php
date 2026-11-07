@@ -70,7 +70,10 @@ final class KnowledgebaseLinkService
     }
 
     /**
-     * @return list<array{title:string,anchor:string}>
+     * Kapitelanker eines Beitrags mit genau den Ankern, die die Ausgabe setzt
+     * (FrontendRenderer::chapterAnchorFor), dazu Ebene und Nummer für die Anzeige im Editor.
+     *
+     * @return list<array{title:string,anchor:string,level:string,badge:string}>
      */
     private static function extractAnchors(string $content): array
     {
@@ -85,6 +88,7 @@ final class KnowledgebaseLinkService
         }
 
         $anchors = [];
+        $registry = [];
         foreach ($decoded as $slice) {
             if (!is_array($slice)) {
                 continue;
@@ -105,29 +109,21 @@ final class KnowledgebaseLinkService
                 continue;
             }
 
-            $anchorInput = trim((string) ($data['anchor_id'] ?? ''));
-            $anchor = self::sanitizeAnchor('' !== $anchorInput ? $anchorInput : $title);
+            $anchor = FrontendRenderer::chapterAnchorFor(trim((string) ($data['anchor_id'] ?? '')), $title, $registry);
             if ('' === $anchor) {
                 continue;
             }
 
+            $level = strtolower(trim((string) ($data['heading_level'] ?? 'h2')));
+
             $anchors[] = [
                 'title' => $title,
                 'anchor' => $anchor,
+                'level' => in_array($level, ['h2', 'h3', 'h4'], true) ? $level : 'h2',
+                'badge' => FrontendRenderer::chapterBadgeText($data),
             ];
         }
 
         return $anchors;
-    }
-
-    private static function sanitizeAnchor(string $value): string
-    {
-        $normalized = strtolower(trim($value));
-        $normalized = preg_replace('/[^a-z0-9\-_]+/u', '-', $normalized);
-        if (!is_string($normalized)) {
-            return '';
-        }
-
-        return trim($normalized, '-');
     }
 }

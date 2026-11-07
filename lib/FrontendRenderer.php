@@ -1331,6 +1331,36 @@ final class FrontendRenderer
     }
 
     /**
+     * Anker eines Kapitelankers genau so, wie ihn die Ausgabe setzt (Präfix „kb-chapter-“ bei
+     * automatisch erzeugten Ankern, „-2“, „-3“ … bei gleichen Titeln in einem Beitrag).
+     * $registry je Beitrag neu beginnen und für alle Kapitelanker in Reihenfolge weiterreichen.
+     *
+     * @param array<string, int> $registry
+     */
+    public static function chapterAnchorFor(string $anchorInput, string $title, array &$registry): string
+    {
+        $anchor = self::resolveChapterRenderAnchor($anchorInput, $title);
+
+        return '' === $anchor ? '' : self::uniqueAnchorFromRegistry($anchor, $registry);
+    }
+
+    /**
+     * Kapitelnummer bzw. Badge-Text eines Kapitelankers (Freitext oder Zahl), ohne Icons; '' wenn keine.
+     *
+     * @param array<string, mixed> $data Elementdaten
+     */
+    public static function chapterBadgeText(array $data): string
+    {
+        $badge = self::resolveChapterBadge($data);
+        $value = trim($badge['badge']);
+        if ($badge['mode'] === 'text') {
+            return $value;
+        }
+
+        return $badge['mode'] === 'auto' && preg_match('/^\d{1,2}$/', $value) === 1 && (int) $value > 0 ? (string) (int) $value : '';
+    }
+
+    /**
      * Kapitelnummer für die Überschrift im Inhalt (Element kb_chapter_nav, Option „Nummer auch in der Überschrift“).
      * Nur Freitext-Nummern („2.1“, „A“) und automatische Zahlen-Badges, keine Icons.
      *

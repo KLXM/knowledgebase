@@ -111,13 +111,16 @@
                                 if (anchors.length > 0) {
                                     items.push({
                                         type: 'nestedmenuitem',
-                                        text: 'Anker im Artikel',
+                                        text: 'Abschnitt im Artikel',
                                         getSubmenuItems: function () {
                                             return anchors.map(function (anchor) {
                                                 var anchorTitle = String(anchor.title || anchor.anchor || 'Anker');
+                                                // Anzeige: Unterabschnitte eingerückt, Kapitelnummer vorangestellt
+                                                var indent = anchor.level === 'h4' ? '\u2003\u2003' : (anchor.level === 'h3' ? '\u2003' : '');
+                                                var badge = String(anchor.badge || '').trim();
                                                 return {
                                                     type: 'menuitem',
-                                                    text: anchorTitle,
+                                                    text: indent + (badge !== '' ? badge + ' ' : '') + anchorTitle,
                                                     onAction: function () {
                                                         var anchorVal = anchor.anchor || '';
                                                         var selectedText = editor.selection.getContent({ format: 'text' });
