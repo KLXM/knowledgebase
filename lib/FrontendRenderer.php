@@ -609,12 +609,20 @@ final class FrontendRenderer
 
         $items .= '</ul>';
 
+        // Handbuch-Layouts: in der Sidebar stehen nur Kapitel (keine Abschnitte)
+        $pagesOnly = in_array(self::$renderLayoutMode, ['handbook', 'handbook_menu'], true);
+        $filterPlaceholder = $pagesOnly
+            ? FrontendI18n::msg('knowledgebase_nav_filter_placeholder_pages', 'Kapitel suchen')
+            : FrontendI18n::msg('knowledgebase_nav_filter_placeholder', 'Titel oder Unterkapitel');
+        // „Alle aufklappen“ nur, wenn Kapitel aufklappbar sind (Unterseiten oder Abschnitte)
+        $hasExpandable = str_contains($items, 'kb-app__nav-sublist" data-kb-nav-sublist');
+
         $navSearchHtml = '';
         if ($chapterFilterEnabled) {
             $navSearchHtml = '<label class="kb-app__nav-search-label" for="' . rex_escape($navSearchId) . '">' . rex_escape(FrontendI18n::msg('knowledgebase_nav_filter_label', 'Kapitel filtern')) . '</label>'
                 . '<div class="kb-app__nav-search-control">'
                 . '<span uk-icon="search"></span>'
-                . '<input id="' . rex_escape($navSearchId) . '" class="kb-app__nav-search-input" type="search" placeholder="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_filter_placeholder', 'Titel oder Unterkapitel')) . '" autocomplete="off" data-kb-nav-search>'
+                . '<input id="' . rex_escape($navSearchId) . '" class="kb-app__nav-search-input" type="search" placeholder="' . rex_escape($filterPlaceholder) . '" autocomplete="off" data-kb-nav-search>'
                 . '</div>';
         }
 
@@ -622,7 +630,7 @@ final class FrontendRenderer
             . '<div class="kb-app__nav-title">' . rex_escape(FrontendI18n::msg('knowledgebase_nav_title', 'Inhaltsverzeichnis')) . '</div>'
             . '<div class="kb-app__nav-search-wrap">'
             . $navSearchHtml
-            . '<button type="button" class="kb-app__nav-expand-toggle" data-kb-nav-expand-toggle data-kb-label-expand="' . rex_escape($expandLabel) . '" data-kb-label-collapse="' . rex_escape($collapseLabel) . '" aria-pressed="false">' . rex_escape($expandLabel) . '</button>'
+            . ($hasExpandable ? '<button type="button" class="kb-app__nav-expand-toggle" data-kb-nav-expand-toggle data-kb-label-expand="' . rex_escape($expandLabel) . '" data-kb-label-collapse="' . rex_escape($collapseLabel) . '" aria-pressed="false">' . rex_escape($expandLabel) . '</button>' : '')
             . '</div>'
             . $items
             . '</div>';
@@ -809,7 +817,8 @@ final class FrontendRenderer
         } finally {
             self::endChapterRenderSession();
         }
-        $isHandbook = self::$renderLayoutMode === 'handbook';
+        // Handbuch: Abschnitte in „In diesem Kapitel“; Variante „kompakt“ nur als Menü unter der Überschrift, ohne Spalte rechts
+        $isHandbook = in_array(self::$renderLayoutMode, ['handbook', 'handbook_menu'], true);
         $showSidebarChapters = !$isHandbook && count($chapters) > 0 && !self::articleHasVisibleChildren($articles, $article->getId());
         $chapterMenu = $isHandbook
             ? self::renderArticleToc($knowledgebase, $article, $chapters, 'inline')
@@ -843,7 +852,7 @@ final class FrontendRenderer
             return $articleHtml;
         }
 
-        $asideToc = self::renderArticleToc($knowledgebase, $article, $chapters, 'aside');
+        $asideToc = self::$renderLayoutMode === 'handbook' ? self::renderArticleToc($knowledgebase, $article, $chapters, 'aside') : '';
 
         return '<div class="kb-app__article-layout' . ($asideToc !== '' ? ' has-toc' : '') . '">' . $articleHtml . $asideToc . '</div>';
     }
@@ -1075,7 +1084,7 @@ final class FrontendRenderer
         $children = is_array($node['children'] ?? null) ? $node['children'] : [];
         $hasChildren = count($children) > 0;
         // Handbuch: Abschnitte stehen in der Übersicht „In diesem Kapitel“, die Navigation zeigt nur Kapitel
-        $chapterLinks = !$hasChildren && self::$renderLayoutMode !== 'handbook' ? self::extractArticleChapters($article, true) : [];
+        $chapterLinks = !$hasChildren && !in_array(self::$renderLayoutMode, ['handbook', 'handbook_menu'], true) ? self::extractArticleChapters($article, true) : [];
         $hasChapterLinks = count($chapterLinks) > 0;
         $isCurrent = $article->getId() === $currentId && !$glossaryActive && !$tocActive && !$tagModeActive;
         $isTrail = self::navigationNodeContainsCurrent($node, $currentId);

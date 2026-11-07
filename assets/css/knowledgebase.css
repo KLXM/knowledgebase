@@ -1942,7 +1942,8 @@
 }
 
 @media (min-width: 960px) {
-    .kb-app--layout-handbook .kb-app__layout {
+    .kb-app--layout-handbook .kb-app__layout,
+    .kb-app--layout-handbook_menu .kb-app__layout {
         grid-template-columns: minmax(230px, 290px) minmax(0, 1fr);
     }
 }

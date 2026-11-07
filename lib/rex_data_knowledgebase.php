@@ -137,14 +137,14 @@ class rex_data_knowledgebase extends rex_yform_manager_dataset
     }
 
     /**
-     * @return 'classic'|'compact'|'focus'|'handbook'
+     * @return 'classic'|'compact'|'focus'|'handbook'|'handbook_menu'
      */
     public function getLayoutMode(): string
     {
         $mode = trim((string) $this->getOptionalValue('layout_mode'));
         $mode = self::normalizeLayoutMode($mode);
 
-        return in_array($mode, ['classic', 'compact', 'focus', 'handbook'], true) ? $mode : 'classic';
+        return in_array($mode, ['classic', 'compact', 'focus', 'handbook', 'handbook_menu'], true) ? $mode : 'classic';
     }
 
     /**
@@ -195,6 +195,7 @@ class rex_data_knowledgebase extends rex_yform_manager_dataset
             $value === 'classic', str_starts_with($value, 'klassisch') => 'classic',
             $value === 'compact', str_starts_with($value, 'kompakt') => 'compact',
             $value === 'focus', str_starts_with($value, 'fokus') => 'focus',
+            $value === 'handbook_menu', str_starts_with($value, 'handbuch kompakt') => 'handbook_menu',
             $value === 'handbook', str_starts_with($value, 'handbuch') => 'handbook',
             default => $mode,
         };

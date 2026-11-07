@@ -126,6 +126,7 @@ Einstellung je Wissensbasis (Feld „Layout-Modus“):
 | Kompakt | wie Klassisch, kleinerer Kopf | in der Sidebar |
 | Fokus | ohne Sidebar; Menü-Knopf öffnet auf dem Desktop eine Schublade am Rand des Inhaltsbereichs, mobil das Off-Canvas | in der Schublade |
 | Handbuch | Sidebar links nur mit den Kapiteln (Beiträgen) | Übersicht „In diesem Kapitel“: ab 1200 px mitlaufende Spalte rechts, darunter aufklappbarer Kasten unter der Überschrift |
+| Handbuch kompakt | wie Handbuch | immer als aufklappbares Menü „In diesem Kapitel“ unter der Überschrift (auch Desktop), keine Spalte rechts |
 
 „Handbuch“ passt für lange Handreichungen mit vielen Abschnitten je Kapitel: die Sidebar bleibt kurz, die Abschnitte stehen neben dem Text.
 
