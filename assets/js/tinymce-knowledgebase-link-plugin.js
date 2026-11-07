@@ -19,6 +19,25 @@
     }
 
     /**
+     * Adresse derselben Domain als Pfad einfügen (/kb/… statt //hage.de/kb/…).
+     * Andere Domains (Wissensbasis in einer anderen Website) behalten die volle Adresse.
+     */
+    function toSameDomainPath(url) {
+        var value = String(url || '').trim();
+        var match = value.match(/^(?:https?:)?\/\/([^\/?#]+)(.*)$/i);
+        if (!match) {
+            return value;
+        }
+        var host = match[1].toLowerCase();
+        var current = String(window.location.host || '').toLowerCase();
+        var bare = function (h) { return h.replace(/^www\./, ''); };
+        if (host === current || bare(host) === bare(current)) {
+            return match[2] !== '' ? match[2] : '/';
+        }
+        return value;
+    }
+
+    /**
      * Löst die URL über den API-Endpoint auf (URL-Addon-Profil bevorzugt).
      * Fällt zurück auf den internen Fallback-Link wenn kein Profil aktiv ist.
      */
@@ -36,7 +55,7 @@
             return response.ok ? response.json() : null;
         }).then(function (data) {
             if (data && data.url && String(data.url).trim() !== '') {
-                return String(data.url);
+                return toSameDomainPath(String(data.url));
             }
             return buildHref(knowledgebaseId, slug, anchor);
         }).catch(function () {
