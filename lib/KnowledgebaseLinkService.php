@@ -70,12 +70,45 @@ final class KnowledgebaseLinkService
     }
 
     /**
+     * Links aus dem Editor-Plugin neu auflösen: <a … data-kb-article="ID" data-kb-chapter="slice_…">
+     * bekommt die aktuelle Adresse (URL-Profil, sonst Fallback) samt aktuellem Anker. Nicht (mehr)
+     * auflösbare Links bleiben unverändert.
+     */
+    public static function rewriteContentLinks(string $html): string
+    {
+        $result = preg_replace_callback(
+            '/<a\b[^>]*\bdata-kb-article=(["\'])(\d+)\1[^>]*>/i',
+            static function (array $m): string {
+                $tag = $m[0];
+                $chapter = preg_match('/\bdata-kb-chapter=(["\'])([^"\']*)\1/i', $tag, $c) === 1 ? $c[2] : '';
+                $href = preg_match('/\bhref=(["\'])([^"\']*)\1/i', $tag, $h) === 1 ? html_entity_decode($h[2], ENT_QUOTES) : '';
+                if ('' === $href) {
+                    return $tag;
+                }
+                $hashPos = strpos($href, '#');
+                $fallbackAnchor = false !== $hashPos ? rawurldecode(substr($href, $hashPos + 1)) : '';
+                $url = KnowledgebaseUrl::resolveContentLink((int) $m[2], $chapter, $fallbackAnchor);
+                if ('' === $url) {
+                    return $tag;
+                }
+
+                $newHref = 'href="' . rex_escape($url) . '"';
+
+                return (string) preg_replace_callback('/\bhref=(["\'])[^"\']*\1/i', static fn (): string => $newHref, $tag, 1);
+            },
+            $html,
+        );
+
+        return is_string($result) ? $result : $html;
+    }
+
+    /**
      * Kapitelanker eines Beitrags mit genau den Ankern, die die Ausgabe setzt
      * (FrontendRenderer::chapterAnchorFor), dazu Ebene und Nummer für die Anzeige im Editor.
      *
-     * @return list<array{title:string,anchor:string,level:string,badge:string}>
+     * @return list<array{title:string,anchor:string,slice:string,level:string,badge:string}>
      */
-    private static function extractAnchors(string $content): array
+    public static function extractAnchors(string $content): array
     {
         $content = trim($content);
         if ('' === $content) {
@@ -119,6 +152,7 @@ final class KnowledgebaseLinkService
             $anchors[] = [
                 'title' => $title,
                 'anchor' => $anchor,
+                'slice' => (string) ($slice['id'] ?? ''),
                 'level' => in_array($level, ['h2', 'h3', 'h4'], true) ? $level : 'h2',
                 'badge' => FrontendRenderer::chapterBadgeText($data),
             ];

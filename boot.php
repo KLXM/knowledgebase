@@ -147,6 +147,17 @@ if (rex_addon::exists('klxmchat') && rex_addon::get('klxmchat')->isAvailable()) 
     });
 }
 
+// Links aus dem Editor-Plugin „Knowledgebase-Link“ (data-kb-article/-chapter) bei der Ausgabe neu auflösen –
+// unabhängig vom URL-AddOn; läuft vor dem Ersatz der Fallback-Adressen weiter unten
+if (rex::isFrontend()) {
+    rex_extension::register('OUTPUT_FILTER', static function (rex_extension_point $ep): void {
+        $subject = $ep->getSubject();
+        if (is_string($subject) && str_contains($subject, 'data-kb-article=')) {
+            $ep->setSubject(\FriendsOfREDAXO\Knowledgebase\KnowledgebaseLinkService::rewriteContentLinks($subject));
+        }
+    }, rex_extension::EARLY);
+}
+
 // URL-Addon-Integration: URL-Rebuild bei Artikel-Änderungen und OUTPUT_FILTER für Link-Rewriting
 if (rex_addon::get('url')->isAvailable() && class_exists(\Url\Profile::class)) {
     rex_extension::register('URL_TABLE_UPDATED', static function (): void {

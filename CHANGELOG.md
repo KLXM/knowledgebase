@@ -5,8 +5,10 @@
 ### Behoben
 - **TinyMCE-Plugin „Knowledgebase-Link“: Abschnitts-Links sprangen nicht**: Das Plugin baute die Anker anders als die Ausgabe – ohne das Präfix `kb-chapter-` automatisch erzeugter Anker und ohne Nummerierung bei gleichen Titeln. Auf hage.de passte keiner der 89 Anker zur Seite; innerhalb der Wissensbasis fing das Skript es teilweise ab, von außen und bei gleichen Titeln nicht. Jetzt nutzt das Plugin dieselbe Logik wie die Ausgabe (`FrontendRenderer::chapterAnchorFor()`): alle Anker der Online-Beiträge passen. Bereits eingefügte Links funktionieren innerhalb der Wissensbasis weiter.
 
+### Neu
+- **Selbstreparierende Links aus dem Plugin**: Das Plugin fügt keinen festen Link mehr ein, sondern einen Verweis auf Beitrag und Kapitelanker per ID (`data-kb-article`, `data-kb-chapter`). Bei der Ausgabe wird daraus die aktuelle Adresse über das URL-Profil (Einstellungen → URL-Profile; ohne Profil die Fallback-Adresse) samt aktuellem Anker – auf derselben Domain als Pfad (`/kb/…/#…` statt `//hage.de/kb/…`). Links stimmen damit auch nach Umbenennen von Beitrag (Slug) oder Kapitel und nach Ändern des Profil-Artikels. Unabhängig vom URL-AddOn (`KnowledgebaseLinkService::rewriteContentLinks()`, `KnowledgebaseUrl::resolveContentLink()`).
+
 ### Verbessert
-- **Plugin fügt Links derselben Domain als Pfad ein** (`/kb/…/#…` statt `//hage.de/kb/…`). Links auf eine Wissensbasis einer anderen Domain behalten die volle Adresse.
 - Im Plugin-Menü „Abschnitt im Artikel“ (vorher „Anker im Artikel“) stehen die Kapitelnummern vor dem Titel, Unterabschnitte (H3/H4) sind eingerückt.
 
 ## [0.9.11] - 2026-11-07

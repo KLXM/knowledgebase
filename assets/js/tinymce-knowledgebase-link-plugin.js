@@ -19,57 +19,25 @@
     }
 
     /**
-     * Adresse derselben Domain als Pfad einfügen (/kb/… statt //hage.de/kb/…).
-     * Andere Domains (Wissensbasis in einer anderen Website) behalten die volle Adresse.
+     * Link mit Verweis auf Beitrag (und Kapitelanker) per ID einfügen. Die Ausgabe löst ihn über das
+     * URL-Profil neu auf – so stimmt er auch nach Umbenennen von Beitrag/Kapitel oder Ändern des Profils.
      */
-    function toSameDomainPath(url) {
-        var value = String(url || '').trim();
-        var match = value.match(/^(?:https?:)?\/\/([^\/?#]+)(.*)$/i);
-        if (!match) {
-            return value;
-        }
-        var host = match[1].toLowerCase();
-        var current = String(window.location.host || '').toLowerCase();
-        var bare = function (h) { return h.replace(/^www\./, ''); };
-        if (host === current || bare(host) === bare(current)) {
-            return match[2] !== '' ? match[2] : '/';
-        }
-        return value;
-    }
-
-    /**
-     * Löst die URL über den API-Endpoint auf (URL-Addon-Profil bevorzugt).
-     * Fällt zurück auf den internen Fallback-Link wenn kein Profil aktiv ist.
-     */
-    function resolveHref(knowledgebaseId, slug, anchor) {
-        var params = 'rex-api-call=knowledgebase_url'
-            + '&kb_id=' + encodeURIComponent(String(knowledgebaseId))
-            + '&slug=' + encodeURIComponent(String(slug));
-        if (String(anchor || '').trim() !== '') {
-            params += '&anchor=' + encodeURIComponent(String(anchor).trim());
+    function insertLink(editor, href, label, articleId, chapterSlice) {
+        var attrs = { href: href, 'data-kb-article': String(articleId || '') };
+        if (String(chapterSlice || '') !== '') {
+            attrs['data-kb-chapter'] = String(chapterSlice);
         }
 
-        return fetch('./index.php?' + params, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        }).then(function (response) {
-            return response.ok ? response.json() : null;
-        }).then(function (data) {
-            if (data && data.url && String(data.url).trim() !== '') {
-                return toSameDomainPath(String(data.url));
-            }
-            return buildHref(knowledgebaseId, slug, anchor);
-        }).catch(function () {
-            return buildHref(knowledgebaseId, slug, anchor);
-        });
-    }
-
-    function insertLink(editor, href, label) {
         if (editor.selection.isCollapsed()) {
-            editor.insertContent('<a href="' + escHtml(href) + '">' + escHtml(label) + '</a>');
+            var html = '<a';
+            Object.keys(attrs).forEach(function (key) {
+                html += ' ' + key + '="' + escHtml(attrs[key]) + '"';
+            });
+            editor.insertContent(html + '>' + escHtml(label) + '</a>');
             return;
         }
 
-        editor.execCommand('mceInsertLink', false, { href: href });
+        editor.execCommand('mceInsertLink', false, attrs);
     }
 
     function fetchTree() {
@@ -121,9 +89,7 @@
                                     onAction: function () {
                                         var selectedText = editor.selection.getContent({ format: 'text' });
                                         var linkText = String(selectedText || '').trim() !== '' ? selectedText : articleTitle;
-                                        resolveHref(kb.id, article.slug, '').then(function (href) {
-                                            insertLink(editor, href, linkText);
-                                        });
+                                        insertLink(editor, buildHref(kb.id, article.slug, ''), linkText, article.id, '');
                                     }
                                 });
 
@@ -144,9 +110,7 @@
                                                         var anchorVal = anchor.anchor || '';
                                                         var selectedText = editor.selection.getContent({ format: 'text' });
                                                         var linkText = String(selectedText || '').trim() !== '' ? selectedText : anchorTitle;
-                                                        resolveHref(kb.id, article.slug, anchorVal).then(function (href) {
-                                                            insertLink(editor, href, linkText);
-                                                        });
+                                                        insertLink(editor, buildHref(kb.id, article.slug, anchorVal), linkText, article.id, anchor.slice || '');
                                                     }
                                                 };
                                             });
