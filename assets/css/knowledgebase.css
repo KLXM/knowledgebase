@@ -1991,3 +1991,12 @@
         margin-top: 3rem !important;
     }
 }
+
+/* Kursiv im Inhalt: UIkit färbt <em> rot-pink (#f0506e) und setzt das nur in Kästen mit dunklem
+   Hintergrund zurück. In der Wissensbasis übernimmt Kursiv die Textfarbe der Umgebung – in jeder Kastenvariante. */
+.kb-app__article-body em,
+.kb-app__article-body i:not([class]),
+.kb-app__intro em,
+.kb-app__intro i:not([class]) {
+    color: inherit;
+}

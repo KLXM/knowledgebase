@@ -3,6 +3,7 @@
 ## [0.9.12] - 2026-11-07
 
 ### Behoben
+- **Kursiv war rot**: UIkit färbt `<em>` rot-pink (#f0506e) und setzt das nur in Kästen mit dunklem Hintergrund zurück – in hellen Kästen und im Fließtext erschien Kursives rot. Im Inhalt der Wissensbasis übernimmt Kursiv jetzt die Textfarbe der Umgebung.
 - **Slug-Skript war nie aktiv**: `knowledgebase_backend_slug.js` wurde nicht eingebunden und hätte die Felder in YForm 5 (numerische Feldnamen) auch nicht gefunden. Jetzt auf „Beiträge“ und „Wissensbasen“ geladen, Felder über die ID der Feldgruppe erkannt.
 - **Umlaute im Slug**: Browser und Server schreiben jetzt gleich um (ä → ae, ö → oe, ü → ue, ß → ss); vorher machte das Skript aus „ü“ ein „u“. Quelle ist auf beiden Seiten zuerst der Navigationstitel.
 - **TinyMCE-Plugin „Knowledgebase-Link“: Abschnitts-Links sprangen nicht**: Das Plugin baute die Anker anders als die Ausgabe – ohne das Präfix `kb-chapter-` automatisch erzeugter Anker und ohne Nummerierung bei gleichen Titeln. Auf hage.de passte keiner der 89 Anker zur Seite; innerhalb der Wissensbasis fing das Skript es teilweise ab, von außen und bei gleichen Titeln nicht. Jetzt nutzt das Plugin dieselbe Logik wie die Ausgabe (`FrontendRenderer::chapterAnchorFor()`): alle Anker der Online-Beiträge passen. Bereits eingefügte Links funktionieren innerhalb der Wissensbasis weiter.
