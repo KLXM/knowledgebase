@@ -132,6 +132,12 @@ if (rex::isBackend() && null !== rex::getUser() && rex_be_controller::getCurrent
     rex_view::addJsFile(rex_url::addonAssets('knowledgebase', 'js/articles-focus-fix.js') . '?v=' . rawurlencode($jsToken));
 }
 
+// Slug-Feld: Auto-Ausfüllen für neue Einträge und Knopf „Aus Navigationstitel erzeugen“ (Beiträge, Wissensbasen)
+if (rex::isBackend() && null !== rex::getUser() && in_array(rex_be_controller::getCurrentPage(), ['knowledgebase/articles', 'knowledgebase/bases'], true)) {
+    $slugJs = rex_addon::get('knowledgebase')->getAssetsPath('knowledgebase_backend_slug.js');
+    rex_view::addJsFile(rex_url::addonAssets('knowledgebase', 'knowledgebase_backend_slug.js') . '?v=' . (is_file($slugJs) ? (string) filemtime($slugJs) : '0'));
+}
+
 if (rex_addon::exists('klxmchat') && rex_addon::get('klxmchat')->isAvailable()) {
     rex_extension::register('KLXMCHAT_CONTENT_PROVIDERS', static function (rex_extension_point $ep): array {
         $providers = $ep->getSubject();
