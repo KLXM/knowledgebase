@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.17] - 2026-11-08
+
+### Geändert
+- Überschriften übernehmen standardmäßig die Schrift der Website (`--kb-heading-font: inherit` statt Georgia); eigene Schrift weiter über die Variable.
+- Glossar-Links nicht mehr fett, nur gepunktet unterstrichen mit Info-Zeichen.
+
+### Behoben
+- Kapitelnummern und markierte Einträge in der Navigation: deckende statt halbtransparente Hintergründe. Prüfwerkzeuge wie Sa11y meldeten sonst fälschlich Kontrast 1:1.
+- Telefon: Suchfeld mit 16px Schrift, damit iOS beim Antippen nicht hineinzoomt (Seite wurde breiter als der Bildschirm).
+- Geöffnete Suche ragte auf schmalen Telefonen (320px) über den Rand (box-sizing der Suchleiste).
+
 ## [0.9.16] - 2026-11-08
 
 ### Geändert

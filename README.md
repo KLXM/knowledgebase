@@ -140,7 +140,7 @@ Schrift und Farben der Ausgabe lassen sich über CSS-Variablen auf `.kb-app` an 
 
 ```css
 .kb-app {
-    --kb-heading-font: inherit;   /* Standard: Georgia, serif */
+    --kb-heading-font: Georgia, serif;   /* Standard: Schrift der Website (inherit) */
     --kb-heading-color: #222;
     --kb-accent: #418032;     /* Links, aktive Navigation, Markierungen */
     --kb-accent-2: #2f5f24;   /* dunkler Ton für Links/Hover */
