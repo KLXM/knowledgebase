@@ -11,6 +11,8 @@ final class AddonSettings
     private const KEY_SEARCH_RECENT_DAYS = 'search_recent_days';
     private const KEY_SEARCH_MULTI_CONTEXT_EXCERPTS = 'search_multi_context_excerpts';
     private const KEY_ALLOW_CHILD_PAGES = 'allow_child_pages';
+    private const KEY_LINK_PDF_INFO = 'link_pdf_info';
+    private const KEY_LINK_EXTERNAL_MARKER = 'link_external_marker';
 
     public static function getMenuTitle(): string
     {
@@ -93,5 +95,40 @@ final class AddonSettings
     public static function setChildPagesEnabled(bool $enabled): void
     {
         \rex_addon::get('knowledgebase')->setConfig(self::KEY_ALLOW_CHILD_PAGES, $enabled ? 1 : 0);
+    }
+
+    /** PDF-Links im Beitrag mit „(PDF, Größe)“ auszeichnen (Standard: aus). */
+    public static function isLinkPdfInfoEnabled(): bool
+    {
+        return self::isFlag(self::KEY_LINK_PDF_INFO);
+    }
+
+    public static function setLinkPdfInfo(bool $enabled): void
+    {
+        \rex_addon::get('knowledgebase')->setConfig(self::KEY_LINK_PDF_INFO, $enabled ? 1 : 0);
+    }
+
+    /** Externe Links im Beitrag mit Symbol kennzeichnen (Standard: aus). */
+    public static function isLinkExternalMarkerEnabled(): bool
+    {
+        return self::isFlag(self::KEY_LINK_EXTERNAL_MARKER);
+    }
+
+    public static function setLinkExternalMarker(bool $enabled): void
+    {
+        \rex_addon::get('knowledgebase')->setConfig(self::KEY_LINK_EXTERNAL_MARKER, $enabled ? 1 : 0);
+    }
+
+    private static function isFlag(string $key): bool
+    {
+        $configured = \rex_addon::get('knowledgebase')->getConfig($key, false);
+        if (is_int($configured)) {
+            return 1 === $configured;
+        }
+        if (is_string($configured)) {
+            return in_array(trim($configured), ['1', '|1|'], true);
+        }
+
+        return true === $configured;
     }
 }

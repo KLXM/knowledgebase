@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.19] - 2026-11-08
+
+### Neu
+- **Links im Beitrag kennzeichnen** (Einstellungen → „Links im Beitrag“, beides standardmäßig aus):
+  - **PDF-Links auszeichnen:** Dateien aus dem Medienpool bekommen „(PDF, 1,2 MB)“, externe PDF-Dateien „(PDF)“. Die Größe externer Dateien wird nicht abgefragt.
+  - **Externe Links kennzeichnen:** Symbol hinter dem Link, für Screenreader „(externer Link)“, bei `target="_blank"` zusätzlich „öffnet in neuem Fenster“. Externe PDF-Links bekommen außerdem „(PDF)“.
+  - Gilt für Anreißer und Beitragsinhalt.
+  - **Nicht gekennzeichnet werden:** verlinkte Bilder und Grafiken, Links ohne Text, Sprungmarken, E-Mail- und Telefon-Links, Glossar-Links und Links, deren Text „PDF“ schon nennt.
+  - Links auf andere Domains dieser Installation gelten als intern.
+  - Die Texte sind unter „Frontend-Texte“ anpassbar (`knowledgebase_link_pdf`, `knowledgebase_link_external`, `knowledgebase_link_new_window`).
+
 ## [0.9.18] - 2026-11-08
 
 ### Behoben

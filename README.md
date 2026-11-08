@@ -151,6 +151,24 @@ Schrift und Farben der Ausgabe lassen sich über CSS-Variablen auf `.kb-app` an 
 
 Helle Hintergründe und Rahmen (`--kb-accent-soft`, `--kb-accent-line`, `--kb-accent-muted`, `--kb-highlight-soft`) werden per `color-mix()` daraus abgeleitet und lassen sich bei Bedarf einzeln setzen.
 
+### Links im Beitrag kennzeichnen
+
+Unter **Einstellungen → Links im Beitrag** lassen sich zwei Kennzeichnungen einschalten (beide standardmäßig aus):
+
+- **PDF-Links auszeichnen:** Links auf PDF-Dateien aus dem Medienpool bekommen „(PDF, 1,2 MB)“, externe PDF-Dateien „(PDF)“. Die Größe externer Dateien wird nicht abgefragt.
+- **Externe Links kennzeichnen:** Symbol hinter dem Link, für Screenreader „(externer Link)“, bei `target="_blank"` zusätzlich „öffnet in neuem Fenster“. Externe PDF-Links bekommen „(PDF)“.
+
+Das gilt für Anreißer und Beitragsinhalt. **Nicht gekennzeichnet werden:**
+- verlinkte Bilder und Grafiken (der Alt-Text beschreibt das Ziel),
+- Links ohne Text, Sprungmarken, E-Mail- und Telefon-Links,
+- Glossar-Links und Links, deren Text „PDF“ schon nennt.
+
+Links auf andere Domains dieser Installation (YRewrite) gelten als intern. Die Texte sind unter „Frontend-Texte“ anpassbar.
+
+**Hinweis für die Redaktion:** Ist die Kennzeichnung aktiv, „(PDF)“, Dateigrößen oder „externer Link“ nicht mehr selbst in den Linktext schreiben, sonst erscheint es doppelt.
+
+Für Tests ohne Aktivierung: `LinkMarker::enhance($html, true, true)`.
+
 ### Glossar-Verlinkung
 
 Ein Glossarbegriff wird je Beitrag nur beim ersten Vorkommen verlinkt. Alle Vorkommen verlinken:
