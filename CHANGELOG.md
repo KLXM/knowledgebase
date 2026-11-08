@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.13] - 2026-11-08
+
+### Neu
+- **Zurück / Weiter am Ende eines Beitrags**: Links zum vorherigen und nächsten Beitrag in der Reihenfolge der Navigation (Eltern vor Kindern). Texte unter „Frontend-Texte“ änderbar (`knowledgebase_pager_*`).
+- **Meta-Beschreibung der Beitragsseiten**: Das URL-Profil lieferte als Beschreibung nur den Titel. Jetzt die Kurzbeschreibung, sonst der Anfang des Beitragstexts (max. 160 Zeichen) – auch für Open Graph und Twitter (`SeoService`, EP `URL_SEO_TAGS`).
+
+### Geändert
+- **Barrierefreiheit**: Akzentfarbe als Schriftfarbe dunkler (`--kb-accent-text`, mind. 4.5:1) – Glossar-Abzeichen, „Ähnliche Artikel“, Treffer- und Kapitelnummern. Links im Fließtext sind unterstrichen, nicht nur farbig.
+- **Lesehistorie**: Symbol „↺“ durch das UIkit-Symbol „history“ ersetzt.
+- **Telefon**: Kein Kartenrahmen um die Wissensbasis, der Text nutzt die volle Breite.
+
 ## [0.9.12] - 2026-11-07
 
 ### Behoben

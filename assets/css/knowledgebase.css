@@ -9,6 +9,8 @@
     --kb-heading-color: #1c3e4c;
     /* Abgeleitete Töne – folgen --kb-accent / --kb-highlight, einzeln überschreibbar */
     --kb-ink: #24374f;
+    /* Akzent als Schriftfarbe – dunkler, damit Text auf Weiß/hellem Grund mind. 4.5:1 erreicht */
+    --kb-accent-text: color-mix(in srgb, var(--kb-accent) 70%, #000);
     --kb-accent-soft: color-mix(in srgb, var(--kb-accent) 6%, #fff);
     --kb-accent-line: color-mix(in srgb, var(--kb-accent) 24%, #fff);
     --kb-accent-muted: color-mix(in srgb, var(--kb-accent) 50%, #fff);
@@ -436,7 +438,7 @@
 }
 
 .kb-app__search-hit strong {
-    color: var(--kb-accent);
+    color: var(--kb-accent-text);
 }
 
 .kb-app__search-hit-badge {
@@ -446,7 +448,7 @@
     padding: 0.18rem 0.5rem;
     border-radius: 999px;
     background: rgba(15, 91, 87, 0.12);
-    color: var(--kb-accent);
+    color: var(--kb-accent-text);
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.04em;
@@ -782,7 +784,7 @@
 }
 
 .kb-app__nav-link.is-trail:not(.is-current) {
-    color: var(--kb-accent);
+    color: var(--kb-accent-text);
 }
 
 .kb-app__nav-link--tags[data-kb-nav-main-toggle] {
@@ -1056,7 +1058,7 @@
     justify-content: center;
     font-size: 0.76rem;
     background: color-mix(in srgb, var(--kb-accent) 12%, transparent);
-    color: var(--kb-accent);
+    color: var(--kb-accent-text);
 }
 
 .kb-app__nav-badge--icon .uk-icon {
@@ -1276,7 +1278,7 @@
 }
 
 .kb-app__search-item-link strong {
-    color: var(--kb-accent);
+    color: var(--kb-accent-text);
 }
 
 .kb-app__search-item-link span {
@@ -1297,7 +1299,7 @@
 
 .kb-app__recommendation-title {
     margin: 0;
-    color: var(--kb-accent);
+    color: var(--kb-accent-text);
     font-size: clamp(1.05rem, 1.8vw, 1.25rem);
 }
 
@@ -1350,7 +1352,7 @@
 }
 
 .kb-app__compact-head strong {
-    color: var(--kb-accent);
+    color: var(--kb-accent-text);
     line-height: 1.35;
 }
 
@@ -1844,7 +1846,7 @@
    Kapitelnummer in der Überschrift (Element kb_chapter_nav, Option „Nummer auch in der Überschrift“)
    ===================================================================== */
 .kb-chapter-nav__number {
-    color: var(--kb-accent);
+    color: var(--kb-accent-text);
     font-variant-numeric: tabular-nums;
     margin-right: 0.15em;
 }
@@ -1999,4 +2001,105 @@
 .kb-app__intro em,
 .kb-app__intro i:not([class]) {
     color: inherit;
+}
+
+/* Links im Fließtext nicht nur an der Farbe erkennbar (WCAG 1.4.1) */
+.kb-app__article-body a:not([class]),
+.kb-app__intro a:not([class]) {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+}
+
+.kb-app__article-body a:not([class]):hover,
+.kb-app__article-body a:not([class]):focus-visible {
+    text-decoration-thickness: 2px;
+}
+
+/* Zurück / Weiter am Ende eines Beitrags */
+.kb-app__pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--kb-accent-line);
+}
+
+.kb-app__pager-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--kb-accent-line);
+    border-radius: 10px;
+    color: var(--kb-ink);
+    text-decoration: none;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.kb-app__pager-link:hover,
+.kb-app__pager-link:focus-visible {
+    border-color: var(--kb-accent-muted);
+    background: var(--kb-accent-soft);
+    color: var(--kb-ink);
+    text-decoration: none;
+}
+
+.kb-app__pager-link--next {
+    justify-content: flex-end;
+    text-align: right;
+}
+
+.kb-app__pager-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.kb-app__pager-dir {
+    color: var(--kb-muted);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.kb-app__pager-title {
+    color: var(--kb-accent-text);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.kb-app__pager-icon {
+    flex: none;
+    color: var(--kb-accent-text);
+}
+
+@media (max-width: 639px) {
+    .kb-app__pager {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+    }
+
+    .kb-app__pager > span:empty {
+        display: none;
+    }
+
+    /* Telefon: kein Kartenrahmen um die Wissensbasis – mehr Breite für den Text */
+    .kb-app.uk-card {
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background: transparent;
+    }
+
+    .kb-app__content {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .kb-app__hero {
+        border-radius: 10px;
+    }
 }
