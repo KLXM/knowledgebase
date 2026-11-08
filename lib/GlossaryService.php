@@ -64,13 +64,16 @@ final class GlossaryService
         $normalizedMap = [];
         $termsForPattern = [];
         foreach ($terms as $term) {
-            $normalized = self::normalizeTerm((string) $term['term']);
-            if ($normalized === '' || isset($normalizedMap[$normalized])) {
-                continue;
-            }
+            // Hauptbegriff und weitere Schreibweisen (Mehrzahl, gebeugte Formen …) zeigen auf denselben Eintrag
+            foreach (array_merge([(string) $term['term']], $term['synonyms'] ?? []) as $form) {
+                $normalized = self::normalizeTerm($form);
+                if ($normalized === '' || isset($normalizedMap[$normalized])) {
+                    continue;
+                }
 
-            $normalizedMap[$normalized] = $term;
-            $termsForPattern[] = preg_quote((string) $term['term'], '/');
+                $normalizedMap[$normalized] = $term;
+                $termsForPattern[] = preg_quote($form, '/');
+            }
         }
 
         if (count($termsForPattern) === 0) {
@@ -256,7 +259,7 @@ final class GlossaryService
     }
 
     /**
-     * @return list<array{id:int,term:string,definition:string,description:string}>
+     * @return list<array{id:int,term:string,definition:string,description:string,synonyms:list<string>}>
      */
     public static function getTermsForKnowledgebase(int $knowledgebaseId): array
     {
@@ -267,13 +270,13 @@ final class GlossaryService
         $cacheFile = self::getCacheFile($knowledgebaseId);
         $cached = rex_file::getCache($cacheFile, null);
         if (is_array($cached)) {
-            /** @var list<array{id:int,term:string,definition:string,description:string}> $cached */
+            /** @var list<array{id:int,term:string,definition:string,description:string,synonyms:list<string>}> $cached */
             return $cached;
         }
 
         $sql = rex_sql::factory();
         $rows = $sql->getArray(
-            'SELECT id, term, definition, description FROM ' . rex::getTable('knowledgebase_glossary') . ' WHERE knowledgebase_id = :knowledgebase_id AND online = 1',
+            'SELECT * FROM ' . rex::getTable('knowledgebase_glossary') . ' WHERE knowledgebase_id = :knowledgebase_id AND online = 1',
             ['knowledgebase_id' => $knowledgebaseId],
         );
 
@@ -289,6 +292,7 @@ final class GlossaryService
                 'term' => $term,
                 'definition' => trim((string) ($row['definition'] ?? '')),
                 'description' => trim((string) ($row['description'] ?? '')),
+                'synonyms' => self::parseSynonyms((string) ($row['synonyms'] ?? ''), $term),
             ];
         }
 
@@ -306,6 +310,64 @@ final class GlossaryService
         }
 
         rex_file::delete(self::getCacheFile($knowledgebaseId));
+    }
+
+    /**
+     * Weitere Schreibweisen: kommagetrennt oder eine pro Zeile; ohne Dubletten und ohne den Hauptbegriff.
+     *
+     * @return list<string>
+     */
+    public static function parseSynonyms(string $value, string $term = ''): array
+    {
+        $seen = ['' => true, self::normalizeTerm($term) => true];
+        $forms = [];
+        foreach (preg_split('/[,;\n\r]+/u', $value) ?: [] as $form) {
+            $form = trim((string) preg_replace('/\s+/u', ' ', $form));
+            $key = self::normalizeTerm($form);
+            if (isset($seen[$key])) {
+                continue;
+            }
+            $seen[$key] = true;
+            $forms[] = $form;
+        }
+
+        return $forms;
+    }
+
+    /**
+     * Glossar-Eintrag zu einem Text suchen – über Begriff oder Schreibweise, auch offline.
+     *
+     * @return array{id:int,term:string,online:bool,matched:string}|null
+     */
+    public static function findEntry(int $knowledgebaseId, string $text): ?array
+    {
+        $needle = self::normalizeTerm($text);
+        if ($knowledgebaseId <= 0 || $needle === '') {
+            return null;
+        }
+        $rows = rex_sql::factory()->getArray(
+            'SELECT * FROM ' . rex::getTable('knowledgebase_glossary') . ' WHERE knowledgebase_id = ?',
+            [$knowledgebaseId],
+        );
+        foreach ($rows as $row) {
+            $term = trim((string) ($row['term'] ?? ''));
+            if (self::normalizeTerm($term) === $needle) {
+                return ['id' => (int) $row['id'], 'term' => $term, 'online' => (int) ($row['online'] ?? 0) === 1, 'matched' => 'term'];
+            }
+            foreach (self::parseSynonyms((string) ($row['synonyms'] ?? ''), $term) as $form) {
+                if (self::normalizeTerm($form) === $needle) {
+                    return ['id' => (int) $row['id'], 'term' => $term, 'online' => (int) ($row['online'] ?? 0) === 1, 'matched' => 'synonym'];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /** Glossar-Cache einer Wissensbasis leeren (nach Änderungen außerhalb von YForm). */
+    public static function clearCache(int $knowledgebaseId): void
+    {
+        self::clearCacheForKnowledgebase($knowledgebaseId);
     }
 
     private static function getCacheFile(int $knowledgebaseId): string

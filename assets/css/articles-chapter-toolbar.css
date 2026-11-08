@@ -111,3 +111,14 @@ body.rex-theme-dark #rex-page-knowledgebase-articles {
     vertical-align: middle;
     margin-bottom: 0;
 }
+
+/* „Ins Glossar“ (glossary-selection-action.js): kurze Rückmeldung unten rechts */
+.kb-glossary-toast {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1070;
+    max-width: 420px;
+    margin: 0;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+}

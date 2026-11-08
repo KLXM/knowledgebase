@@ -675,6 +675,10 @@ final class FrontendRenderer
 
                 $entries .= '<li class="kb-app__glossary-item">';
                 $entries .= '<a href="#' . rex_escape($modalId) . '" class="kb-app__glossary-link kb-app__glossary-link--index" data-kb-glossary-link="1" uk-toggle>' . rex_escape((string) $term['term']) . '</a>';
+                $synonyms = $term['synonyms'] ?? [];
+                if ($synonyms !== []) {
+                    $entries .= '<div class="kb-app__glossary-item-synonyms">' . rex_escape(FrontendI18n::msg('knowledgebase_glossary_synonyms', 'auch') . ': ' . implode(', ', $synonyms)) . '</div>';
+                }
                 if ($definition !== '') {
                     $entries .= '<div class="kb-app__glossary-item-definition">' . rex_escape($definition) . '</div>';
                 }

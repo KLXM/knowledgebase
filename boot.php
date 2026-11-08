@@ -101,11 +101,14 @@ if ((rex_addon::exists('builder') && rex_addon::get('builder')->isAvailable()) |
 }
 
 if (rex::isBackend() && null !== rex::getUser() && rex_addon::get('tinymce')->isAvailable() && class_exists(\FriendsOfRedaxo\TinyMce\PluginRegistry::class)) {
+    // Cache-Buster mit der Knowledgebase-Version (die TinyMCE-Registry hängt sonst nur ihre eigene an)
+    $kbPluginVersion = '?v=' . rawurlencode((string) rex_addon::get('knowledgebase')->getVersion());
     \FriendsOfRedaxo\TinyMce\PluginRegistry::addPlugin(
         'knowledgebase_link',
-        rex_url::addonAssets('knowledgebase', 'js/tinymce-knowledgebase-link-plugin.js'),
+        rex_url::addonAssets('knowledgebase', 'js/tinymce-knowledgebase-link-plugin.js') . $kbPluginVersion,
         'knowledgebase_link'
     );
+
 }
 
 if (rex::isBackend() && null !== rex::getUser() && rex_be_controller::getCurrentPage() === 'knowledgebase/articles') {
@@ -130,6 +133,8 @@ if (rex::isBackend() && null !== rex::getUser() && rex_be_controller::getCurrent
 
     rex_view::addCssFile(rex_url::addonAssets('knowledgebase', 'css/articles-chapter-toolbar.css') . '?v=' . rawurlencode($cssToken));
     rex_view::addJsFile(rex_url::addonAssets('knowledgebase', 'js/articles-focus-fix.js') . '?v=' . rawurlencode($jsToken));
+    // Builder-Ansicht: markierten Text per Leiste „Ins Glossar“ aufnehmen (braucht builder mit selection-actions.js)
+    rex_view::addJsFile(rex_url::addonAssets('knowledgebase', 'js/glossary-selection-action.js') . '?v=' . rawurlencode($jsToken));
 }
 
 // Slug-Feld: Auto-Ausfüllen für neue Einträge und Knopf „Aus Navigationstitel erzeugen“ (Beiträge, Wissensbasen)
