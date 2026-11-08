@@ -896,7 +896,7 @@ final class FrontendRenderer
                 : FrontendI18n::msg('knowledgebase_pager_next', 'Weiter');
             $icon = '<span class="kb-app__pager-icon" uk-icon="icon: chevron-' . ('prev' === $direction ? 'left' : 'right') . '" aria-hidden="true"></span>';
 
-            return '<a class="kb-app__pager-link kb-app__pager-link--' . $direction . '" rel="' . $direction . '" href="' . rex_escape(FrontendContext::articleUrlForId($target->getId())) . '">'
+            return '<a class="kb-app__pager-link kb-app__pager-link--' . $direction . '" rel="' . $direction . '" data-kb-slug="' . rex_escape((string) $target->getValue('slug')) . '" href="' . rex_escape(KnowledgebaseUrl::getArticleUrl((int) $target->getValue('knowledgebase_id'), (string) $target->getValue('slug'))) . '">'
                 . ('prev' === $direction ? $icon : '')
                 . '<span class="kb-app__pager-text"><span class="kb-app__pager-dir">' . rex_escape($label) . '</span>'
                 . '<span class="kb-app__pager-title">' . rex_escape($target->getNavLabel()) . '</span></span>'
