@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.16] - 2026-11-08
+
+### Geändert
+- **„Ähnliche Artikel“ als zugeklappter Bereich am Ende** („Ähnliche Artikel (3)“ zum Aufklappen). Bereits gelesene Beiträge werden nicht mehr ausgeblendet, sondern ans Ende sortiert – vorher verschwand der Bereich, sobald man fast alles gelesen hatte. Beiträge aus „Zurück / Weiter“ bleiben ausgenommen.
+
+### Behoben
+- **„Ins Glossar“ → „Eintrag bearbeiten“**: Der Link öffnete den Eintrag mit „CSRF-Token ungültig“. Jetzt mit dem Token der Glossar-Tabelle (wie `rex_yform_manager::url()`), weiter auf der Glossar-Seite der Knowledgebase.
+
 ## [0.9.15] - 2026-11-08
 
 ### Neu

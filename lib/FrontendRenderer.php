@@ -830,11 +830,11 @@ final class FrontendRenderer
         $recommendationBlocks = '';
 
         if ($relatedEnabled) {
-            $recommendationBlocks .= '<section class="kb-app__recommendation-section" data-kb-related-section hidden>'
-                . '<h2 class="kb-app__recommendation-title" data-kb-related-heading>' . rex_escape(FrontendI18n::msg('knowledgebase_related_heading', 'Aehnliche Artikel')) . '</h2>'
+            $recommendationBlocks .= '<details class="kb-app__recommendation-section" data-kb-related-section hidden>'
+                . '<summary class="kb-app__recommendation-summary"><h2 class="kb-app__recommendation-title"><span data-kb-related-heading>' . rex_escape(FrontendI18n::msg('knowledgebase_related_heading', 'Aehnliche Artikel')) . '</span> <span class="kb-app__recommendation-count" data-kb-related-count></span></h2></summary>'
                 . '<ul class="kb-app__compact-list" data-kb-related-list></ul>'
                 . '<div class="uk-alert-warning" data-kb-related-empty hidden>' . rex_escape(FrontendI18n::msg('knowledgebase_related_empty', 'Keine passenden Beitraege gefunden.')) . '</div>'
-                . '</section>';
+                . '</details>';
         }
 
         $recommendations = $recommendationBlocks !== ''

@@ -752,7 +752,7 @@ function initArticleRecommendations(app) {
                 .map(function (entry) {
                     return entry && typeof entry.slug === 'string' ? bySlug[entry.slug] : null;
                 })
-                .filter(function (entry) { return !!entry && entry.slug !== currentSlug && !readMap[entry.slug] && !pagerMap[entry.slug]; })
+                .filter(function (entry) { return !!entry && entry.slug !== currentSlug && !pagerMap[entry.slug]; })
                 .map(function (entry) {
                     var score = 0;
                     if (currentTags.length > 0 && entry.tags.length > 0) {
@@ -763,10 +763,14 @@ function initArticleRecommendations(app) {
                         });
                     }
 
-                    return { entry: entry, score: score };
+                    return { entry: entry, score: score, read: !!readMap[entry.slug] };
                 });
 
+            // Bereits Gelesenes nicht ausblenden, sondern ans Ende
             relatedCandidates.sort(function (left, right) {
+                if (left.read !== right.read) {
+                    return left.read ? 1 : -1;
+                }
                 if (left.score !== right.score) {
                     return right.score - left.score;
                 }
@@ -783,6 +787,10 @@ function initArticleRecommendations(app) {
 
             if (chosen.length > 0) {
                 renderCompactList(relatedList, chosen);
+                var relatedCount = relatedSection.querySelector('[data-kb-related-count]');
+                if (relatedCount) {
+                    relatedCount.textContent = '(' + chosen.length + ')';
+                }
                 relatedSection.hidden = false;
             } else {
                 relatedList.innerHTML = '';

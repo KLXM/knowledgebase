@@ -78,7 +78,7 @@ class rex_api_knowledgebase_glossary extends rex_api_function
             'match' => $kbId > 0 && '' !== $text ? GlossaryService::findEntry($kbId, $text) : null,
             'can_write' => $canWrite,
             'token' => $canWrite ? rex_csrf_token::factory(self::CSRF_KEY)->getValue() : '',
-            'edit_url' => rex_url::backendPage('knowledgebase/glossary', ['table_name' => rex::getTable('knowledgebase_glossary'), 'func' => 'edit'], false),
+            'edit_url' => self::editUrl(),
         ]);
     }
 
@@ -153,6 +153,21 @@ class rex_api_knowledgebase_glossary extends rex_api_function
         if ($create && in_array('createuser', $columns, true)) {
             $sql->setValue('createuser', $user->getLogin());
         }
+    }
+
+    /**
+     * Link zum Bearbeiten im Glossar (data_id hängt das Skript an). YForm prüft beim Bearbeiten ein CSRF-Token
+     * mit dem Schlüssel der Tabelle – wie rex_yform_manager::url(), aber auf der Glossar-Seite der Knowledgebase.
+     */
+    private static function editUrl(): string
+    {
+        $params = ['table_name' => rex::getTable('knowledgebase_glossary'), 'func' => 'edit'];
+        $table = rex_yform_manager_table::get(rex::getTable('knowledgebase_glossary'));
+        if ($table instanceof rex_yform_manager_table) {
+            $params += rex_csrf_token::factory($table->getCSRFKey())->getUrlParams();
+        }
+
+        return rex_url::backendPage('knowledgebase/glossary', $params, false);
     }
 
     /** @param array<string, mixed> $data */
