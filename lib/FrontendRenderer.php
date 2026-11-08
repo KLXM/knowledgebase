@@ -812,13 +812,13 @@ final class FrontendRenderer
         }
 
         $intro = trim((string) $article->getValue('intro'));
-        $introHtml = '' !== $intro ? '<div class="kb-app__intro">' . $intro . '</div>' : '';
+        $introHtml = '' !== $intro ? '<div class="kb-app__intro">' . LinkMarker::enhance($intro) . '</div>' : '';
         $breadcrumbs = self::renderBreadcrumbs($knowledgebase, $article);
         $editButton = self::renderBackendEditButton($article);
         $chapters = self::extractArticleChapters($article, false);
         self::beginChapterRenderSession();
         try {
-            $articleBody = GlossaryService::enhanceArticleHtml($knowledgebase, $article->renderContent());
+            $articleBody = LinkMarker::enhance(GlossaryService::enhanceArticleHtml($knowledgebase, $article->renderContent()));
         } finally {
             self::endChapterRenderSession();
         }

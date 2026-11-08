@@ -15,12 +15,16 @@ if ('save' === rex_request('func', 'string') && $csrfToken->isValid()) {
     $searchRecentDays = rex_request('search_recent_days', 'int', 14);
     $searchMultiContextExcerpts = rex_request('search_multi_context_excerpts', 'int', 0) === 1;
     $allowChildPages = rex_request('allow_child_pages', 'int', 0) === 1;
+    $linkPdfInfo = rex_request('link_pdf_info', 'int', 0) === 1;
+    $linkExternalMarker = rex_request('link_external_marker', 'int', 0) === 1;
 
     AddonSettings::setMenuTitle($menuTitle);
     AddonSettings::setElementMode($elementMode);
     AddonSettings::setSearchRecentDays($searchRecentDays);
     AddonSettings::setSearchMultiContextExcerpts($searchMultiContextExcerpts);
     AddonSettings::setChildPagesEnabled($allowChildPages);
+    AddonSettings::setLinkPdfInfo($linkPdfInfo);
+    AddonSettings::setLinkExternalMarker($linkExternalMarker);
 
     echo rex_view::success('Einstellungen wurden gespeichert.');
 } elseif ('save' === rex_request('func', 'string')) {
@@ -32,6 +36,8 @@ $currentElementMode = AddonSettings::getElementMode();
 $currentSearchRecentDays = AddonSettings::getSearchRecentDays();
 $currentSearchMultiContextExcerpts = AddonSettings::isSearchMultiContextExcerptsEnabled();
 $currentAllowChildPages = AddonSettings::isChildPagesEnabled();
+$currentLinkPdfInfo = AddonSettings::isLinkPdfInfoEnabled();
+$currentLinkExternalMarker = AddonSettings::isLinkExternalMarkerEnabled();
 
 $content = '';
 $content .= '<form action="' . rex_url::currentBackendPage() . '" method="post">';
@@ -81,6 +87,19 @@ $content .= '<option value="1"' . ($currentAllowChildPages ? ' selected' : '') .
 $content .= '</select>';
 $content .= '<p class="help-block">Steuert die Aktion "Unterseite anlegen" in der Artikelliste. Bei "Deaktiviert" werden Unterseiten serverseitig auf Hauptebene erzwungen.</p>';
 $content .= '</div>';
+$content .= '</fieldset>';
+
+$content .= '<fieldset>';
+$content .= '<legend>Links im Beitrag</legend>';
+$content .= '<div class="checkbox">';
+$content .= '<label><input type="checkbox" name="link_pdf_info" value="1"' . ($currentLinkPdfInfo ? ' checked' : '') . '> PDF-Links auszeichnen: „(PDF, 1,2 MB)“</label>';
+$content .= '<p class="help-block">Dateien aus dem Medienpool bekommen Format und Größe, externe PDF-Dateien „(PDF)“. Die Größe externer Dateien wird nicht abgefragt.</p>';
+$content .= '</div>';
+$content .= '<div class="checkbox">';
+$content .= '<label><input type="checkbox" name="link_external_marker" value="1"' . ($currentLinkExternalMarker ? ' checked' : '') . '> Externe Links kennzeichnen</label>';
+$content .= '<p class="help-block">Symbol hinter dem Link, für Screenreader „(externer Link)“, bei neuem Fenster zusätzlich „öffnet in neuem Fenster“. Externe PDF-Links bekommen „(PDF)“.</p>';
+$content .= '</div>';
+$content .= '<p class="help-block">Gilt für Anreißer und Beitragsinhalt. Nicht gekennzeichnet werden verlinkte Bilder und Grafiken, Links ohne Text, Sprungmarken, E-Mail- und Telefon-Links, Glossar-Links und Links, deren Text „PDF“ schon nennt. Links auf andere Domains dieser Installation gelten als intern.<br><strong>Wenn aktiv:</strong> Die Redaktion sollte „(PDF)“, Dateigrößen oder „externer Link“ nicht mehr selbst in den Linktext schreiben, sonst steht es doppelt da.</p>';
 $content .= '</fieldset>';
 
 $content .= '<p><button class="btn btn-save" type="submit">Speichern</button></p>';
