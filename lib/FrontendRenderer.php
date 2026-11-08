@@ -531,11 +531,12 @@ final class FrontendRenderer
             $navToggleLabel = FrontendI18n::msg('knowledgebase_nav_submenu_toggle', 'Untermenü umschalten');
             $items .= '<li class="kb-app__nav-main-item kb-app__nav-main-item--tags" data-kb-nav-main' . ($tagModeActive ? ' data-kb-nav-default-open="1"' : '') . '>';
             $items .= '<div class="kb-app__nav-main-row">';
-            $items .= '<div class="kb-app__nav-link kb-app__nav-link--tags' . ($tagExpanded ? ' is-current is-trail' : '') . '" data-kb-nav-main-link data-kb-nav-main-toggle role="button" tabindex="0" aria-expanded="' . ($tagExpanded ? 'true' : 'false') . '" aria-label="' . rex_escape($navToggleLabel) . '" title="' . rex_escape($navToggleLabel) . '" uk-tooltip="' . rex_escape($navToggleLabel) . '" onclick="' . rex_escape(self::NAV_TOGGLE_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}">';
+            // Nur der Knopf daneben ist bedienbar (ein Tab-Stopp); ein Mausklick auf die Zeile löst ihn aus
+            $items .= '<div class="kb-app__nav-link kb-app__nav-link--tags' . ($tagExpanded ? ' is-current is-trail' : '') . '" onclick="var b=this.parentNode.querySelector(\'[data-kb-nav-main-toggle]\');if(b){b.click();}">';
             $items .= self::renderNavBadgeIcon('tag');
             $items .= '<span>' . rex_escape($tagsLabel) . '</span>';
             $items .= '</div>';
-            $items .= '<button class="kb-app__nav-main-toggle" data-kb-nav-main-toggle type="button" aria-expanded="' . ($tagExpanded ? 'true' : 'false') . '" aria-label="' . rex_escape($navToggleLabel) . '" title="' . rex_escape($navToggleLabel) . '" uk-tooltip="' . rex_escape($navToggleLabel) . '" onclick="' . rex_escape(self::NAV_TOGGLE_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}"><span uk-icon="chevron-down"></span></button>';
+            $items .= '<button class="kb-app__nav-main-toggle" data-kb-nav-main-toggle type="button" aria-expanded="' . ($tagExpanded ? 'true' : 'false') . '" aria-label="' . rex_escape($navToggleLabel . ': ' . $tagsLabel) . '" title="' . rex_escape($navToggleLabel) . '" uk-tooltip="' . rex_escape($navToggleLabel) . '" onclick="' . rex_escape(self::NAV_TOGGLE_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}"><span uk-icon="chevron-down"></span></button>';
             $items .= '</div>';
 
             $items .= '<ul class="kb-app__nav-list kb-app__nav-sublist kb-app__nav-tag-list" data-kb-nav-sublist' . ($tagExpanded ? '' : ' hidden') . '>';
@@ -1158,7 +1159,8 @@ final class FrontendRenderer
         $html .= '</a>';
 
         if ($hasChildren || $hasChapterLinks) {
-            $html .= '<button class="kb-app__nav-main-toggle" data-kb-nav-main-toggle type="button" aria-expanded="' . ($isExpanded ? 'true' : 'false') . '" aria-label="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_submenu_toggle', 'Untermenü umschalten')) . '" title="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_submenu_toggle', 'Untermenü umschalten')) . '" uk-tooltip="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_submenu_toggle', 'Untermenü umschalten')) . '" onclick="' . rex_escape(self::NAV_TOGGLE_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}"><span uk-icon="chevron-down"></span></button>';
+            // Label mit Titel: Screenreader sagen, welches Untermenü der Knopf öffnet
+            $html .= '<button class="kb-app__nav-main-toggle" data-kb-nav-main-toggle type="button" aria-expanded="' . ($isExpanded ? 'true' : 'false') . '" aria-label="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_submenu_toggle', 'Untermenü umschalten') . ': ' . $article->getNavLabel()) . '" title="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_submenu_toggle', 'Untermenü umschalten')) . '" uk-tooltip="' . rex_escape(FrontendI18n::msg('knowledgebase_nav_submenu_toggle', 'Untermenü umschalten')) . '" onclick="' . rex_escape(self::NAV_TOGGLE_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}"><span uk-icon="chevron-down"></span></button>';
         }
         $html .= '</div>';
 
