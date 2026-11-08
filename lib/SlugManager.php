@@ -35,7 +35,8 @@ final class SlugManager
         $title = trim((string) $yform->getFieldValue('title'));
         $navTitle = trim((string) $yform->getFieldValue('nav_title'));
         $slugInput = trim((string) $yform->getFieldValue('slug'));
-        $slugSource = $title !== '' ? $title : $navTitle;
+        // Navigationstitel hat Vorrang, sonst der Titel (wie der Generator im Backend)
+        $slugSource = $navTitle !== '' ? $navTitle : $title;
         $baseSlug = self::slugify($slugInput !== '' ? $slugInput : $slugSource);
 
         if ($baseSlug === '') {

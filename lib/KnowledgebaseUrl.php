@@ -38,6 +38,57 @@ final class KnowledgebaseUrl
     }
 
     /**
+     * Link aus dem Editor (Plugin „Knowledgebase-Link“) beim Ausgeben neu auflösen: Beitrag per ID,
+     * Abschnitt per ID des Kapitelankers. So stimmen Links auch nach Umbenennen von Beitrag/Kapitel
+     * oder Ändern des URL-Profils. Adresse über das URL-Profil (sonst Fallback), auf derselben Domain als Pfad.
+     * Leer, wenn der Beitrag nicht (mehr) online ist.
+     */
+    public static function resolveContentLink(int $articleId, string $chapterSliceId = '', string $fallbackAnchor = ''): string
+    {
+        static $cache = [];
+        $cacheKey = $articleId . '|' . $chapterSliceId . '|' . $fallbackAnchor;
+        if (isset($cache[$cacheKey])) {
+            return $cache[$cacheKey];
+        }
+
+        $row = rex_sql::factory()->getArray(
+            'SELECT knowledgebase_id, slug, content FROM ' . rex::getTable('knowledgebase_article') . ' WHERE id = ? AND online = 1',
+            [$articleId],
+        )[0] ?? null;
+        if (null === $row || '' === (string) $row['slug']) {
+            return $cache[$cacheKey] = '';
+        }
+
+        $anchor = $fallbackAnchor;
+        if ('' !== $chapterSliceId) {
+            foreach (KnowledgebaseLinkService::extractAnchors((string) $row['content']) as $chapter) {
+                if ($chapter['slice'] === $chapterSliceId) {
+                    $anchor = $chapter['anchor'];
+                    break;
+                }
+            }
+        }
+
+        return $cache[$cacheKey] = self::toSameDomainPath(self::getArticleUrl((int) $row['knowledgebase_id'], (string) $row['slug'], $anchor));
+    }
+
+    /** //hage.de/kb/… bzw. https://hage.de/kb/… auf derselben Domain als /kb/… */
+    public static function toSameDomainPath(string $url): string
+    {
+        if (preg_match('~^(?:https?:)?//([^/?#]+)(.*)$~i', $url, $m) !== 1) {
+            return $url;
+        }
+        $host = strtolower($m[1]);
+        $current = strtolower((string) \rex_server('HTTP_HOST', 'string', ''));
+        $bare = static fn (string $h): string => preg_replace('/^www\./', '', $h) ?? $h;
+        if ('' !== $current && ($host === $current || $bare($host) === $bare($current))) {
+            return '' !== $m[2] ? $m[2] : '/';
+        }
+
+        return $url;
+    }
+
+    /**
      * Vorschau-Adresse eines Beitrags fürs Backend: URL-Profil, sonst die Standard-Seite der
      * Wissensbasis mit Parameter (im Backend gibt es keine „aktuelle Seite“ als Basis). Leer, wenn beides fehlt.
      */

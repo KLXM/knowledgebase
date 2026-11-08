@@ -19,38 +19,25 @@
     }
 
     /**
-     * Löst die URL über den API-Endpoint auf (URL-Addon-Profil bevorzugt).
-     * Fällt zurück auf den internen Fallback-Link wenn kein Profil aktiv ist.
+     * Link mit Verweis auf Beitrag (und Kapitelanker) per ID einfügen. Die Ausgabe löst ihn über das
+     * URL-Profil neu auf – so stimmt er auch nach Umbenennen von Beitrag/Kapitel oder Ändern des Profils.
      */
-    function resolveHref(knowledgebaseId, slug, anchor) {
-        var params = 'rex-api-call=knowledgebase_url'
-            + '&kb_id=' + encodeURIComponent(String(knowledgebaseId))
-            + '&slug=' + encodeURIComponent(String(slug));
-        if (String(anchor || '').trim() !== '') {
-            params += '&anchor=' + encodeURIComponent(String(anchor).trim());
+    function insertLink(editor, href, label, articleId, chapterSlice) {
+        var attrs = { href: href, 'data-kb-article': String(articleId || '') };
+        if (String(chapterSlice || '') !== '') {
+            attrs['data-kb-chapter'] = String(chapterSlice);
         }
 
-        return fetch('./index.php?' + params, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        }).then(function (response) {
-            return response.ok ? response.json() : null;
-        }).then(function (data) {
-            if (data && data.url && String(data.url).trim() !== '') {
-                return String(data.url);
-            }
-            return buildHref(knowledgebaseId, slug, anchor);
-        }).catch(function () {
-            return buildHref(knowledgebaseId, slug, anchor);
-        });
-    }
-
-    function insertLink(editor, href, label) {
         if (editor.selection.isCollapsed()) {
-            editor.insertContent('<a href="' + escHtml(href) + '">' + escHtml(label) + '</a>');
+            var html = '<a';
+            Object.keys(attrs).forEach(function (key) {
+                html += ' ' + key + '="' + escHtml(attrs[key]) + '"';
+            });
+            editor.insertContent(html + '>' + escHtml(label) + '</a>');
             return;
         }
 
-        editor.execCommand('mceInsertLink', false, { href: href });
+        editor.execCommand('mceInsertLink', false, attrs);
     }
 
     function fetchTree() {
@@ -102,29 +89,28 @@
                                     onAction: function () {
                                         var selectedText = editor.selection.getContent({ format: 'text' });
                                         var linkText = String(selectedText || '').trim() !== '' ? selectedText : articleTitle;
-                                        resolveHref(kb.id, article.slug, '').then(function (href) {
-                                            insertLink(editor, href, linkText);
-                                        });
+                                        insertLink(editor, buildHref(kb.id, article.slug, ''), linkText, article.id, '');
                                     }
                                 });
 
                                 if (anchors.length > 0) {
                                     items.push({
                                         type: 'nestedmenuitem',
-                                        text: 'Anker im Artikel',
+                                        text: 'Abschnitt im Artikel',
                                         getSubmenuItems: function () {
                                             return anchors.map(function (anchor) {
                                                 var anchorTitle = String(anchor.title || anchor.anchor || 'Anker');
+                                                // Anzeige: Unterabschnitte eingerückt, Kapitelnummer vorangestellt
+                                                var indent = anchor.level === 'h4' ? '\u2003\u2003' : (anchor.level === 'h3' ? '\u2003' : '');
+                                                var badge = String(anchor.badge || '').trim();
                                                 return {
                                                     type: 'menuitem',
-                                                    text: anchorTitle,
+                                                    text: indent + (badge !== '' ? badge + ' ' : '') + anchorTitle,
                                                     onAction: function () {
                                                         var anchorVal = anchor.anchor || '';
                                                         var selectedText = editor.selection.getContent({ format: 'text' });
                                                         var linkText = String(selectedText || '').trim() !== '' ? selectedText : anchorTitle;
-                                                        resolveHref(kb.id, article.slug, anchorVal).then(function (href) {
-                                                            insertLink(editor, href, linkText);
-                                                        });
+                                                        insertLink(editor, buildHref(kb.id, article.slug, anchorVal), linkText, article.id, anchor.slice || '');
                                                     }
                                                 };
                                             });

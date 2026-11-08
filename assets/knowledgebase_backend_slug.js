@@ -9,13 +9,19 @@
     return (input.getAttribute('name') || '').toLowerCase();
   }
 
+  // YForm 5 vergibt numerische Feldnamen (FORM[…][7]); der Feldname steht in der ID der Feldgruppe (…-slug)
+  function groupIdEndsWith(input, suffix) {
+    var group = input.closest('.form-group');
+    return Boolean(group && group.id && group.id.slice(-suffix.length) === suffix);
+  }
+
   function isTitleField(input) {
     if (!isTextInput(input)) {
       return false;
     }
 
     var name = fieldName(input);
-    return /(^|\[)title\]?$/.test(name) || Boolean(input.closest('.yform-name-title'));
+    return /(^|\[)title\]?$/.test(name) || Boolean(input.closest('.yform-name-title')) || groupIdEndsWith(input, '-title');
   }
 
   function isNavTitleField(input) {
@@ -24,7 +30,7 @@
     }
 
     var name = fieldName(input);
-    return /(^|\[)nav_title\]?$/.test(name) || Boolean(input.closest('.yform-name-nav_title'));
+    return /(^|\[)nav_title\]?$/.test(name) || Boolean(input.closest('.yform-name-nav_title')) || groupIdEndsWith(input, '-nav_title');
   }
 
   function isSlugField(input) {
@@ -33,7 +39,7 @@
     }
 
     var name = fieldName(input);
-    return /(^|\[)slug\]?$/.test(name) || Boolean(input.closest('.yform-name-slug'));
+    return /(^|\[)slug\]?$/.test(name) || Boolean(input.closest('.yform-name-slug')) || groupIdEndsWith(input, '-slug');
   }
 
   function slugify(value) {
@@ -41,7 +47,11 @@
       return '';
     }
 
+    // Umlaute wie rex_string::normalize() auf dem Server umschreiben (ä → ae …), damit Vorschau und Speichern übereinstimmen
     var normalized = String(value)
+      .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
+      .replace(/Ä/g, 'Ae').replace(/Ö/g, 'Oe').replace(/Ü/g, 'Ue')
+      .replace(/ß/g, 'ss')
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
@@ -94,15 +104,58 @@
   }
 
   function getSlugSource(pair) {
-    if (pair.titleInput && pair.titleInput.value.trim() !== '') {
-      return pair.titleInput.value;
-    }
-
+    // Navigationstitel hat Vorrang (kürzer, passt zur Navigation), sonst der Titel
     if (pair.navTitleInput && pair.navTitleInput.value.trim() !== '') {
       return pair.navTitleInput.value;
     }
 
+    if (pair.titleInput && pair.titleInput.value.trim() !== '') {
+      return pair.titleInput.value;
+    }
+
     return '';
+  }
+
+  /**
+   * Knopf „Aus Navigationstitel erzeugen“ am Slug-Feld. Bei bestehenden Beiträgen Hinweis,
+   * dass sich die Adresse ändert (Links aus dem Knowledgebase-Plugin passen sich an, externe nicht).
+   */
+  function addGeneratorButton(pair) {
+    var input = pair.slugInput;
+    if (input.dataset.kbSlugGeneratorBound === '1') {
+      return;
+    }
+    input.dataset.kbSlugGeneratorBound = '1';
+
+    var initialValue = input.value.trim();
+    var wrap = document.createElement('div');
+    wrap.className = 'kb-slug-generator';
+    wrap.style.marginTop = '6px';
+
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'btn btn-default btn-xs';
+    button.innerHTML = '<i class="rex-icon fa-magic" aria-hidden="true"></i> Aus Navigationstitel erzeugen';
+
+    var notice = document.createElement('div');
+    notice.className = 'help-block';
+    notice.style.display = 'none';
+    notice.textContent = 'Die Adresse des Beitrags ändert sich beim Speichern. Links aus dem Knowledgebase-Plugin passen sich an, Lesezeichen und Links von außen nicht.';
+
+    button.addEventListener('click', function () {
+      var generated = slugify(getSlugSource(pair));
+      if (generated === '') {
+        return;
+      }
+      input.value = generated;
+      input.dataset.kbSlugTouched = '1';
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      notice.style.display = initialValue !== '' && initialValue !== generated ? '' : 'none';
+    });
+
+    wrap.appendChild(button);
+    wrap.appendChild(notice);
+    input.insertAdjacentElement('afterend', wrap);
   }
 
   function updateSlug(pair) {
@@ -142,6 +195,7 @@
       }
 
       pair.slugInput.dataset.kbSlugAutofillBound = '1';
+      addGeneratorButton(pair);
       if (pair.slugInput.value.trim() !== '') {
         pair.slugInput.dataset.kbSlugTouched = '1';
       }
