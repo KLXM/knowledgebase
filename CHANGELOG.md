@@ -2,6 +2,13 @@
 
 ## [0.9.14] - 2026-11-08
 
+### Neu
+- **Glossar: Weitere Schreibweisen**: Neues Feld je Begriff (kommagetrennt oder eine pro Zeile), z. B. Mehrzahl oder gebeugte Formen. Alle Schreibweisen werden im Text wie der Begriff verlinkt und zeigen dieselbe Erklärung; auf der Glossarseite stehen sie klein unter dem Begriff („auch: …“). Bisher brauchte jede Form einen eigenen Eintrag.
+- **„Ins Glossar“ in der Builder-Ansicht**: Text in der Vorschau eines Beitrags markieren → Leiste „Ins Glossar“. Steht der Begriff schon im Glossar (als Begriff oder Schreibweise), kommt ein Hinweis mit Link zum Eintrag; sonst lässt er sich direkt anlegen oder einem vorhandenen Begriff als Schreibweise zuordnen. Braucht builder ≥ 1.4.0 (`BuilderSelectionActions`); ohne bleibt alles wie bisher. Schnittstelle `rex_api_knowledgebase_glossary` (Lesen: Recht „Beiträge“ oder „Glossar“, Schreiben: „Glossar“, mit CSRF-Schutz).
+
+### Geändert
+- TinyMCE-Plugin „Knowledgebase-Link“ lädt mit der Version der Knowledgebase als Cache-Buster, damit Browser nach Updates die neue Fassung holen.
+
 ### Behoben
 - **Zurück / Weiter führte ins Leere**: Die Links hingen die Adresse des Ziels an die aktuelle Adresse an (`/kb/personalmanagement///hage.de/kb/gesetzliche_grundlagen/`). Jetzt dieselbe Adressauflösung wie die Navigation (`KnowledgebaseUrl::getArticleUrl()`).
 
