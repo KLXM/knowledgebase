@@ -335,7 +335,7 @@ final class FrontendRenderer
             . $searchStateInputs
             . $tagStateInput
             . $tagsStateInput
-            . '<label class="kb-app__search-label uk-hidden" for="' . rex_escape($instanceId . '-search') . '">' . rex_escape(FrontendI18n::msg('knowledgebase_search_label', 'Suche')) . '</label>'
+            . '<label class="kb-app__search-label uk-hidden-visually" for="' . rex_escape($instanceId . '-search') . '">' . rex_escape(FrontendI18n::msg('knowledgebase_search_label', 'Suche')) . '</label>'
             . '<div class="kb-app__search-row">'
             . '<div class="kb-app__search-actions">'
             . '<button class="kb-app__search-toggle" type="button" data-kb-search-toggle data-kb-label-open="' . rex_escape($searchToggleOpenLabel) . '" data-kb-label-close="' . rex_escape($searchToggleCloseLabel) . '" aria-label="' . rex_escape($searchToggleOpenLabel) . '" title="' . rex_escape($searchToggleOpenLabel) . '" uk-tooltip="' . rex_escape($searchToggleOpenLabel) . '" aria-controls="' . rex_escape($instanceId . '-search-control') . '" aria-expanded="false" onclick="' . rex_escape(self::SEARCH_OPEN_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}"><span uk-icon="search"></span></button>'
@@ -366,7 +366,7 @@ final class FrontendRenderer
             . '<div id="' . rex_escape($offcanvasId) . '" class="kb-app__offcanvas-panel" uk-offcanvas="mode: push; flip: true; overlay: true">'
             . '<div class="uk-offcanvas-bar uk-offcanvas-bar-flip kb-app__offcanvas">'
             . '<button class="uk-offcanvas-close uk-offcanvas-close-default" type="button" uk-close aria-label="' . rex_escape($menuCloseLabel) . '" title="' . rex_escape($menuCloseLabel) . '" uk-tooltip="' . rex_escape($menuCloseLabel) . '"></button>'
-            . $nav
+            . self::uniqueIds($nav, '-offcanvas') // Navigation steht zweimal im DOM (Seitenleiste + mobil): eigene IDs
             . '</div>'
             . '</div>'
             . '<div class="kb-app__layout">'
@@ -491,6 +491,20 @@ final class FrontendRenderer
     /**
      * @param list<rex_yform_manager_dataset> $articles
      */
+    /**
+     * Hängt an alle id-Werte (und passende for-/aria-controls-Verweise) einer HTML-Kopie einen Zusatz an,
+     * damit dieselbe Navigation zweimal im DOM stehen kann, ohne doppelte IDs.
+     */
+    private static function uniqueIds(string $html, string $suffix): string
+    {
+        preg_match_all('~\sid="([^"]+)"~', $html, $m);
+        foreach (array_unique($m[1]) as $id) {
+            $html = (string) preg_replace('~(\s(?:id|for|aria-controls|aria-labelledby|aria-describedby)=")' . preg_quote($id, '~') . '"~', '$1' . $id . $suffix . '"', $html);
+        }
+
+        return $html;
+    }
+
     private static function renderNavigation(array $articles, ?\rex_data_knowledgebase_article $currentArticle, string $articleParam, string $glossaryParam, string $tocParam, string $tagParam, string $tagsParam, bool $glossaryEnabled, bool $glossaryActive, bool $tocActive, bool $tagFilterEnabled, bool $tagMultiEnabled, bool $tagModeActive, array $availableTags, string $selectedTag, array $selectedTags, bool $chapterFilterEnabled): string
     {
         $currentId = $currentArticle instanceof \rex_data_knowledgebase_article ? $currentArticle->getId() : 0;
@@ -576,10 +590,11 @@ final class FrontendRenderer
                 }
 
                 $items .= '<li class="kb-app__nav-chapter-item" data-kb-nav-chapter>';
-                $items .= '<a class="kb-app__nav-link kb-app__nav-link--chapter kb-app__nav-link--tag-option' . ($isChecked ? ' is-current' : '') . '" data-kb-nav-chapter-link href="' . rex_escape(self::buildUrl($tagParams)) . '">';
+                $items .= '<a class="kb-app__nav-link kb-app__nav-link--chapter kb-app__nav-link--tag-option' . ($isChecked ? ' is-current' : '') . '" data-kb-nav-chapter-link href="' . rex_escape(self::buildUrl($tagParams)) . '"' . ($isChecked ? ' aria-current="true"' : '') . '>';
                 $items .= self::renderTagDot($tagColor);
                 if ($tagMultiEnabled) {
-                    $items .= '<span class="kb-app__tag-check"><input type="checkbox" tabindex="-1"' . ($isChecked ? ' checked' : '') . '></span>';
+                    // nur Anzeige: ein Formularfeld in einem Link ist für Screenreader verwirrend und hätte kein Label
+                    $items .= '<span class="kb-app__tag-check" aria-hidden="true"><span class="kb-app__tag-box' . ($isChecked ? ' is-checked' : '') . '"></span></span>';
                 }
                 $items .= '<span>' . rex_escape($tagLabel);
                 if ($tagCount > 0) {

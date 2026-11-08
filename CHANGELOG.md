@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.20] - 2026-11-08
+
+### Behoben (Barrierefreiheit)
+- **Doppelte IDs:** Die Navigation steht zweimal im DOM (Seitenleiste und mobile Navigation). Die mobile Kopie bekommt jetzt eigene IDs (`-offcanvas`), `for`/`aria-controls` werden mit angepasst. Vorher zeigte das Label des Kapitelfilters in der mobilen Navigation auf das falsche Feld.
+- **Label der Suche:** `uk-hidden-visually` statt `uk-hidden`. Das Label bleibt unsichtbar, wird aber zuverlässig vorgelesen; `display: none` werten nicht alle Browser als Beschriftung.
+- **Tag-Auswahl:** Die Kästchen in der Tag-Navigation waren echte, nicht bedienbare Checkboxen ohne Label innerhalb von Links (Sa11y: „Eingabe ohne Label“). Jetzt ist es ein dekoratives Kästchen (`aria-hidden`), und der ausgewählte Tag-Link trägt `aria-current="true"`. Aussehen und Bedienung bleiben gleich.
+- **Kontrast:** Der Platzhaltertext der Suchfelder ist jetzt `#6b7280` (vorher `#9aa3ad`, 2,6:1), ebenso das Lupen-Symbol im Suchfeld (vorher `#8b97a5`, unter 3:1).
+
 ## [0.9.19] - 2026-11-08
 
 ### Neu
