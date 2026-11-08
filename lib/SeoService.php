@@ -20,11 +20,7 @@ final class SeoService
     {
         $text = self::plain((string) $article->getValue('intro'));
         if ('' === $text) {
-            $text = self::plain((string) $article->getValue('search_text'));
-            $title = self::plain((string) $article->getValue('title'));
-            if ('' !== $title && str_starts_with($text, $title)) {
-                $text = ltrim(mb_substr($text, mb_strlen($title)), " \t\n\r-–:");
-            }
+            $text = self::firstParagraph((string) $article->getValue('content'));
         }
 
         return self::shorten($text);
@@ -61,6 +57,46 @@ final class SeoService
         $tags['twitter:description'] = '<meta name="twitter:description" content="' . $content . '" />';
 
         return $tags;
+    }
+
+    /** Erster Absatz (<p>) aus dem Builder-Inhalt mit genug Text. */
+    private static function firstParagraph(string $json): string
+    {
+        $data = json_decode($json, true);
+        if (!is_array($data)) {
+            return '';
+        }
+        $found = '';
+        $walk = static function (mixed $node) use (&$walk, &$found): void {
+            if ('' !== $found) {
+                return;
+            }
+            if (is_string($node)) {
+                if (str_contains($node, '<p') && preg_match_all('#<p[^>]*>(.*?)</p>#is', $node, $m)) {
+                    foreach ($m[1] as $paragraph) {
+                        $text = self::plain($paragraph);
+                        if (mb_strlen($text) >= 60) {
+                            $found = $text;
+
+                            return;
+                        }
+                    }
+                }
+
+                return;
+            }
+            if (is_array($node)) {
+                if (array_key_exists('online', $node) && !$node['online']) {
+                    return;
+                }
+                foreach ($node as $child) {
+                    $walk($child);
+                }
+            }
+        };
+        $walk($data);
+
+        return $found;
     }
 
     private static function plain(string $html): string

@@ -4,7 +4,7 @@
 
 ### Neu
 - **Zurück / Weiter am Ende eines Beitrags**: Links zum vorherigen und nächsten Beitrag in der Reihenfolge der Navigation (Eltern vor Kindern). Texte unter „Frontend-Texte“ änderbar (`knowledgebase_pager_*`).
-- **Meta-Beschreibung der Beitragsseiten**: Das URL-Profil lieferte als Beschreibung nur den Titel. Jetzt die Kurzbeschreibung, sonst der Anfang des Beitragstexts (max. 160 Zeichen) – auch für Open Graph und Twitter (`SeoService`, EP `URL_SEO_TAGS`).
+- **Meta-Beschreibung der Beitragsseiten**: Das URL-Profil lieferte als Beschreibung nur den Titel. Jetzt die Kurzbeschreibung, sonst der erste Absatz des Inhalts mit mind. 60 Zeichen (max. 160 Zeichen, Offline-Elemente übersprungen) – auch für Open Graph und Twitter (`SeoService`, EP `URL_SEO_TAGS`).
 
 ### Geändert
 - **Barrierefreiheit**: Akzentfarbe als Schriftfarbe dunkler (`--kb-accent-text`, mind. 4.5:1) – Glossar-Abzeichen, „Ähnliche Artikel“, Treffer- und Kapitelnummern. Links im Fließtext sind unterstrichen, nicht nur farbig.
