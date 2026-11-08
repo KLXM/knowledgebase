@@ -1293,14 +1293,63 @@
 }
 
 .kb-app__recommendation-section {
-    display: grid;
-    gap: 0.7rem;
+    display: block;
+}
+
+.kb-app__recommendation-section[hidden] {
+    display: none;
+}
+
+/* „Ähnliche Artikel“ als zugeklappter Bereich am Ende */
+.kb-app__recommendation-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.kb-app__recommendation-summary::-webkit-details-marker {
+    display: none;
+}
+
+.kb-app__recommendation-summary::before {
+    content: '';
+    flex: none;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-right: 2px solid var(--kb-accent-text);
+    border-bottom: 2px solid var(--kb-accent-text);
+    transform: rotate(-45deg);
+    transition: transform 0.15s ease;
+}
+
+.kb-app__recommendation-section[open] > .kb-app__recommendation-summary::before {
+    transform: rotate(45deg);
+}
+
+.kb-app__recommendation-summary:focus-visible {
+    outline: 2px solid var(--kb-accent-text);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+.kb-app__recommendation-section[open] > .kb-app__compact-list {
+    margin-top: 0.7rem;
 }
 
 .kb-app__recommendation-title {
+    display: inline;
     margin: 0;
     color: var(--kb-accent-text);
-    font-size: clamp(1.05rem, 1.8vw, 1.25rem);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.kb-app__recommendation-count {
+    color: var(--kb-muted);
+    font-weight: 400;
 }
 
 .kb-app__compact-list {
