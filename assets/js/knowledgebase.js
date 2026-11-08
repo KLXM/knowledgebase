@@ -742,11 +742,17 @@ function initArticleRecommendations(app) {
                 }
             });
 
+            // Was schon unter „Zurück / Weiter“ steht, nicht noch einmal als ähnlichen Artikel zeigen
+            var pagerMap = {};
+            Array.prototype.forEach.call(app.querySelectorAll('.kb-app__pager [data-kb-slug]'), function (link) {
+                pagerMap[link.getAttribute('data-kb-slug')] = true;
+            });
+
             var relatedCandidates = articleIndex
                 .map(function (entry) {
                     return entry && typeof entry.slug === 'string' ? bySlug[entry.slug] : null;
                 })
-                .filter(function (entry) { return !!entry && entry.slug !== currentSlug && !readMap[entry.slug]; })
+                .filter(function (entry) { return !!entry && entry.slug !== currentSlug && !readMap[entry.slug] && !pagerMap[entry.slug]; })
                 .map(function (entry) {
                     var score = 0;
                     if (currentTags.length > 0 && entry.tags.length > 0) {

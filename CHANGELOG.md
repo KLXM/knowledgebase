@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.14] - 2026-11-08
+
+### Behoben
+- **Zurück / Weiter führte ins Leere**: Die Links hingen die Adresse des Ziels an die aktuelle Adresse an (`/kb/personalmanagement///hage.de/kb/gesetzliche_grundlagen/`). Jetzt dieselbe Adressauflösung wie die Navigation (`KnowledgebaseUrl::getArticleUrl()`).
+
+### Geändert
+- **Zurück / Weiter zurückhaltender**: schmale Textzeile mit Pfeil statt zwei Kästen, damit es sich von „Ähnliche Artikel“ absetzt.
+- **Keine Dopplung**: „Ähnliche Artikel“ zeigt keine Beiträge, die schon unter „Zurück / Weiter“ stehen.
+
 ## [0.9.13] - 2026-11-08
 
 ### Neu
