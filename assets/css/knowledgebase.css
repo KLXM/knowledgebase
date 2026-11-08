@@ -1482,7 +1482,7 @@
 
 .kb-app__offcanvas .kb-app__nav-badge {
     background: color-mix(in srgb, var(--kb-accent) 16%, #fff);
-    color: var(--kb-accent-2);
+    color: var(--kb-accent-text);
 }
 
 .kb-app__offcanvas .uk-offcanvas-close {

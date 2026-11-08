@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.9.18] - 2026-11-08
+
+### Behoben
+- Kapitelnummern in der mobilen Navigation (Offcanvas): Schrift in `--kb-accent-text` statt `--kb-accent-2`. Vorher 4,22:1 auf dem getönten Hintergrund, jetzt über 4,5:1 (Sa11y-Fehler „Kontrast“).
+
 ## [0.9.17] - 2026-11-08
 
 ### Geändert
