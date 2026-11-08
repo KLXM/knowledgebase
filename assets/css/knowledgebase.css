@@ -4,8 +4,8 @@
     --kb-text: #1f2937;
     --kb-accent: #1e87f0;
     --kb-accent-2: #0f6ecd;
-    /* Schrift der Überschriften – im Projekt z. B. mit inherit auf die Website-Schrift setzen */
-    --kb-heading-font: Georgia, 'Times New Roman', serif;
+    /* Schrift der Überschriften: Standard ist die Schrift der Website (inherit), eigene Schrift z. B. Georgia, serif */
+    --kb-heading-font: inherit;
     --kb-heading-color: #1c3e4c;
     /* Abgeleitete Töne – folgen --kb-accent / --kb-highlight, einzeln überschreibbar */
     --kb-ink: #24374f;
@@ -145,6 +145,7 @@
 
 .kb-app__search-control {
     display: flex;
+    box-sizing: border-box;
     flex: 1 1 auto;
     min-width: 0;
     gap: 0.75rem;
@@ -314,7 +315,7 @@
 
 .kb-app__history-link:hover,
 .kb-app__history-link:focus {
-    background: color-mix(in srgb, var(--kb-accent) 8%, transparent);
+    background: color-mix(in srgb, var(--kb-accent) 8%, #fff);
 }
 
 .kb-app__history-empty {
@@ -767,13 +768,13 @@
 
 .kb-app__nav-link:hover,
 .kb-app__nav-link:focus {
-    background: color-mix(in srgb, var(--kb-accent) 8%, transparent);
+    background: color-mix(in srgb, var(--kb-accent) 8%, #fff);
     transform: translateX(2px);
 }
 
 .kb-app__nav-link.is-current {
     /* ohne Fettschrift: die Breite bleibt gleich, der Eintrag bricht nicht anders um */
-    background: color-mix(in srgb, var(--kb-accent) 14%, transparent);
+    background: color-mix(in srgb, var(--kb-accent) 14%, #fff);
     box-shadow: inset 3px 0 0 var(--kb-accent);
     color: var(--kb-ink);
 }
@@ -1057,7 +1058,7 @@
     align-items: center;
     justify-content: center;
     font-size: 0.76rem;
-    background: color-mix(in srgb, var(--kb-accent) 12%, transparent);
+    background: color-mix(in srgb, var(--kb-accent) 12%, #fff);
     color: var(--kb-accent-text);
 }
 
@@ -1108,7 +1109,7 @@
     text-decoration: underline;
     text-decoration-style: dotted;
     text-underline-offset: 0.16em;
-    font-weight: 600;
+    font-weight: inherit;
 }
 
 .kb-app__glossary-link::after {
@@ -1467,11 +1468,11 @@
 
 .kb-app__offcanvas .kb-app__nav-link:hover,
 .kb-app__offcanvas .kb-app__nav-link:focus {
-    background: color-mix(in srgb, var(--kb-accent) 10%, transparent);
+    background: color-mix(in srgb, var(--kb-accent) 10%, #fff);
 }
 
 .kb-app__offcanvas .kb-app__nav-link.is-current {
-    background: color-mix(in srgb, var(--kb-accent) 16%, transparent);
+    background: color-mix(in srgb, var(--kb-accent) 16%, #fff);
     color: var(--kb-ink) !important;
 }
 
@@ -1480,7 +1481,7 @@
 }
 
 .kb-app__offcanvas .kb-app__nav-badge {
-    background: color-mix(in srgb, var(--kb-accent) 16%, transparent);
+    background: color-mix(in srgb, var(--kb-accent) 16%, #fff);
     color: var(--kb-accent-2);
 }
 
@@ -1986,7 +1987,7 @@
 }
 
 .kb-app__toc .kb-app__nav-link.is-active-anchor {
-    background: color-mix(in srgb, var(--kb-accent) 12%, transparent);
+    background: color-mix(in srgb, var(--kb-accent) 12%, #fff);
     box-shadow: inset 3px 0 0 var(--kb-accent);
     border-radius: 0 6px 6px 0;
     color: var(--kb-ink);
@@ -2162,4 +2163,11 @@
 .kb-app__glossary-item-synonyms {
     color: var(--kb-muted);
     font-size: 0.85rem;
+}
+
+/* Telefon: Suchfeld mit mind. 16px, sonst zoomt iOS beim Antippen hinein und die Seite wird breiter als der Bildschirm */
+@media (max-width: 959px) {
+    .kb-app .kb-app__search-input {
+        font-size: 16px;
+    }
 }
