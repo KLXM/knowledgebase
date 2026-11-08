@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.9.16] - 2026-11-08
+
+### Behoben
+- **„Ins Glossar“ → „Eintrag bearbeiten“**: Der Link öffnete den Eintrag mit „CSRF-Token ungültig“. Jetzt mit dem Token der Glossar-Tabelle (wie `rex_yform_manager::url()`), weiter auf der Glossar-Seite der Knowledgebase.
+
 ## [0.9.15] - 2026-11-08
 
 ### Neu
