@@ -340,7 +340,7 @@ final class FrontendRenderer
             . '<div class="kb-app__search-actions">'
             . '<button class="kb-app__search-toggle" type="button" data-kb-search-toggle data-kb-label-open="' . rex_escape($searchToggleOpenLabel) . '" data-kb-label-close="' . rex_escape($searchToggleCloseLabel) . '" aria-label="' . rex_escape($searchToggleOpenLabel) . '" title="' . rex_escape($searchToggleOpenLabel) . '" uk-tooltip="' . rex_escape($searchToggleOpenLabel) . '" aria-controls="' . rex_escape($instanceId . '-search-control') . '" aria-expanded="false" onclick="' . rex_escape(self::SEARCH_OPEN_INLINE_HANDLER) . '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}"><span uk-icon="search"></span></button>'
             . '<div class="kb-app__history-wrap uk-inline">'
-            . '<button class="kb-app__history-toggle uk-button uk-button-default uk-button-small" type="button" data-kb-history-toggle aria-label="' . rex_escape($historyLabel) . '" title="' . rex_escape($historyLabel) . '" uk-tooltip="' . rex_escape($historyLabel) . '"><span class="kb-app__history-toggle-icon" aria-hidden="true">↺</span></button>'
+            . '<button class="kb-app__history-toggle uk-button uk-button-default uk-button-small" type="button" data-kb-history-toggle aria-label="' . rex_escape($historyLabel) . '" title="' . rex_escape($historyLabel) . '" uk-tooltip="' . rex_escape($historyLabel) . '"><span class="kb-app__history-toggle-icon" uk-icon="icon: history" aria-hidden="true"></span></button>'
             . '<div class="kb-app__history-dropdown" data-kb-history-dropdown uk-dropdown="mode: click; pos: bottom-right; offset: 8">'
             . '<div class="kb-app__history-title">' . rex_escape($historyHeading) . '</div>'
             . '<ul class="kb-app__history-list uk-nav uk-nav-default" data-kb-history-list></ul>'
@@ -845,6 +845,7 @@ final class FrontendRenderer
             . $chapterMenu
             . $introHtml
             . '<div class="kb-app__article-body">' . $articleBody . '</div>'
+            . self::renderPager($articles, $article)
             . $recommendations
             . '</article>';
 
@@ -855,6 +856,58 @@ final class FrontendRenderer
         $asideToc = self::$renderLayoutMode === 'handbook' ? self::renderArticleToc($knowledgebase, $article, $chapters, 'aside') : '';
 
         return '<div class="kb-app__article-layout' . ($asideToc !== '' ? ' has-toc' : '') . '">' . $articleHtml . $asideToc . '</div>';
+    }
+
+    /**
+     * „Zurück / Weiter“ am Ende eines Beitrags – Reihenfolge wie in der Navigation (Eltern vor Kindern).
+     *
+     * @param list<rex_yform_manager_dataset> $articles
+     */
+    private static function renderPager(array $articles, \rex_data_knowledgebase_article $article): string
+    {
+        $order = [];
+        $walk = static function (array $nodes) use (&$walk, &$order): void {
+            foreach ($nodes as $node) {
+                $order[] = $node['article'];
+                $walk($node['children']);
+            }
+        };
+        $walk(self::buildArticleTree($articles));
+
+        $index = null;
+        foreach ($order as $i => $candidate) {
+            if ($candidate->getId() === $article->getId()) {
+                $index = $i;
+                break;
+            }
+        }
+        if (null === $index) {
+            return '';
+        }
+        $prev = $order[$index - 1] ?? null;
+        $next = $order[$index + 1] ?? null;
+        if (null === $prev && null === $next) {
+            return '';
+        }
+
+        $link = static function (\rex_data_knowledgebase_article $target, string $direction): string {
+            $label = 'prev' === $direction
+                ? FrontendI18n::msg('knowledgebase_pager_prev', 'Zurück')
+                : FrontendI18n::msg('knowledgebase_pager_next', 'Weiter');
+            $icon = '<span class="kb-app__pager-icon" uk-icon="icon: chevron-' . ('prev' === $direction ? 'left' : 'right') . '" aria-hidden="true"></span>';
+
+            return '<a class="kb-app__pager-link kb-app__pager-link--' . $direction . '" rel="' . $direction . '" href="' . rex_escape(FrontendContext::articleUrlForId($target->getId())) . '">'
+                . ('prev' === $direction ? $icon : '')
+                . '<span class="kb-app__pager-text"><span class="kb-app__pager-dir">' . rex_escape($label) . '</span>'
+                . '<span class="kb-app__pager-title">' . rex_escape($target->getNavLabel()) . '</span></span>'
+                . ('next' === $direction ? $icon : '')
+                . '</a>';
+        };
+
+        return '<nav class="kb-app__pager" aria-label="' . rex_escape(FrontendI18n::msg('knowledgebase_pager_label', 'Kapitel blättern')) . '">'
+            . ($prev ? $link($prev, 'prev') : '<span></span>')
+            . ($next ? $link($next, 'next') : '<span></span>')
+            . '</nav>';
     }
 
     /**

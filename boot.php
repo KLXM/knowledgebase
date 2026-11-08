@@ -232,6 +232,11 @@ if (rex_addon::get('url')->isAvailable() && class_exists(\Url\Profile::class)) {
         }
     });
 
+    // Meta-Beschreibung der Beitragsseiten: Kurzbeschreibung bzw. Textanfang statt nur Titel
+    if (rex::isFrontend()) {
+        rex_extension::register('URL_SEO_TAGS', ['FriendsOfREDAXO\\Knowledgebase\\SeoService', 'handleUrlSeoTags']);
+    }
+
     // OUTPUT_FILTER: Interne Fallback-URLs (?kb_X_article=slug) durch saubere URLs ersetzen
     if (rex::isFrontend()) {
         rex_extension::register('OUTPUT_FILTER', static function (rex_extension_point $ep): void {

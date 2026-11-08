@@ -46,6 +46,9 @@ final class FrontendI18n
         'knowledgebase_recent_heading',
         'knowledgebase_recent_empty',
         'knowledgebase_related_heading',
+        'knowledgebase_pager_label',
+        'knowledgebase_pager_prev',
+        'knowledgebase_pager_next',
         'knowledgebase_related_empty',
     ];
 
@@ -87,6 +90,9 @@ final class FrontendI18n
             'knowledgebase_recent_heading' => 'Zuletzt angesehen',
             'knowledgebase_recent_empty' => 'Noch keine zuletzt angesehenen Beiträge vorhanden.',
             'knowledgebase_related_heading' => 'Ähnliche Artikel',
+            'knowledgebase_pager_label' => 'Kapitel blättern',
+            'knowledgebase_pager_prev' => 'Zurück',
+            'knowledgebase_pager_next' => 'Weiter',
             'knowledgebase_related_empty' => 'Keine passenden Beiträge gefunden.',
         ],
         'en' => [
@@ -123,6 +129,9 @@ final class FrontendI18n
             'knowledgebase_recent_heading' => 'Recently viewed',
             'knowledgebase_recent_empty' => 'No recently viewed articles yet.',
             'knowledgebase_related_heading' => 'Similar articles',
+            'knowledgebase_pager_label' => 'Browse chapters',
+            'knowledgebase_pager_prev' => 'Previous',
+            'knowledgebase_pager_next' => 'Next',
             'knowledgebase_related_empty' => 'No related articles found.',
         ],
     ];
