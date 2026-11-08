@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.18] - 2026-11-08
+
+### Behoben
+- Tastatur und Screenreader in der Seitennavigation: Die Zeile „Tags“ ist kein zweiter Tab-Stopp mehr (bisher `div` mit `role="button"` neben dem eigentlichen Knopf, vorgelesen als „Untermenü umschalten“). Die Umschalt-Knöpfe nennen jetzt den Eintrag, z. B. „Untermenü umschalten: Organisationsentwicklung in Kitas“.
+- Kapitelnummern in der mobilen Navigation (Offcanvas): Schrift in `--kb-accent-text` statt `--kb-accent-2`. Vorher 4,22:1 auf dem getönten Hintergrund, jetzt über 4,5:1 (Sa11y-Fehler „Kontrast“).
+
 ## [0.9.17] - 2026-11-08
 
 ### Geändert
