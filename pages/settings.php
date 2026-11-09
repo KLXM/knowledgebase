@@ -17,6 +17,7 @@ if ('save' === rex_request('func', 'string') && $csrfToken->isValid()) {
     $allowChildPages = rex_request('allow_child_pages', 'int', 0) === 1;
     $linkPdfInfo = rex_request('link_pdf_info', 'int', 0) === 1;
     $linkExternalMarker = rex_request('link_external_marker', 'int', 0) === 1;
+    $chapterHeadingStyle = rex_request('chapter_heading_style', 'string', 'bullet');
 
     AddonSettings::setMenuTitle($menuTitle);
     AddonSettings::setElementMode($elementMode);
@@ -25,6 +26,7 @@ if ('save' === rex_request('func', 'string') && $csrfToken->isValid()) {
     AddonSettings::setChildPagesEnabled($allowChildPages);
     AddonSettings::setLinkPdfInfo($linkPdfInfo);
     AddonSettings::setLinkExternalMarker($linkExternalMarker);
+    AddonSettings::setChapterHeadingStyle($chapterHeadingStyle);
 
     echo rex_view::success('Einstellungen wurden gespeichert.');
 } elseif ('save' === rex_request('func', 'string')) {
@@ -38,6 +40,7 @@ $currentSearchMultiContextExcerpts = AddonSettings::isSearchMultiContextExcerpts
 $currentAllowChildPages = AddonSettings::isChildPagesEnabled();
 $currentLinkPdfInfo = AddonSettings::isLinkPdfInfoEnabled();
 $currentLinkExternalMarker = AddonSettings::isLinkExternalMarkerEnabled();
+$currentChapterHeadingStyle = AddonSettings::getChapterHeadingStyle();
 
 $content = '';
 $content .= '<form action="' . rex_url::currentBackendPage() . '" method="post">';
@@ -100,6 +103,19 @@ $content .= '<label><input type="checkbox" name="link_external_marker" value="1"
 $content .= '<p class="help-block">Symbol hinter dem Link, für Screenreader „(externer Link)“, bei neuem Fenster zusätzlich „öffnet in neuem Fenster“. Externe PDF-Links bekommen „(PDF)“.</p>';
 $content .= '</div>';
 $content .= '<p class="help-block">Gilt für Anreißer und Beitragsinhalt. Nicht gekennzeichnet werden verlinkte Bilder und Grafiken, Links ohne Text, Sprungmarken, E-Mail- und Telefon-Links, Glossar-Links und Links, deren Text „PDF“ schon nennt. Links auf andere Domains dieser Installation gelten als intern.<br><strong>Wenn aktiv:</strong> Die Redaktion sollte „(PDF)“, Dateigrößen oder „externer Link“ nicht mehr selbst in den Linktext schreiben, sonst steht es doppelt da.</p>';
+$content .= '</fieldset>';
+
+$content .= '<fieldset>';
+$content .= '<legend>Kapitelüberschriften</legend>';
+$content .= '<div class="form-group">';
+$content .= '<label for="kb-chapter-heading-style">Darstellung</label>';
+$content .= '<select class="form-control" id="kb-chapter-heading-style" name="chapter_heading_style">';
+foreach (['bullet' => 'Balken links (Standard)', 'line' => 'Feine Linie darunter, Nummer hinterlegt'] as $styleValue => $styleLabel) {
+    $content .= '<option value="' . $styleValue . '"' . ($styleValue === $currentChapterHeadingStyle ? ' selected' : '') . '>' . rex_escape($styleLabel) . '</option>';
+}
+$content .= '</select>';
+$content .= '<p class="help-block">Gilt für das Element „Kapitel“. Bei „Feine Linie“ trennt eine durchgezogene Linie unter der Überschrift die Abschnitte; eine Kapitelnummer („Nummer auch in der Überschrift zeigen“) steht hinterlegt vor dem Titel, mehrzeilige Titel laufen bündig zum Titel.</p>';
+$content .= '</div>';
 $content .= '</fieldset>';
 
 $content .= '<p><button class="btn btn-save" type="submit">Speichern</button></p>';

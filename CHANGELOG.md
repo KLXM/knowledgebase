@@ -13,6 +13,12 @@
   - Wirkt auf „Meine Wissensbasen“ und auf die Auswahl unter „Beiträge“.
   - Standard: Admins und alle mit `knowledgebase[articles]` dürfen jede Wissensbasis bearbeiten.
 
+- **Einstellung „Kapitelüberschriften“** (Einstellungen → Kapitelüberschriften):
+  - „Balken links“ ist der Standard und entspricht der bisherigen Darstellung.
+  - „Feine Linie darunter, Nummer hinterlegt“: Eine durchgezogene feine Linie unter der Überschrift trennt die Abschnitte, mit und ohne Nummer gleich.
+  - Eine Kapitelnummer steht dabei als hinterlegte Plakette vor dem Titel, wie in der Seitennavigation.
+  - Die Wissensbasis bekommt dafür die Klasse `kb-app--heading-line`.
+
 ### Verbessert
 - **Kapitelüberschriften mit Nummer:** Mehrzeilige Titel laufen jetzt bündig zum Titel und nicht mehr unter die Kapitelnummer (hängender Einzug). Betrifft das Element „Kapitel“ mit der Option „Nummer auch in der Überschrift zeigen“, in allen drei Vorlagen (UIkit, Bootstrap, schlicht).
 

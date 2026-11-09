@@ -1943,6 +1943,35 @@
     flex: none;
 }
 
+/* Darstellung „Feine Linie darunter, Nummer hinterlegt“ (Einstellungen → Kapitelüberschriften) */
+.kb-app--heading-line .kb-chapter-nav__heading {
+    padding-bottom: 0.45rem;
+    border-bottom: 1px solid var(--kb-accent-line);
+}
+
+.kb-app--heading-line .kb-chapter-nav__heading.uk-heading-bullet::before {
+    display: none;
+}
+
+.kb-app--heading-line .kb-chapter-nav__heading--numbered {
+    align-items: flex-start;
+}
+
+.kb-app--heading-line .kb-chapter-nav__heading--numbered > .kb-chapter-nav__number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.2em;
+    height: 2.2em;
+    margin: 0.2em 0.7em 0 0;
+    padding: 0 0.45em;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--kb-accent) 12%, #fff);
+    font-size: 0.6em;
+    font-weight: 700;
+    line-height: 1;
+}
+
 /* =====================================================================
    Übersicht „In diesem Kapitel“ (Layout „Handbuch“)
    ===================================================================== */
