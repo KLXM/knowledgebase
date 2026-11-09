@@ -6,7 +6,8 @@
     --kb-accent-2: #0f6ecd;
     /* Schrift der Überschriften: Standard ist die Schrift der Website (inherit), eigene Schrift z. B. Georgia, serif */
     --kb-heading-font: inherit;
-    --kb-heading-color: #1c3e4c;
+    /* Farbe der Überschriften im Beitrag: kommt von der Website. Eigene Farbe z. B.
+       .kb-app__article-body :is(h1, h2, h3, h4) { color: #1c3e4c; } */
     /* Abgeleitete Töne – folgen --kb-accent / --kb-highlight, einzeln überschreibbar */
     --kb-ink: #24374f;
     /* Akzent als Schriftfarbe – dunkler, damit Text auf Weiß/hellem Grund mind. 4.5:1 erreicht */
@@ -1248,7 +1249,6 @@
 .kb-app__article-body h3,
 .kb-app__article-body h4 {
     font-family: var(--kb-heading-font);
-    color: var(--kb-heading-color);
 }
 
 .kb-app__article-body h1 {

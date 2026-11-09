@@ -20,6 +20,10 @@
   - Die Wissensbasis bekommt dafür die Klasse `kb-app--heading-line`.
 
 ### Verbessert
+- **Farbe der Überschriften im Beitrag kommt von der Website:**
+  - Bisher war sie fest auf `#1c3e4c` gesetzt, wie zuvor schon die Schrift.
+  - Die Variable `--kb-heading-color` entfällt.
+  - Eine eigene Farbe lässt sich per CSS setzen: `.kb-app__article-body :is(h1, h2, h3, h4) { color: … }`.
 - **Kapitelüberschriften mit Nummer:** Mehrzeilige Titel laufen jetzt bündig zum Titel und nicht mehr unter die Kapitelnummer (hängender Einzug). Betrifft das Element „Kapitel“ mit der Option „Nummer auch in der Überschrift zeigen“, in allen drei Vorlagen (UIkit, Bootstrap, schlicht).
 
 ## [0.9.20] - 2026-11-08
