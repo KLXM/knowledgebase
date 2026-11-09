@@ -1923,6 +1923,26 @@
     margin-right: 0.15em;
 }
 
+/* Hängender Einzug: mehrzeilige Titel laufen bündig zum Titel, nicht unter die Nummer */
+.kb-chapter-nav__heading--numbered {
+    display: flex;
+    align-items: baseline;
+}
+
+.kb-chapter-nav__heading--numbered > .kb-chapter-nav__number {
+    flex: none;
+    margin-right: 0.4em;
+}
+
+.kb-chapter-nav__heading--numbered > .kb-chapter-nav__title {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.kb-chapter-nav__heading--numbered.uk-heading-bullet::before {
+    flex: none;
+}
+
 /* =====================================================================
    Übersicht „In diesem Kapitel“ (Layout „Handbuch“)
    ===================================================================== */

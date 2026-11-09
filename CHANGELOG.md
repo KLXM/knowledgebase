@@ -13,6 +13,9 @@
   - Wirkt auf „Meine Wissensbasen“ und auf die Auswahl unter „Beiträge“.
   - Standard: Admins und alle mit `knowledgebase[articles]` dürfen jede Wissensbasis bearbeiten.
 
+### Verbessert
+- **Kapitelüberschriften mit Nummer:** Mehrzeilige Titel laufen jetzt bündig zum Titel und nicht mehr unter die Kapitelnummer (hängender Einzug). Betrifft das Element „Kapitel“ mit der Option „Nummer auch in der Überschrift zeigen“, in allen drei Vorlagen (UIkit, Bootstrap, schlicht).
+
 ## [0.9.20] - 2026-11-08
 
 ### Behoben (Barrierefreiheit)
