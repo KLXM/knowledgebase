@@ -19,7 +19,7 @@ if ('' === $anchor) {
     return;
 }
 ?>
-<section id="<?= rex_escape($anchor) ?>" class="panel panel-default kb-chapter-nav kb-chapter-nav--bootstrap<?= '' !== $spacingTop ? ' kb-chapter-nav--space-' . $spacingTop : '' ?>">
+<section id="<?= rex_escape($anchor) ?>" class="panel panel-default kb-chapter-nav kb-chapter-nav--bootstrap<?= '' !== $spacingTop ? ' kb-chapter-nav--space-' . $spacingTop : '' ?> kb-chapter-nav--heading-<?= \FriendsOfREDAXO\Knowledgebase\AddonSettings::getChapterHeadingStyle() ?>">
     <div class="panel-body">
         <h4 class="kb-chapter-nav__heading<?= '' !== $headingNumber ? ' kb-chapter-nav__heading--numbered' : '' ?>" style="margin-top:0;"><?php if ('' !== $headingNumber): ?><span class="kb-chapter-nav__number"><?= rex_escape($headingNumber) ?></span> <span class="kb-chapter-nav__title"><?= rex_escape($title) ?></span><?php else: ?><?= rex_escape($title) ?><?php endif ?></h4>
 

@@ -17,7 +17,8 @@
   - „Balken links“ ist der Standard und entspricht der bisherigen Darstellung.
   - „Feine Linie darunter, Nummer hinterlegt“: Eine durchgezogene feine Linie unter der Überschrift trennt die Abschnitte, mit und ohne Nummer gleich.
   - Eine Kapitelnummer steht dabei als hinterlegte Plakette vor dem Titel, wie in der Seitennavigation.
-  - Die Wissensbasis bekommt dafür die Klasse `kb-app--heading-line`.
+  - Das Element „Kapitel“ bekommt dafür die Klasse `kb-chapter-nav--heading-line`.
+  - Die Backend-Vorschau im Builder zeigt die gewählte Darstellung ebenfalls, im hellen und im dunklen Thema.
 
 ### Verbessert
 - **Farbe der Überschriften im Beitrag kommt von der Website:**

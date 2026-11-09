@@ -1943,21 +1943,21 @@
     flex: none;
 }
 
-/* Darstellung „Feine Linie darunter, Nummer hinterlegt“ (Einstellungen → Kapitelüberschriften) */
-.kb-app--heading-line .kb-chapter-nav__heading {
+/* Darstellung „Feine Linie darunter, Nummer hinterlegt“ (Einstellungen → Kapitelüberschriften); Klasse am Element, damit es auch die Backend-Vorschau zeigt */
+.kb-chapter-nav--heading-line .kb-chapter-nav__heading {
     padding-bottom: 0.45rem;
     border-bottom: 1px solid var(--kb-accent-line);
 }
 
-.kb-app--heading-line .kb-chapter-nav__heading.uk-heading-bullet::before {
+.kb-chapter-nav--heading-line .kb-chapter-nav__heading.uk-heading-bullet::before {
     display: none;
 }
 
-.kb-app--heading-line .kb-chapter-nav__heading--numbered {
+.kb-chapter-nav--heading-line .kb-chapter-nav__heading--numbered {
     align-items: flex-start;
 }
 
-.kb-app--heading-line .kb-chapter-nav__heading--numbered > .kb-chapter-nav__number {
+.kb-chapter-nav--heading-line .kb-chapter-nav__heading--numbered > .kb-chapter-nav__number {
     display: inline-flex;
     align-items: center;
     justify-content: center;

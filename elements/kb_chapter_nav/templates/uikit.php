@@ -24,7 +24,7 @@ if ('' === $anchor) {
     return;
 }
 ?>
-<section id="<?= rex_escape($anchor) ?>" class="kb-chapter-nav uk-section uk-section-xsmall uk-padding-remove-top uk-padding-remove-horizontal<?= '' !== $spacingTop ? ' kb-chapter-nav--space-' . $spacingTop : '' ?>">
+<section id="<?= rex_escape($anchor) ?>" class="kb-chapter-nav uk-section uk-section-xsmall uk-padding-remove-top uk-padding-remove-horizontal<?= '' !== $spacingTop ? ' kb-chapter-nav--space-' . $spacingTop : '' ?> kb-chapter-nav--heading-<?= \FriendsOfREDAXO\Knowledgebase\AddonSettings::getChapterHeadingStyle() ?>">
         <<?= $headingLevel ?> class="kb-chapter-nav__heading uk-heading-bullet uk-margin-small-bottom<?= '' !== $headingNumber ? ' kb-chapter-nav__heading--numbered' : '' ?>"><?php if ('' !== $headingNumber): ?><span class="kb-chapter-nav__number"><?= rex_escape($headingNumber) ?></span> <span class="kb-chapter-nav__title"><?= rex_escape($title) ?></span><?php else: ?><?= rex_escape($title) ?><?php endif ?></<?= $headingLevel ?>>
 
     <?php
