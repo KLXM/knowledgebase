@@ -122,3 +122,36 @@ body.rex-theme-dark #rex-page-knowledgebase-articles {
     margin: 0;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
 }
+
+
+/* Backend-Vorschau des Elements „Kapitel“: Darstellung „Feine Linie darunter, Nummer hinterlegt“ wie im Frontend */
+.kb-chapter-nav--heading-line .kb-chapter-nav__heading {
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid rgba(30, 135, 240, 0.35);
+}
+
+.kb-chapter-nav--heading-line .kb-chapter-nav__heading--numbered {
+  display: flex;
+  align-items: flex-start;
+}
+
+.kb-chapter-nav--heading-line .kb-chapter-nav__heading--numbered > .kb-chapter-nav__number {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.2em;
+  height: 2.2em;
+  margin: 0.1em 0.7em 0 0;
+  padding: 0 0.45em;
+  border-radius: 999px;
+  background: rgba(30, 135, 240, 0.14);
+  font-size: 0.7em;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.kb-chapter-nav--heading-line .kb-chapter-nav__heading--numbered > .kb-chapter-nav__title {
+  flex: 1 1 auto;
+  min-width: 0;
+}

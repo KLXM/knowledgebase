@@ -13,6 +13,10 @@ final class AddonSettings
     private const KEY_ALLOW_CHILD_PAGES = 'allow_child_pages';
     private const KEY_LINK_PDF_INFO = 'link_pdf_info';
     private const KEY_LINK_EXTERNAL_MARKER = 'link_external_marker';
+    private const KEY_CHAPTER_HEADING_STYLE = 'chapter_heading_style';
+
+    /** Darstellungen der Kapitelüberschriften */
+    public const CHAPTER_HEADING_STYLES = ['bullet', 'line'];
 
     public static function getMenuTitle(): string
     {
@@ -117,6 +121,19 @@ final class AddonSettings
     public static function setLinkExternalMarker(bool $enabled): void
     {
         \rex_addon::get('knowledgebase')->setConfig(self::KEY_LINK_EXTERNAL_MARKER, $enabled ? 1 : 0);
+    }
+
+    /** Kapitelüberschrift: 'bullet' = Balken links (Standard), 'line' = feine Linie darunter, Nummer hinterlegt */
+    public static function getChapterHeadingStyle(): string
+    {
+        $style = (string) \rex_addon::get('knowledgebase')->getConfig(self::KEY_CHAPTER_HEADING_STYLE, 'bullet');
+
+        return in_array($style, self::CHAPTER_HEADING_STYLES, true) ? $style : 'bullet';
+    }
+
+    public static function setChapterHeadingStyle(string $style): void
+    {
+        \rex_addon::get('knowledgebase')->setConfig(self::KEY_CHAPTER_HEADING_STYLE, in_array($style, self::CHAPTER_HEADING_STYLES, true) ? $style : 'bullet');
     }
 
     private static function isFlag(string $key): bool

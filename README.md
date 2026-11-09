@@ -141,12 +141,17 @@ Schrift und Farben der Ausgabe lassen sich über CSS-Variablen auf `.kb-app` an 
 ```css
 .kb-app {
     --kb-heading-font: Georgia, serif;   /* Standard: Schrift der Website (inherit) */
-    --kb-heading-color: #222;
     --kb-accent: #418032;     /* Links, aktive Navigation, Markierungen */
     --kb-accent-2: #2f5f24;   /* dunkler Ton für Links/Hover */
     --kb-ink: #222;           /* dunkle Schrift in Navigation und Kopf */
     --kb-highlight: #418032;  /* Linie am Anreißer, Hervorhebungen */
 }
+```
+
+Überschriften im Beitrag übernehmen Schrift und Farbe der Website. Eine eigene Farbe setzt man per CSS:
+
+```css
+.kb-app__article-body :is(h1, h2, h3, h4) { color: #222; }
 ```
 
 Helle Hintergründe und Rahmen (`--kb-accent-soft`, `--kb-accent-line`, `--kb-accent-muted`, `--kb-highlight-soft`) werden per `color-mix()` daraus abgeleitet und lassen sich bei Bedarf einzeln setzen.

@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.9.21] - 2026-11-09
+
+### Neu
+- **Übersicht: „Meine Wissensbasen“.** Oben in der Übersicht stehen alle Wissensbasen, die die angemeldete Person bearbeiten darf, jeweils mit Status und Anzahl der Beiträge. Direkte Links:
+  - „Beiträge bearbeiten“ öffnet die Beitragsliste, die Wissensbasis ist schon ausgewählt.
+  - „Im Frontend öffnen“ führt zur Standard-Seite oder zur Adresse aus dem URL-Profil.
+  - „Einstellungen“ erscheint nur mit dem Recht `knowledgebase[bases]`.
+  - Offline-Wissensbasen sind als solche gekennzeichnet.
+- **Extension Point `KNOWLEDGEBASE_CAN_EDIT`** (Parameter `knowledgebase_id` und `user`):
+  - Damit lässt sich einschränken, wer welche Wissensbasis bearbeitet.
+  - Wirkt auf „Meine Wissensbasen“ und auf die Auswahl unter „Beiträge“.
+  - Standard: Admins und alle mit `knowledgebase[articles]` dürfen jede Wissensbasis bearbeiten.
+
+- **Einstellung „Kapitelüberschriften“** (Einstellungen → Kapitelüberschriften):
+  - „Balken links“ ist der Standard und entspricht der bisherigen Darstellung.
+  - „Feine Linie darunter, Nummer hinterlegt“: Eine durchgezogene feine Linie unter der Überschrift trennt die Abschnitte, mit und ohne Nummer gleich.
+  - Eine Kapitelnummer steht dabei als hinterlegte Plakette vor dem Titel, wie in der Seitennavigation.
+  - Das Element „Kapitel“ bekommt dafür die Klasse `kb-chapter-nav--heading-line`.
+  - Die Backend-Vorschau im Builder zeigt die gewählte Darstellung ebenfalls, im hellen und im dunklen Thema.
+
+### Verbessert
+- **Farbe der Überschriften im Beitrag kommt von der Website:**
+  - Bisher war sie fest auf `#1c3e4c` gesetzt, wie zuvor schon die Schrift.
+  - Die Variable `--kb-heading-color` entfällt.
+  - Eine eigene Farbe lässt sich per CSS setzen: `.kb-app__article-body :is(h1, h2, h3, h4) { color: … }`.
+- **Kapitelüberschriften mit Nummer:** Mehrzeilige Titel laufen jetzt bündig zum Titel und nicht mehr unter die Kapitelnummer (hängender Einzug). Betrifft das Element „Kapitel“ mit der Option „Nummer auch in der Überschrift zeigen“, in allen drei Vorlagen (UIkit, Bootstrap, schlicht).
+
 ## [0.9.20] - 2026-11-08
 
 ### Behoben (Barrierefreiheit)
