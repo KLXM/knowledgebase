@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.9.21] - 2026-11-09
+
+### Neu
+- **Übersicht: „Meine Wissensbasen“.** Oben in der Übersicht stehen alle Wissensbasen, die die angemeldete Person bearbeiten darf, jeweils mit Status und Anzahl der Beiträge. Direkte Links:
+  - „Beiträge bearbeiten“ öffnet die Beitragsliste, die Wissensbasis ist schon ausgewählt.
+  - „Im Frontend öffnen“ führt zur Standard-Seite oder zur Adresse aus dem URL-Profil.
+  - „Einstellungen“ erscheint nur mit dem Recht `knowledgebase[bases]`.
+  - Offline-Wissensbasen sind als solche gekennzeichnet.
+- **Extension Point `KNOWLEDGEBASE_CAN_EDIT`** (Parameter `knowledgebase_id` und `user`):
+  - Damit lässt sich einschränken, wer welche Wissensbasis bearbeitet.
+  - Wirkt auf „Meine Wissensbasen“ und auf die Auswahl unter „Beiträge“.
+  - Standard: Admins und alle mit `knowledgebase[articles]` dürfen jede Wissensbasis bearbeiten.
+
 ## [0.9.20] - 2026-11-08
 
 ### Behoben (Barrierefreiheit)

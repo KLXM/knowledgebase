@@ -1,5 +1,8 @@
 <?php
 
+use FriendsOfREDAXO\Knowledgebase\KnowledgebaseAccess;
+use FriendsOfREDAXO\Knowledgebase\KnowledgebaseUrl;
+
 $addon = rex_addon::get('knowledgebase');
 
 $getCount = static function (string $table, ?string $condition = null): int {
@@ -127,6 +130,82 @@ $dashboard .= '</style>';
 
 $dashboard .= '<div class="kb-dashboard">';
 $dashboard .= '<p>' . rex_escape($addon->i18n('knowledgebase_overview_intro')) . '</p>';
+
+// Meine Wissensbasen: alle, die die angemeldete Person bearbeiten darf – mit direkten Links
+$user = rex::getUser();
+$canEditBases = $user instanceof rex_user && ($user->isAdmin() || $user->hasPerm('knowledgebase[bases]'));
+$basesCsrfParams = [];
+$basesTableObj = rex_yform_manager_table::get($baseTable);
+if ($basesTableObj instanceof rex_yform_manager_table) {
+    $basesCsrfParams = rex_csrf_token::factory($basesTableObj->getCSRFKey())->getUrlParams();
+}
+$articleCounts = [];
+foreach (rex_sql::factory()->getArray('SELECT knowledgebase_id, COUNT(*) AS total, SUM(online = 1) AS online FROM ' . $articleTable . ' GROUP BY knowledgebase_id') as $countRow) {
+    $articleCounts[(int) $countRow['knowledgebase_id']] = [(int) $countRow['total'], (int) $countRow['online']];
+}
+$myBases = [];
+foreach (rex_yform_manager_dataset::query($baseTable)->orderBy('title')->find() as $base) {
+    if ($base instanceof rex_yform_manager_dataset && KnowledgebaseAccess::canEdit((int) $base->getId())) {
+        $myBases[] = $base;
+    }
+}
+
+$dashboard .= '<div class="panel panel-default kb-dashboard-panel kb-dashboard-mine" style="margin-bottom:16px;">';
+$dashboard .= '<div class="panel-heading"><h2 class="panel-title" style="font-size:inherit;font-weight:700;">Meine Wissensbasen</h2></div>';
+$dashboard .= '<div class="table-responsive">';
+$dashboard .= '<table class="table table-striped kb-dashboard-list" style="margin-bottom:0;">';
+$dashboard .= '<thead><tr><th scope="col">Wissensbasis</th><th scope="col">Status</th><th scope="col">Beiträge</th><th scope="col">Aktionen</th></tr></thead><tbody>';
+if ([] === $myBases) {
+    $dashboard .= '<tr><td colspan="4" class="text-muted">Für dich ist noch keine Wissensbasis freigegeben.</td></tr>';
+}
+foreach ($myBases as $base) {
+    $kbId = (int) $base->getId();
+    $kbTitle = (string) $base->getValue('title');
+    $kbOnline = 1 === (int) $base->getValue('online');
+    [$total, $online] = $articleCounts[$kbId] ?? [0, 0];
+
+    $articlesUrl = html_entity_decode(rex_url::backendPage('knowledgebase/articles', [
+        'knowledgebase_id' => $kbId,
+        'rex_yform_filter' => ['knowledgebase_id' => $kbId],
+        'rex_yform_set' => ['knowledgebase_id' => $kbId],
+    ]), ENT_QUOTES, 'UTF-8');
+
+    // Frontend: Standard-Seite der Wissensbasis, sonst Adresse aus dem URL-Profil
+    $frontendUrl = '';
+    if ($base instanceof rex_data_knowledgebase && $base->getPreviewArticleId() > 0) {
+        $frontendUrl = rex_getUrl($base->getPreviewArticleId());
+    } elseif (KnowledgebaseUrl::hasProfile($kbId)) {
+        $frontendUrl = KnowledgebaseUrl::getBaseUrl($kbId);
+    }
+
+    $actions = '<a class="btn btn-primary btn-xs" href="' . rex_escape($articlesUrl) . '" aria-label="' . rex_escape('Beiträge bearbeiten: ' . $kbTitle) . '"><i class="rex-icon fa-pencil" aria-hidden="true"></i> Beiträge bearbeiten</a>';
+    if ('' !== $frontendUrl) {
+        $actions .= ' <a class="btn btn-default btn-xs" href="' . rex_escape($frontendUrl) . '" target="_blank" rel="noopener" aria-label="' . rex_escape('Im Frontend öffnen: ' . $kbTitle . ' (neues Fenster)') . '"><i class="rex-icon fa-external-link" aria-hidden="true"></i> Im Frontend öffnen</a>';
+    }
+    if ($canEditBases) {
+        $settingsUrl = html_entity_decode(rex_url::backendPage('knowledgebase/bases', [
+            'table_name' => $baseTable,
+            'func' => 'edit',
+            'data_id' => $kbId,
+        ] + $basesCsrfParams), ENT_QUOTES, 'UTF-8');
+        $actions .= ' <a class="btn btn-default btn-xs" href="' . rex_escape($settingsUrl) . '" aria-label="' . rex_escape('Einstellungen: ' . $kbTitle) . '"><i class="rex-icon fa-cog" aria-hidden="true"></i> Einstellungen</a>';
+    }
+
+    $status = $kbOnline
+        ? '<span class="label label-success">Online</span>'
+        : '<span class="label label-default">Offline</span>';
+    if ('' !== $frontendUrl && !$kbOnline) {
+        $status .= '<br><small class="text-muted">im Frontend nur für Angemeldete</small>';
+    }
+
+    $dashboard .= '<tr class="kb-dashboard-row">';
+    $dashboard .= '<th scope="row"><a href="' . rex_escape($articlesUrl) . '">' . rex_escape($kbTitle) . '</a></th>';
+    $dashboard .= '<td>' . $status . '</td>';
+    $dashboard .= '<td>' . $total . ' <small class="text-muted">(' . $online . ' online)</small></td>';
+    $dashboard .= '<td>' . $actions . '</td>';
+    $dashboard .= '</tr>';
+}
+$dashboard .= '</tbody></table></div></div>';
 $dashboard .= '<div class="row">';
 
 foreach ($stats as $index => $stat) {
@@ -223,10 +302,10 @@ $dashboard .= 'if(prefersReduced){return;}';
 $dashboard .= 'var root=document.querySelector(".kb-dashboard");';
 $dashboard .= 'if(!root){return;}';
 $dashboard .= 'var cards=root.querySelectorAll(".kb-dashboard-card");';
-$dashboard .= 'var panel=root.querySelector(".kb-dashboard-panel");';
+$dashboard .= 'var panels=root.querySelectorAll(".kb-dashboard-panel");';
 $dashboard .= 'var rows=root.querySelectorAll(".kb-dashboard-row");';
 $dashboard .= 'cards.forEach(function(card,index){window.setTimeout(function(){card.classList.add("is-visible");},80+(index*90));});';
-$dashboard .= 'if(panel){window.setTimeout(function(){panel.classList.add("is-visible");},420);}';
+$dashboard .= 'panels.forEach(function(panel,index){window.setTimeout(function(){panel.classList.add("is-visible");},index===0?60:420);});';
 $dashboard .= 'rows.forEach(function(row,index){window.setTimeout(function(){row.classList.add("is-visible");},540+(index*55));});';
 $dashboard .= '})();';
 $dashboard .= '</script>';
