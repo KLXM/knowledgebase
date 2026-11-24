@@ -3,6 +3,7 @@
 use FriendsOfREDAXO\Knowledgebase\KnowledgebaseUrl;
 use FriendsOfREDAXO\Knowledgebase\ArticleHierarchyService;
 use FriendsOfREDAXO\Knowledgebase\AddonSettings;
+use FriendsOfREDAXO\Knowledgebase\KnowledgebaseAccess;
 
 $tableName = rex::getTable('knowledgebase_article');
 $currentPage = rex_be_controller::getCurrentPage();
@@ -39,7 +40,7 @@ if (class_exists('rex_data_knowledgebase')) {
         ->find();
 
     foreach ($knowledgebases as $knowledgebase) {
-        if (!$knowledgebase instanceof rex_yform_manager_dataset) {
+        if (!$knowledgebase instanceof rex_yform_manager_dataset || !KnowledgebaseAccess::canEdit((int) $knowledgebase->getId())) {
             continue;
         }
 

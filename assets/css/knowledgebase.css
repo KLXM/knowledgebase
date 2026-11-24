@@ -6,7 +6,8 @@
     --kb-accent-2: #0f6ecd;
     /* Schrift der Überschriften: Standard ist die Schrift der Website (inherit), eigene Schrift z. B. Georgia, serif */
     --kb-heading-font: inherit;
-    --kb-heading-color: #1c3e4c;
+    /* Farbe der Überschriften im Beitrag: kommt von der Website. Eigene Farbe z. B.
+       .kb-app__article-body :is(h1, h2, h3, h4) { color: #1c3e4c; } */
     /* Abgeleitete Töne – folgen --kb-accent / --kb-highlight, einzeln überschreibbar */
     --kb-ink: #24374f;
     /* Akzent als Schriftfarbe – dunkler, damit Text auf Weiß/hellem Grund mind. 4.5:1 erreicht */
@@ -1248,7 +1249,6 @@
 .kb-app__article-body h3,
 .kb-app__article-body h4 {
     font-family: var(--kb-heading-font);
-    color: var(--kb-heading-color);
 }
 
 .kb-app__article-body h1 {
@@ -1921,6 +1921,55 @@
     color: var(--kb-accent-text);
     font-variant-numeric: tabular-nums;
     margin-right: 0.15em;
+}
+
+/* Hängender Einzug: mehrzeilige Titel laufen bündig zum Titel, nicht unter die Nummer */
+.kb-chapter-nav__heading--numbered {
+    display: flex;
+    align-items: baseline;
+}
+
+.kb-chapter-nav__heading--numbered > .kb-chapter-nav__number {
+    flex: none;
+    margin-right: 0.4em;
+}
+
+.kb-chapter-nav__heading--numbered > .kb-chapter-nav__title {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.kb-chapter-nav__heading--numbered.uk-heading-bullet::before {
+    flex: none;
+}
+
+/* Darstellung „Feine Linie darunter, Nummer hinterlegt“ (Einstellungen → Kapitelüberschriften); Klasse am Element, damit es auch die Backend-Vorschau zeigt */
+.kb-chapter-nav--heading-line .kb-chapter-nav__heading {
+    padding-bottom: 0.45rem;
+    border-bottom: 1px solid var(--kb-accent-line);
+}
+
+.kb-chapter-nav--heading-line .kb-chapter-nav__heading.uk-heading-bullet::before {
+    display: none;
+}
+
+.kb-chapter-nav--heading-line .kb-chapter-nav__heading--numbered {
+    align-items: flex-start;
+}
+
+.kb-chapter-nav--heading-line .kb-chapter-nav__heading--numbered > .kb-chapter-nav__number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.2em;
+    height: 2.2em;
+    margin: 0.2em 0.7em 0 0;
+    padding: 0 0.45em;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--kb-accent) 12%, #fff);
+    font-size: 0.6em;
+    font-weight: 700;
+    line-height: 1;
 }
 
 /* =====================================================================
